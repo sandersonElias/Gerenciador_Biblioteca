@@ -1,0 +1,31 @@
+CREATE TABLE tb_livro (
+    id BIGINT PRIMARY KEY,
+
+    titulo VARCHAR(100) NOT NULL,
+    editora VARCHAR(100),
+
+    total_exemplares BIGINT NOT NULL,
+
+    cdd VARCHAR(50),
+    localizacao VARCHAR(50),
+    descricao TEXT,
+    url_img VARCHAR(500),
+
+    contador_emprestimos BIGINT NOT NULL DEFAULT 0,
+
+    genero_id BIGINT,
+    catalogacao_id BIGINT,
+    autor_id BIGINT,
+
+    CONSTRAINT fk_livro_genero
+        FOREIGN KEY (genero_id)
+            REFERENCES tb_genero(id),
+
+    CONSTRAINT fk_livro_catalogacao
+        FOREIGN KEY (catalogacao_id)
+            REFERENCES tb_catalogacao(id),
+
+    CONSTRAINT fk_livro_autor
+        FOREIGN KEY (autor_id)
+            REFERENCES tb_autor(id)
+);
