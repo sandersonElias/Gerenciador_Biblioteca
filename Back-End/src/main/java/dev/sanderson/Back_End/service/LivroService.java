@@ -2,7 +2,13 @@ package dev.sanderson.Back_End.service;
 
 import dev.sanderson.Back_End.dto.LivroDtos.LivroRequest;
 import dev.sanderson.Back_End.dto.LivroDtos.LivroResponse;
+import dev.sanderson.Back_End.entity.Autor;
+import dev.sanderson.Back_End.entity.Catalogacao;
+import dev.sanderson.Back_End.entity.Genero;
 import dev.sanderson.Back_End.entity.Livro;
+import dev.sanderson.Back_End.repository.AutorRepository;
+import dev.sanderson.Back_End.repository.CatalogacaoRepository;
+import dev.sanderson.Back_End.repository.GeneroRepository;
 import dev.sanderson.Back_End.repository.LivroRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
@@ -17,15 +23,44 @@ import java.util.List;
 public class LivroService {
 
     private final LivroRepository livroRepository;
+    private final AutorRepository autorRepository;
+    private final CatalogacaoRepository catalogacaoRepository;
+    private final GeneroRepository generoRepository;
     private final ObjectMapper objectMapper;
 
     // Criar novo livro
     public LivroResponse insertLivro(LivroRequest dto) {
-        Livro entity = objectMapper.convertValue(dto, Livro.class);
-        if (entity.getContadorEmprestimos() == null) entity.setContadorEmprestimos(0);
-        if (entity.getTotalExemplares() == null) entity.setTotalExemplares(0);
 
-        Livro salvo = livroRepository.save(entity);
+        Livro livro = new Livro();
+
+        livro.setTitulo(dto.getTitulo());
+        livro.setEditora(dto.getEditora());
+        livro.setCdd(dto.getCdd());
+        livro.setLocalizacao(dto.getLocalizacao());
+        livro.setDescricao(dto.getDescricao());
+        livro.setUrlImg(dto.getUrlImg());
+
+        livro.setTotalExemplares(
+                dto.getTotalExemplares() != null ? dto.getTotalExemplares() : 0
+        );
+
+        livro.setContadorEmprestimos(0);
+
+        Autor autor = autorRepository.findByAutor(dto.getAutor())
+                .orElseThrow(() -> new RuntimeException("Autor não encontrado"));
+
+        Genero genero = generoRepository.findByGenero(dto.getGenero())
+                .orElseThrow(() -> new RuntimeException("Genero não encontrado"));
+
+        Catalogacao catalogacao = catalogacaoRepository.findByCatalogacao(dto.getCatalogacao())
+                .orElseThrow(() -> new RuntimeException("Catalogacao não encontrada"));
+
+        livro.setAutor(autor);
+        livro.setGenero(genero);
+        livro.setCatalogacao(catalogacao);
+
+        Livro salvo = livroRepository.save(livro);
+
         return objectMapper.convertValue(salvo, LivroResponse.class);
     }
 
