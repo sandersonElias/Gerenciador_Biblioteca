@@ -12,6 +12,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "tb_user")
+@Inheritance(strategy = InheritanceType.JOINED)
 public class User {
 
     @Id
