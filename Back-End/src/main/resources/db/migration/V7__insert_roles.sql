@@ -1,3 +1,3 @@
-INSERT INTO tb_roles (role) VALUES ('ADMIN');
-INSERT INTO tb_roles (role) VALUES ('FUNCIONARIO');
-INSERT INTO tb_roles (role) VALUES ('ALUNO');
+INSERT INTO tb_roles (role) VALUES ('ROLE_ADMIN');
+INSERT INTO tb_roles (role) VALUES ('ROLE_FUNCIONARIO');
+INSERT INTO tb_roles (role) VALUES ('ROLE_ALUNO');
