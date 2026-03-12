@@ -14,25 +14,56 @@ public interface EmprestimoRepository extends JpaRepository<Emprestimo, Long> {
 
     List<Emprestimo> findAll();
 
-    @Query("SELECT COUNT(e) FROM Emprestimo e WHERE e.livro.id = :livroId AND e.status = 'PENDENTE'")
+    @Query("""
+        SELECT COUNT(e)
+        FROM Emprestimo e
+        WHERE e.livro.id = :livroId
+        AND e.status = 'PENDENTE'
+    """)
     Integer contarEmprestimosPendentes(@Param("livroId") Long livroId);
 
-    @Query("SELECT e FROM Emprestimo e WHERE LOWER(e.aluno.nome) LIKE LOWER(CONCAT('%', :nome, '%'))")
-    List<Emprestimo> buscarAluno(@Param("nome") String nome);
+    @Query("""
+        SELECT e
+        FROM Emprestimo e
+        WHERE LOWER(e.user.name) LIKE LOWER(CONCAT('%', :name, '%'))
+    """)
+    List<Emprestimo> buscarUser(@Param("name") String name);
 
-    @Query("SELECT e FROM Emprestimo e WHERE LOWER(e.livro.titulo) LIKE LOWER(CONCAT('%', :titulo, '%'))")
+    @Query("""
+        SELECT e
+        FROM Emprestimo e
+        WHERE LOWER(e.livro.titulo) LIKE LOWER(CONCAT('%', :titulo, '%'))
+    """)
     List<Emprestimo> buscarLivro(@Param("titulo") String titulo);
 
-    @Query("SELECT e FROM Emprestimo e WHERE e.status = :status")
+    @Query("""
+        SELECT e
+        FROM Emprestimo e
+        WHERE e.status = :status
+    """)
     List<Emprestimo> buscarStatus(@Param("status") String status);
 
-    @Query("SELECT e FROM Emprestimo e WHERE e.dataDevolucao = :data")
+    @Query("""
+        SELECT e
+        FROM Emprestimo e
+        WHERE e.dataDevolucao = :data
+    """)
     List<Emprestimo> buscarDevolucaoDoDia(@Param("data") LocalDate data);
 
     // Buscas para Renovação e Devolução
-    @Query("SELECT e FROM Emprestimo e WHERE LOWER(e.livro.titulo) LIKE LOWER(CONCAT('%', :titulo, '%')) AND e.status <> 'Devolvido' ")
+    @Query("""
+        SELECT e
+        FROM Emprestimo e
+        WHERE LOWER(e.livro.titulo) LIKE LOWER(CONCAT('%', :titulo, '%'))
+        AND e.status <> 'DEVOLVIDO'
+    """)
     List<Emprestimo> buscarRenovacaoLivro(@Param("titulo") String titulo);
 
-    @Query("SELECT e FROM Emprestimo e WHERE LOWER(e.aluno.nome) LIKE LOWER(CONCAT('%', :nome, '%')) AND e.status <> 'Devolvido' ")
-    List<Emprestimo> buscarRenovacaoAluno(@Param("nome") String nome);
+    @Query("""
+        SELECT e
+        FROM Emprestimo e
+        WHERE LOWER(e.user.name) LIKE LOWER(CONCAT('%', :name, '%'))
+        AND e.status <> 'DEVOLVIDO'
+    """)
+    List<Emprestimo> buscarRenovacaoUser(@Param("name") String name);
 }

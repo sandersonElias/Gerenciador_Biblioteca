@@ -4,6 +4,7 @@ import dev.sanderson.Back_End.dto.LivroDtos.LivroRequest;
 import dev.sanderson.Back_End.dto.LivroDtos.LivroResponse;
 import dev.sanderson.Back_End.service.LivroService;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +19,7 @@ public class LivroController {
     private final LivroService livroService;
 
     // Criar novo livro
-    @PostMapping
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<LivroResponse> criarLivro(@RequestBody LivroRequest livroDto){
         LivroResponse criado = livroService.insertLivro(livroDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(criado);
@@ -64,7 +65,6 @@ public class LivroController {
         LivroResponse livroDto = livroService.buscarPorId(id);
         return ResponseEntity.ok(livroDto);
     }
-
 
     // Lista livros mais populares limite=5
     @GetMapping("/populares")

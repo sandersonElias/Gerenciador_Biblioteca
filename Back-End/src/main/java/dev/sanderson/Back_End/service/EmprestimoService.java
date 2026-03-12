@@ -44,7 +44,7 @@ public class EmprestimoService {
         Emprestimo emp = new Emprestimo();
         emp.setId(dto.getId());
 
-        emp.setUserId(user);
+        emp.setUser(user);
         emp.setLivro(livro);
 
         LocalDate hoje = dto.getDataEmprestimo() != null ? dto.getDataEmprestimo() : LocalDate.now();
@@ -109,8 +109,8 @@ public class EmprestimoService {
     }
 
     // Buscar por nome do aluno
-    public List<EmprestimoResponse> buscarPorAluno(String nome) {
-        return emprestimoRepository.buscarAluno(nome).stream()
+    public List<EmprestimoResponse> buscarPorUser(String nome) {
+        return emprestimoRepository.buscarUser(nome).stream()
                 .map(e -> objectMapper.convertValue(e, EmprestimoResponse.class))
                 .toList();
     }
@@ -131,8 +131,8 @@ public class EmprestimoService {
     }
 
     // Buscar por nome do aluno para renovação
-    public List<EmprestimoResponse> buscarPorAlunoRenovacao(String nome) {
-        return emprestimoRepository.buscarRenovacaoAluno(nome).stream()
+    public List<EmprestimoResponse> buscarPorUserRenovacao(String nome) {
+        return emprestimoRepository.buscarRenovacaoUser(nome).stream()
                 .map(e -> objectMapper.convertValue(e, EmprestimoResponse.class))
                 .toList();
     }

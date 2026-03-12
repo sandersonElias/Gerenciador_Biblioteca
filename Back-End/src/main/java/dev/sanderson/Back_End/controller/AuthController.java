@@ -11,6 +11,7 @@ import dev.sanderson.Back_End.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -32,7 +33,7 @@ public class AuthController implements AuthControllerDoc {
     private final AuthenticationManager authenticationManager;
     private final TokenService tokenService;
 
-    @PostMapping
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> auth(@RequestBody @Valid UserLoginDto userLoginDto)  {
 
         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
@@ -51,7 +52,10 @@ public class AuthController implements AuthControllerDoc {
 
     }
 
-    @PostMapping("/registrar")
+    @PostMapping(
+            value = "/registrar",
+            consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE
+    )
     public ResponseEntity<UserResponse> registrar (@RequestBody @Valid UserRequest userRequest) throws BusinessRuleException {
         UserResponse user = userService.registrar(userRequest);
         return new ResponseEntity<>(user, HttpStatus.CREATED);
