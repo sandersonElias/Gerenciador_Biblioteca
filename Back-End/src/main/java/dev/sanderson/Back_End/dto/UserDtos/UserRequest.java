@@ -11,6 +11,9 @@ import lombok.*;
 @AllArgsConstructor
 public class UserRequest {
 
+    @NotEmpty(message = "Name não pode ser vazio")
+    private String name;
+
     @NotEmpty(message = "Email não pode ser vazio")
     private String email;
 

@@ -1,17 +1,17 @@
 package dev.sanderson.Back_End.dto.LivroDtos;
 
-public record LivroResponse(
-        Long id,
-        String titulo,
-        String editora,
-        Integer totalExemplares,
-        String cdd,
-        String localizacao,
-        String descricao,
-        String urlImg,
-        Integer contadorEmprestimos,
-        AutorDto autor,
-        GeneroDto genero,
-        CatalogacaoDto catalogacao
-) {
+public class LivroResponse{
+
+    private Long id;
+    private String titulo;
+    private String editora;
+    private Integer totalExemplares;
+    private String cdd;
+    private String localizacao;
+    private String descricao;
+    private String urlImg;
+    private Integer contadorEmprestimos;
+    private AutorDto autor;
+    private GeneroDto genero;
+    private CatalogacaoDto catalogacao;
 }

@@ -32,7 +32,7 @@ public class SecurityConfiguration {
                 .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/livro/buscar/**").permitAll()
+                        .requestMatchers( "/auth", "/", "/livro/buscar/**").permitAll()
                         .requestMatchers("/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 );

@@ -22,29 +22,35 @@ public class UserService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public Optional<User> findByLoginAndSenha(String email, String password) {
+    public Optional<User> findByLoginAndPassword(String email, String password) {
         return userRepository.findByEmailAndPassword(email, password);
     }
 
     public Optional<User> findById(Long id){
         return userRepository.findById(id);
     }
-    public Optional<User> findByLogin(String email){
+
+    public Optional<User> findByEmail(String email){
         return userRepository.findByEmail(email);
     }
 
     public UserResponse registrar(UserRequest userRequest) throws BusinessRuleException {
+
         if(userRepository.findByEmail(userRequest.getEmail()).isPresent()){
-            throw new BusinessRuleException("Email já" + userRequest.getEmail() + " está em uso" );
+            throw new BusinessRuleException("Email já " + userRequest.getEmail() + " está em uso");
         }
 
-        User newUser = objectMapper.convertValue(userRequest, User.class);
+        User newUser = new User();
+
+        newUser.setName(userRequest.getName());
+        newUser.setEmail(userRequest.getEmail());
+        newUser.setPassword(passwordEncoder.encode(userRequest.getPassword()));
 
         Roles role = buscarRole(userRequest.getRole());
         newUser.setRole(role);
-        String password = passwordEncoder.encode(newUser.getPassword());
-        newUser.setPassword(password);
+
         newUser = userRepository.save(newUser);
+
         UserResponse registrar = objectMapper.convertValue(newUser, UserResponse.class);
         return registrar;
     }

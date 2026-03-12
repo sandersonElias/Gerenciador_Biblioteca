@@ -13,5 +13,5 @@ public class UserLoginDto {
 
     @Schema(description = "Senha do usuário", example = "123", required = true)
     @NotEmpty(message = "Senha não pode ser vazio")
-    private String senha;
+    private String password;
 }

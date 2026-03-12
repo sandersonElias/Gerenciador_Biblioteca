@@ -51,14 +51,14 @@ public class LivroController {
         return ResponseEntity.ok(livroDto);
     }
 
-    // Lista todos os livros (detalhado)
+    // Lista todos os livros
     @GetMapping("/todos")
     public ResponseEntity<List<LivroResponse>> todosLivros(){
         List<LivroResponse> livroDto = livroService.listarTodos();
         return ResponseEntity.ok(livroDto);
     }
 
-    // Busca por Id (detalhado)
+    // Busca por Id
     @GetMapping("/{id}")
     public ResponseEntity<LivroResponse> buscarLivro(@PathVariable Long id){
         LivroResponse livroDto = livroService.buscarPorId(id);
