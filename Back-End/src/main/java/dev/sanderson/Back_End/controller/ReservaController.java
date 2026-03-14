@@ -55,7 +55,7 @@ public class ReservaController {
 
     }
 
-    @GetMapping
+    @GetMapping("/todos")
     public List<Reserva> listarReservas() {
 
         return reservaService.listarReservas();
