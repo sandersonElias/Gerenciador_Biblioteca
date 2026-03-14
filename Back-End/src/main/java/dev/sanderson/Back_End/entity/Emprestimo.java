@@ -1,5 +1,7 @@
 package dev.sanderson.Back_End.entity;
 
+import dev.sanderson.Back_End.entity.type.StatusEmprestimo;
+import dev.sanderson.Back_End.entity.type.StatusReserva;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -23,8 +25,8 @@ public class Emprestimo {
     private LocalDate dataDevolvido;
     private Integer renovacoes = 0;
 
-    @Column(nullable = false)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private StatusEmprestimo status;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)

@@ -2,6 +2,7 @@ package dev.sanderson.Back_End.controller;
 
 import dev.sanderson.Back_End.dto.EmprestimoDtos.EmprestimoRequest;
 import dev.sanderson.Back_End.dto.EmprestimoDtos.EmprestimoResponse;
+import dev.sanderson.Back_End.entity.type.StatusEmprestimo;
 import dev.sanderson.Back_End.service.EmprestimoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -77,7 +78,7 @@ public class EmprestimoController {
 
     // Buscar por status
     @GetMapping("/status/{status}")
-    public ResponseEntity<List<EmprestimoResponse>> buscarPorStatus(@PathVariable String status) {
+    public ResponseEntity<List<EmprestimoResponse>> buscarPorStatus(@PathVariable StatusEmprestimo status) {
         return ResponseEntity.ok(emprestimoService.buscarPorStatus(status));
     }
 

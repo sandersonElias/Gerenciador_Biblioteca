@@ -6,6 +6,7 @@ import dev.sanderson.Back_End.dto.EmprestimoDtos.EmprestimoResponse;
 import dev.sanderson.Back_End.entity.Emprestimo;
 import dev.sanderson.Back_End.entity.Livro;
 import dev.sanderson.Back_End.entity.User;
+import dev.sanderson.Back_End.entity.type.StatusEmprestimo;
 import dev.sanderson.Back_End.repository.EmprestimoRepository;
 import dev.sanderson.Back_End.repository.LivroRepository;
 import dev.sanderson.Back_End.repository.UserRepository;
@@ -53,7 +54,12 @@ public class EmprestimoService {
         LocalDate devolucao = dto.getDataDevolucao() != null ? dto.getDataDevolucao() : hoje.plusDays(7);
         emp.setDataDevolucao(devolucao);
 
-        emp.setStatus(dto.getStatus() != null ? dto.getStatus() : "Pendente");
+        if (dto.getStatus() != null) {
+            emp.setStatus(dto.getStatus());
+        } else {
+            emp.setStatus(StatusEmprestimo.ATIVO);
+        }
+
         emp.setRenovacoes(dto.getRenovacoes() != null ? dto.getRenovacoes() : 0);
 
         int contador = livro.getContadorEmprestimos() != null ? livro.getContadorEmprestimos() : 0;
@@ -70,7 +76,7 @@ public class EmprestimoService {
         Emprestimo emp = emprestimoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Empréstimo não encontrado"));
 
-        emp.setStatus("Devolvido");
+        emp.setStatus(StatusEmprestimo.DEVOLVIDO);
         emp.setDataDevolvido(LocalDate.now());
         emprestimoRepository.save(emp);
     }
@@ -80,14 +86,14 @@ public class EmprestimoService {
         Emprestimo emp = emprestimoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Empréstimo não encontrado"));
 
-        if ("Devolvido".equalsIgnoreCase(emp.getStatus())) {
+        if (emp.getStatus() == StatusEmprestimo.DEVOLVIDO) {
             throw new IllegalStateException("Empréstimo já devolvido; renovação não permitida");
         }
 
         emp.setRenovacoes(Objects.requireNonNullElse(emp.getRenovacoes(), 0) + 1);
         LocalDate novaDevolucao = Objects.requireNonNullElse(emp.getDataDevolucao(), LocalDate.now()).plusDays(7);
         emp.setDataDevolucao(novaDevolucao);
-        emp.setStatus("Emprestado");
+        emp.setStatus(StatusEmprestimo.ATIVO);
 
         Emprestimo atualizado = emprestimoRepository.save(emp);
         return objectMapper.convertValue(atualizado, EmprestimoResponse.class);
@@ -138,7 +144,7 @@ public class EmprestimoService {
     }
 
     // Buscar por status
-    public List<EmprestimoResponse> buscarPorStatus(String status) {
+    public List<EmprestimoResponse> buscarPorStatus(StatusEmprestimo status) {
         return emprestimoRepository.buscarStatus(status).stream()
                 .map(e -> objectMapper.convertValue(e, EmprestimoResponse.class))
                 .toList();

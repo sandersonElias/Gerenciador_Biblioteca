@@ -1,5 +1,6 @@
 package dev.sanderson.Back_End.dto.EmprestimoDtos;
 
+import dev.sanderson.Back_End.entity.type.StatusEmprestimo;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,7 +18,7 @@ public class EmprestimoRequest {
     private LocalDate dataDevolucao;
     private LocalDate dataDevolvido;
     private Integer renovacoes;
-    private String status;
+    private StatusEmprestimo status;
     private Long livroId;
     private Long userId;
 }

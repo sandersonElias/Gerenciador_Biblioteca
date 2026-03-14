@@ -1,6 +1,7 @@
 package dev.sanderson.Back_End.repository;
 
 import dev.sanderson.Back_End.entity.Emprestimo;
+import dev.sanderson.Back_End.entity.type.StatusEmprestimo;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.jpa.repository.Query;
@@ -41,7 +42,7 @@ public interface EmprestimoRepository extends JpaRepository<Emprestimo, Long> {
         FROM Emprestimo e
         WHERE e.status = :status
     """)
-    List<Emprestimo> buscarStatus(@Param("status") String status);
+    List<Emprestimo> buscarStatus(@Param("status") StatusEmprestimo status);
 
     @Query("""
         SELECT e
