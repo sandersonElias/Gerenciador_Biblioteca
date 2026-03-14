@@ -3,7 +3,6 @@ package dev.sanderson.Back_End.security;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -32,7 +31,9 @@ public class SecurityConfiguration {
                 .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers( "/auth", "/", "/livro/buscar/**").permitAll()
+                        .requestMatchers( "/", "/auth", "/livro/buscar/**", "livro/todos").permitAll()
+                        .requestMatchers("/reserva/**").hasAnyRole("ALUNO", "FUNCIONARIO")
+                        .requestMatchers("/emprestimo/**").hasRole("FUNCIONARIO")
                         .requestMatchers("/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 );

@@ -4,6 +4,7 @@ import dev.sanderson.Back_End.entity.Reserva;
 import dev.sanderson.Back_End.entity.User;
 import dev.sanderson.Back_End.service.ReservaService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,7 +17,10 @@ public class ReservaController {
 
     private final ReservaService reservaService;
 
-    @PostMapping("/{livroId}")
+    @PostMapping(
+            value = "/{livroId}",
+            consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE
+    )
     public Reserva reservarLivro(
             @PathVariable Long livroId,
             @AuthenticationPrincipal User user

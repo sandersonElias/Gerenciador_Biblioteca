@@ -44,6 +44,8 @@ public class LivroService {
                 dto.getTotalExemplares() != null ? dto.getTotalExemplares() : 0
         );
 
+        livro.setQuantidadeDisponivel(dto.getQuantidadeDisponivel());
+
         livro.setContadorEmprestimos(0);
 
         Autor autor = autorRepository.findByAutor(dto.getAutor())
