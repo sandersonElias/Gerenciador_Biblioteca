@@ -1,5 +1,6 @@
 package dev.sanderson.Back_End.entity;
 
+import dev.sanderson.Back_End.entity.type.StatusReserva;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -22,7 +23,10 @@ public class Reserva {
 
     private LocalDate dataReserva;
     private LocalDate dataExpiracao;
-    private String status;
+    private LocalDate dataDisponivel;
+
+    @Enumerated(EnumType.STRING)
+    private StatusReserva status;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "livro_id", nullable = false)

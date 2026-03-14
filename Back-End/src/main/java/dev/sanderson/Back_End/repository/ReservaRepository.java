@@ -3,6 +3,7 @@ package dev.sanderson.Back_End.repository;
 import dev.sanderson.Back_End.entity.Livro;
 import dev.sanderson.Back_End.entity.Reserva;
 import dev.sanderson.Back_End.entity.User;
+import dev.sanderson.Back_End.entity.type.StatusReserva;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -23,14 +24,24 @@ public interface ReservaRepository extends JpaRepository<Reserva, Long> {
     """)
     Optional<Reserva> buscarPrimeiraReserva(
             @Param("livro") Livro livro,
-            @Param("status") String status
+            @Param("status") StatusReserva status
     );
 
-    List<Reserva> findByStatus(String status);
+    List<Reserva> findByStatus(StatusReserva status);
+
+    List<Reserva> findByUser(User user);
 
     boolean existsByLivroAndUserAndStatus(
             Livro livro,
             User user,
-            String status
+            StatusReserva status
     );
+
+    @Query("""
+       SELECT r
+       FROM Reserva r
+       WHERE r.livro.id = :livroId
+       ORDER BY r.dataReserva ASC
+       """)
+    List<Reserva> buscarReservasPorLivro(@Param("livroId") Long livroId);
 }

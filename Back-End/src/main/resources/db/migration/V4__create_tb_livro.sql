@@ -5,6 +5,7 @@ CREATE TABLE tb_livro (
     editora VARCHAR(100),
 
     total_exemplares BIGINT NOT NULL,
+    quantidade_Disponivel BIGINT NOT NULL,
 
     cdd VARCHAR(50),
     localizacao VARCHAR(50),

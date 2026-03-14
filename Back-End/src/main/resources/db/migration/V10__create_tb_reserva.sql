@@ -4,6 +4,7 @@ CREATE TABLE tb_reserva (
 
     data_reserva DATE,
     data_expiracao DATE,
+    data_disponivel DATE,
 
     status VARCHAR(50) NOT NULL,
 

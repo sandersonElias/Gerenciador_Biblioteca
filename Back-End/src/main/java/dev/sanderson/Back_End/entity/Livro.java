@@ -26,6 +26,9 @@ public class Livro {
     @Column(nullable = false)
     private Integer totalExemplares;
 
+    @Column(nullable = false)
+    private  Integer quantidadeDisponivel;
+
     private String cdd;
     private String localizacao;
     private String descricao;
