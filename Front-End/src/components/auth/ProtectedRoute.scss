@@ -1,0 +1,22 @@
+.access-denied {
+  max-width: 600px;
+  margin: 4rem auto;
+  text-align: center;
+  padding: 2rem;
+  
+  h1 {
+    color: var(--color-error);
+    margin-bottom: 1rem;
+  }
+  
+  p {
+    color: var(--color-text-secondary);
+  }
+}
+
+.loading-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+}

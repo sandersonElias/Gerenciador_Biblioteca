@@ -31,7 +31,7 @@ public class SecurityConfiguration {
                 .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers( "/", "/auth", "/livro/buscar/**", "livro/todos").permitAll()
+                        .requestMatchers( "/", "/auth", "/livro/buscar/**", "livro/todos", "/livro/populares").permitAll()
                         .requestMatchers("/reserva/**").hasAnyRole("ALUNO", "FUNCIONARIO")
                         .requestMatchers("/emprestimo/**").hasRole("FUNCIONARIO")
                         .requestMatchers("/**").hasRole("ADMIN")

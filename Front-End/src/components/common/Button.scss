@@ -1,0 +1,119 @@
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  border-radius: var(--border-radius-md);
+  transition: all var(--transition-fast);
+  border: 2px solid transparent;
+  cursor: pointer;
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  
+  // Sizes
+  &--sm {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+  }
+  
+  &--md {
+    padding: 0.625rem 1.25rem;
+    font-size: 1rem;
+  }
+  
+  &--lg {
+    padding: 0.875rem 1.75rem;
+    font-size: 1.125rem;
+  }
+  
+  // Variants
+  &--primary {
+    background-color: var(--color-primary);
+    color: white;
+    
+    &:hover:not(:disabled) {
+      background-color: var(--color-secondary);
+    }
+  }
+  
+  &--secondary {
+    background-color: var(--color-secondary);
+    color: white;
+    
+    &:hover:not(:disabled) {
+      background-color: var(--color-primary);
+    }
+  }
+  
+  &--accent {
+    background-color: var(--color-amber);
+    color: var(--color-text-primary);
+    
+    &:hover:not(:disabled) {
+      background-color: #e69b00;
+    }
+  }
+  
+  &--outline {
+    background-color: transparent;
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    
+    &:hover:not(:disabled) {
+      background-color: var(--color-primary);
+      color: white;
+    }
+  }
+  
+  &--ghost {
+    background-color: transparent;
+    color: var(--color-text-secondary);
+    
+    &:hover:not(:disabled) {
+      background-color: var(--color-light-cyan);
+      color: var(--color-primary);
+    }
+  }
+  
+  &--danger {
+    background-color: var(--color-error);
+    color: white;
+    
+    &:hover:not(:disabled) {
+      background-color: #c82333;
+    }
+  }
+  
+  // States
+  &--full-width {
+    width: 100%;
+  }
+  
+  &--loading {
+    position: relative;
+  }
+  
+  &__spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid currentColor;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    position: absolute;
+  }
+  
+  &__text--hidden {
+    opacity: 0;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
