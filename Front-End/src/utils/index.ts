@@ -110,7 +110,7 @@ export const capitalize = (str: string): string => {
 export const formatRole = (role: string): string => {
   const roleMap: Record<string, string> = {
     'ROLE_ADMIN': 'Administrador',
-    'ROLE_FUNCIONARIO': 'Funcion·rio',
+    'ROLE_FUNCIONARIO': 'Funcion√°rio',
     'ROLE_ALUNO': 'Aluno',
   };
   return roleMap[role] || role;

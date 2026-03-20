@@ -62,14 +62,14 @@ const BookFormPage: React.FC = () => {
   const validate = () => {
     const newErrors: Record<string, string> = {};
     
-    if (!formData.titulo.trim()) newErrors.titulo = 'T�tulo � obrigat�rio';
-    if (!formData.autor.trim()) newErrors.autor = 'Autor � obrigat�rio';
-    if (!formData.genero.trim()) newErrors.genero = 'G�nero � obrigat�rio';
-    if (!formData.catalogacao.trim()) newErrors.catalogacao = 'Cataloga��o � obrigat�ria';
+    if (!formData.titulo.trim()) newErrors.titulo = 'Título é obrigatório';
+    if (!formData.autor.trim()) newErrors.autor = 'Autor é obrigatório';
+    if (!formData.genero.trim()) newErrors.genero = 'Gênero é obrigatório';
+    if (!formData.catalogacao.trim()) newErrors.catalogacao = 'Catalogação é obrigatória';
     if (formData.totalExemplares < 1) newErrors.totalExemplares = 'Deve ter pelo menos 1 exemplar';
-    if (formData.quantidadeDisponivel < 0) newErrors.quantidadeDisponivel = 'Quantidade n�o pode ser negativa';
+    if (formData.quantidadeDisponivel < 0) newErrors.quantidadeDisponivel = 'Quantidade não pode ser negativa';
     if (formData.quantidadeDisponivel > formData.totalExemplares) {
-      newErrors.quantidadeDisponivel = 'Dispon�vel n�o pode ser maior que total';
+      newErrors.quantidadeDisponivel = 'Disponível não pode ser maior que total';
     }
     
     setErrors(newErrors);
@@ -113,14 +113,14 @@ const BookFormPage: React.FC = () => {
         <form onSubmit={handleSubmit} className="book-form">
           <div className="form-grid">
             <div className="form-section">
-              <h3>Informa��es B�sicas</h3>
+              <h3>Informações Básicas</h3>
               
               <Input
-                label="T�tulo *"
+                label="Título *"
                 value={formData.titulo}
                 onChange={(e) => handleChange('titulo', e.target.value)}
                 error={errors.titulo}
-                placeholder="Digite o t�tulo do livro"
+                placeholder="Digite o título do livro"
               />
               
               <Input
@@ -140,15 +140,15 @@ const BookFormPage: React.FC = () => {
               
               <div className="form-row">
                 <Input
-                  label="G�nero *"
+                  label="Gênero *"
                   value={formData.genero}
                   onChange={(e) => handleChange('genero', e.target.value)}
                   error={errors.genero}
-                  placeholder="Ex: Fic��o, Romance"
+                  placeholder="Ex: Ficção, Romance"
                 />
                 
                 <Input
-                  label="Cataloga��o *"
+                  label="Catalogação *"
                   value={formData.catalogacao}
                   onChange={(e) => handleChange('catalogacao', e.target.value)}
                   error={errors.catalogacao}
@@ -158,7 +158,7 @@ const BookFormPage: React.FC = () => {
             </div>
 
             <div className="form-section">
-              <h3>Detalhes F�sicos</h3>
+              <h3>Detalhes Físicos</h3>
               
               <div className="form-row">
                 <Input
@@ -171,7 +171,7 @@ const BookFormPage: React.FC = () => {
                 />
                 
                 <Input
-                  label="Dispon�veis *"
+                  label="Disponíveis *"
                   type="number"
                   value={formData.quantidadeDisponivel}
                   onChange={(e) => handleChange('quantidadeDisponivel', parseInt(e.target.value) || 0)}
@@ -185,14 +185,14 @@ const BookFormPage: React.FC = () => {
                   label="CDD"
                   value={formData.cdd}
                   onChange={(e) => handleChange('cdd', e.target.value)}
-                  placeholder="C�digo de classifica��o"
+                  placeholder="Código de classificação"
                 />
                 
                 <Input
-                  label="Localiza��o"
+                  label="Localização"
                   value={formData.localizacao}
                   onChange={(e) => handleChange('localizacao', e.target.value)}
-                  placeholder="Prateleira/se��o"
+                  placeholder="Prateleira/seção"
                 />
               </div>
               
@@ -211,11 +211,11 @@ const BookFormPage: React.FC = () => {
             </div>
 
             <div className="form-section full-width">
-              <h3>Descri��o</h3>
+              <h3>Descrição</h3>
               <textarea
                 value={formData.descricao}
                 onChange={(e) => handleChange('descricao', e.target.value)}
-                placeholder="Descri��o ou sinopse do livro..."
+                placeholder="Descrição ou sinopse do livro..."
                 rows={4}
               />
             </div>
@@ -230,7 +230,7 @@ const BookFormPage: React.FC = () => {
               Cancelar
             </Button>
             <Button type="submit" variant="primary" size="lg">
-              {isEditing ? 'Salvar Altera��es' : 'Cadastrar Livro'}
+              {isEditing ? 'Salvar Alterações' : 'Cadastrar Livro'}
             </Button>
           </div>
         </form>

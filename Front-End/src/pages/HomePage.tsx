@@ -9,7 +9,7 @@ import BookCard from '../components/books/BookCard';
 import SearchBar from '../components/books/SearchBar';
 import Button from '../components/common/Button';
 import './HomePage.scss';
-import ImgUm from '../components/assets/home-img-um.png'
+import ImgUm from '../components/assets/home-img-dois.png'
 
 const HomePage: React.FC = () => {
   const [popularBooks, setPopularBooks] = useState<Livro[]>([]);

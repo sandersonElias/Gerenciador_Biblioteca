@@ -35,7 +35,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return (
       <div className="access-denied">
         <h1>Acesso Negado</h1>
-        <p>Voc� n�o tem permiss�o para acessar esta p�gina.</p>
+        <p>Você não tem permissão para acessar esta página.</p>
       </div>
     );
   }

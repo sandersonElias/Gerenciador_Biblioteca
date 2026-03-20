@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import Input from '../components/common/Input';
 import Button from '../components/common/Button';
+import LoginImg from '../components/assets/login-img.png'
 import './LoginPage.scss';
 
 const LoginPage: React.FC = () => {
@@ -22,9 +23,9 @@ const LoginPage: React.FC = () => {
     
     if (!email) {
       newErrors.email = 'Email é obrigatório';
-    } else if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) {
-      newErrors.email = 'Email inválido';
-    }
+    } //else if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) {
+    //  newErrors.email = 'Email inválido';
+    //}
     
     if (!password) {
       newErrors.password = 'Senha é obrigatória';
@@ -60,7 +61,7 @@ const LoginPage: React.FC = () => {
       <div className="login-container">
         <div className="login-illustration">
           <div className="illustration-content">
-            <span className="illustration-icon">📚</span>
+              <img className='illustration-icon' src={LoginImg} alt="" />
             <h2>Biblioteca Monsa</h2>
             <p>Conectando alunos ao conhecimento</p>
           </div>

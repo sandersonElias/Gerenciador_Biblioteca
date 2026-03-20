@@ -54,9 +54,9 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
             <button
               onClick={() => hideToast(toast.id)}
               className="toast-close"
-              aria-label="Fechar notificação"
+              aria-label="Fechar notificaÃ§Ã£o"
             >
-              ×
+              x
             </button>
           </div>
         ))}

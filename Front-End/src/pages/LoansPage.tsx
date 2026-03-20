@@ -35,7 +35,7 @@ const LoansPage: React.FC = () => {
       const data = await withLoading(emprestimoApi.getAll());
       setLoans(data);
     } catch (error) {
-      showToast('Erro ao carregar empr�stimos', 'error');
+      showToast('Erro ao carregar empréstimos', 'error');
     }
   };
 
@@ -62,7 +62,7 @@ const LoansPage: React.FC = () => {
     
     try {
       await emprestimoApi.renovar(selectedLoan.id);
-      showToast('Empr�stimo renovado com sucesso!', 'success');
+      showToast('Empréstimo renovado com sucesso!', 'success');
       setShowRenewModal(false);
       loadLoans();
     } catch (error: any) {
@@ -90,12 +90,12 @@ const LoansPage: React.FC = () => {
         livroId: parseInt(newLoan.livroId),
         dataDevolucao: newLoan.dataDevolucao || undefined,
       });
-      showToast('Empr�stimo criado com sucesso!', 'success');
+      showToast('Empréstimo criado com sucesso!', 'success');
       setShowNewLoanModal(false);
       setNewLoan({ userId: '', livroId: '', dataDevolucao: '' });
       loadLoans();
     } catch (error: any) {
-      showToast(error.response?.data?.message || 'Erro ao criar empr�stimo', 'error');
+      showToast(error.response?.data?.message || 'Erro ao criar empréstimo', 'error');
     }
   };
 
@@ -113,11 +113,11 @@ const LoansPage: React.FC = () => {
       <div className="container">
         <div className="page-header">
           <div>
-            <h1>Gerenciamento de Empr�stimos</h1>
-            <p>Gerencie empr�stimos, renova��es e devolu��es</p>
+            <h1>Gerenciamento de Empréstimos</h1>
+            <p>Gerencie empréstimos, renovações e devoluções</p>
           </div>
           <Button variant="primary" onClick={() => setShowNewLoanModal(true)}>
-            + Novo Empr�stimo
+            + Novo Empréstimo
           </Button>
         </div>
 
@@ -125,7 +125,7 @@ const LoansPage: React.FC = () => {
           <div className="search-box">
             <input
               type="text"
-              placeholder="Buscar por usu�rio ou livro..."
+              placeholder="Buscar por usuário ou livro..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -148,12 +148,12 @@ const LoansPage: React.FC = () => {
             <thead>
               <tr>
                 <th>Livro</th>
-                <th>Usu�rio</th>
-                <th>Data Empr�stimo</th>
-                <th>Data Devolu��o</th>
-                <th>Renova��es</th>
+                <th>Usuário</th>
+                <th>Data Empréstimo</th>
+                <th>Data Devolução</th>
+                <th>Renovações</th>
                 <th>Status</th>
-                <th>A��es</th>
+                <th>Ações</th>
               </tr>
             </thead>
             <tbody>
@@ -206,7 +206,7 @@ const LoansPage: React.FC = () => {
           
           {filteredLoans.length === 0 && (
             <div className="empty-state">
-              <p>Nenhum empr�stimo encontrado</p>
+              <p>Nenhum emprérstimo encontrado</p>
             </div>
           )}
         </div>
@@ -216,41 +216,41 @@ const LoansPage: React.FC = () => {
       <Modal
         isOpen={showRenewModal}
         onClose={() => setShowRenewModal(false)}
-        title="Renovar Empr�stimo"
+        title="Renovar Empréstimo"
         footer={
           <>
             <Button variant="ghost" onClick={() => setShowRenewModal(false)}>
               Cancelar
             </Button>
             <Button variant="primary" onClick={handleRenew}>
-              Confirmar Renova��o
+              Confirmar Renovação
             </Button>
           </>
         }
       >
-        <p>Tem certeza que deseja renovar o empr�stimo de:</p>
+        <p>Tem certeza que deseja renovar o empréstimo de:</p>
         <strong>{selectedLoan?.livro.titulo}</strong>
-        <p>Usu�rio: {selectedLoan?.user.name}</p>
-        <p className="modal-note">A data de devolu��o ser� estendida em 7 dias.</p>
+        <p>Usuário: {selectedLoan?.user.name}</p>
+        <p className="modal-note">A data de devolução será estendida em 7 dias.</p>
       </Modal>
 
       {/* Return Modal */}
       <Modal
         isOpen={showReturnModal}
         onClose={() => setShowReturnModal(false)}
-        title="Registrar Devolu��o"
+        title="Registrar Devolução"
         footer={
           <>
             <Button variant="ghost" onClick={() => setShowReturnModal(false)}>
               Cancelar
             </Button>
             <Button variant="primary" onClick={handleReturn}>
-              Confirmar Devolu��o
+              Confirmar Devolução
             </Button>
           </>
         }
       >
-        <p>Confirmar devolu��o do livro:</p>
+        <p>Confirmar devolução do livro:</p>
         <strong>{selectedLoan?.livro.titulo}</strong>
         <p>Emprestado para: {selectedLoan?.user.name}</p>
       </Modal>
@@ -259,25 +259,25 @@ const LoansPage: React.FC = () => {
       <Modal
         isOpen={showNewLoanModal}
         onClose={() => setShowNewLoanModal(false)}
-        title="Novo Empr�stimo"
+        title="Novo Empréstimo"
         footer={
           <>
             <Button variant="ghost" onClick={() => setShowNewLoanModal(false)}>
               Cancelar
             </Button>
             <Button variant="primary" onClick={handleNewLoan}>
-              Criar Empr�stimo
+              Criar Empréstimo
             </Button>
           </>
         }
       >
         <div className="form-group">
           <Input
-            label="ID do Usu�rio"
+            label="ID do Usuário"
             type="number"
             value={newLoan.userId}
             onChange={(e) => setNewLoan({...newLoan, userId: e.target.value})}
-            placeholder="Digite o ID do usu�rio"
+            placeholder="Digite o ID do usuário"
           />
         </div>
         <div className="form-group">
@@ -291,7 +291,7 @@ const LoansPage: React.FC = () => {
         </div>
         <div className="form-group">
           <Input
-            label="Data de Devolu��o (opcional)"
+            label="Data de Devolução (opcional)"
             type="date"
             value={newLoan.dataDevolucao}
             onChange={(e) => setNewLoan({...newLoan, dataDevolucao: e.target.value})}

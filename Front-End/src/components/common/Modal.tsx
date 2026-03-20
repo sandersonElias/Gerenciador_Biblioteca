@@ -51,7 +51,7 @@ const Modal: React.FC<ModalProps> = ({
               className="modal-close"
               aria-label="Fechar modal"
             >
-              ×
+              x
             </button>
           </div>
         )}

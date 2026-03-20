@@ -25,26 +25,26 @@ const UserFormPage: React.FC = () => {
 
   const roles: { value: Role; label: string }[] = [
     { value: 'ROLE_ALUNO', label: 'Aluno' },
-    { value: 'ROLE_FUNCIONARIO', label: 'Funcion�rio' },
+    { value: 'ROLE_FUNCIONARIO', label: 'Funcionário' },
     { value: 'ROLE_ADMIN', label: 'Administrador' },
   ];
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
     
-    if (!formData.name.trim()) newErrors.name = 'Nome � obrigat�rio';
+    if (!formData.name.trim()) newErrors.name = 'Nome é obrigatório';
     if (!formData.email.trim()) {
-      newErrors.email = 'Email � obrigat�rio';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Email inv�lido';
-    }
+      newErrors.email = 'Email é obrigatório';
+    } // else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      //newErrors.email = 'Email inv�lido';
+    //}
     if (!formData.password) {
-      newErrors.password = 'Senha � obrigat�ria';
+      newErrors.password = 'Senha é obrigatória';
     } else if (formData.password.length < 3) {
       newErrors.password = 'Senha deve ter pelo menos 3 caracteres';
     }
     if (formData.password !== confirmPassword) {
-      newErrors.confirmPassword = 'As senhas n�o coincidem';
+      newErrors.confirmPassword = 'As senhas não coincidem';
     }
     
     setErrors(newErrors);
@@ -58,10 +58,10 @@ const UserFormPage: React.FC = () => {
     
     try {
       await withLoading(authApi.register(formData));
-      showToast('Usu�rio cadastrado com sucesso!', 'success');
+      showToast('Usuário cadastrado com sucesso!', 'success');
       navigate('/admin');
     } catch (error: any) {
-      showToast(error.response?.data?.message || 'Erro ao cadastrar usu�rio', 'error');
+      showToast(error.response?.data?.message || 'Erro ao cadastrar usuário', 'error');
     }
   };
 
@@ -76,13 +76,13 @@ const UserFormPage: React.FC = () => {
     <div className="user-form-page">
       <div className="container">
         <div className="form-header">
-          <h1>Cadastrar Novo Usu�rio</h1>
+          <h1>Cadastrar Novo Usuário</h1>
           <p>Crie uma nova conta para acesso ao sistema</p>
         </div>
 
         <form onSubmit={handleSubmit} className="user-form">
           <div className="form-section">
-            <h3>Informa��es Pessoais</h3>
+            <h3>Informações Pessoais</h3>
             
             <Input
               label="Nome Completo *"
@@ -103,7 +103,7 @@ const UserFormPage: React.FC = () => {
           </div>
 
           <div className="form-section">
-            <h3>Tipo de Usu�rio</h3>
+            <h3>Tipo de Usuário</h3>
             
             <div className="select-group">
               <label htmlFor="role">Perfil *</label>
@@ -120,13 +120,13 @@ const UserFormPage: React.FC = () => {
                 ))}
               </select>
               <p className="select-help">
-                Escolha o n�vel de acesso do usu�rio no sistema
+                Escolha o nível de acesso do usuário no sistema
               </p>
             </div>
           </div>
 
           <div className="form-section">
-            <h3>Seguran�a</h3>
+            <h3>Segurança</h3>
             
             <Input
               label="Senha *"
@@ -134,7 +134,7 @@ const UserFormPage: React.FC = () => {
               value={formData.password}
               onChange={(e) => handleChange('password', e.target.value)}
               error={errors.password}
-              placeholder="��������"
+              placeholder="Digite uma senha ..."
             />
             
             <Input
@@ -143,7 +143,7 @@ const UserFormPage: React.FC = () => {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               error={errors.confirmPassword}
-              placeholder="��������"
+              placeholder="Confirme a senha ..."
             />
           </div>
 
@@ -156,7 +156,7 @@ const UserFormPage: React.FC = () => {
               Cancelar
             </Button>
             <Button type="submit" variant="primary" size="lg">
-              Cadastrar Usu�rio
+              Cadastrar Usuário
             </Button>
           </div>
         </form>
