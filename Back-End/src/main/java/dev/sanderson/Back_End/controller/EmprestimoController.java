@@ -45,7 +45,8 @@ public class EmprestimoController {
     // Listar todos
     @GetMapping("/todos")
     public ResponseEntity<List<EmprestimoResponse>> listarTodos() {
-        return ResponseEntity.ok(emprestimoService.todosEmprestimos());
+        List<EmprestimoResponse> emprestimo = emprestimoService.todosEmprestimos();
+        return ResponseEntity.ok(emprestimo);
     }
 
     // Buscar por ID

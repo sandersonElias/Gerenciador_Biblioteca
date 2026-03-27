@@ -31,9 +31,9 @@ public class SecurityConfiguration {
                 .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers( "/", "/auth", "/livro/buscar/**", "livro/todos", "/livro/populares").permitAll()
-                        .requestMatchers("/reserva/**").hasAnyRole("ALUNO", "FUNCIONARIO")
-                        .requestMatchers("/emprestimo/**").hasRole("FUNCIONARIO")
+                        .requestMatchers("/", "/auth", "/livro/buscar/**", "/livro/todos", "/livro/populares", "/livro/id/**").permitAll()
+                        .requestMatchers("/reserva", "/reserva/**").hasAnyRole("ALUNO", "FUNCIONARIO", "ADMIN")
+                        .requestMatchers( "/emprestimo", "/emprestimo/**", "/user/name/**").hasAnyRole("FUNCIONARIO", "ADMIN")
                         .requestMatchers("/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 );

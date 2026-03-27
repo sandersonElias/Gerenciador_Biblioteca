@@ -1,6 +1,7 @@
 package dev.sanderson.Back_End.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.sanderson.Back_End.dto.LivroDtos.LivroResponse;
 import dev.sanderson.Back_End.dto.UserDtos.UserRequest;
 import dev.sanderson.Back_End.dto.UserDtos.UserResponse;
 import dev.sanderson.Back_End.entity.Roles;
@@ -11,6 +12,8 @@ import dev.sanderson.Back_End.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -59,5 +62,13 @@ public class UserService {
         return roleRepository.findByRole(role)
                 .orElseThrow(() ->
                         new BusinessRuleException("Role não existe: " + role));
+    }
+
+
+    public List<UserResponse> buscarUserName(String name){
+        return  userRepository.buscarPeloNome(name)
+                .stream()
+                .map(e -> objectMapper.convertValue(e, UserResponse.class))
+                .toList();
     }
 }

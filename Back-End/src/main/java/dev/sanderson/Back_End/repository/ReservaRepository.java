@@ -29,7 +29,19 @@ public interface ReservaRepository extends JpaRepository<Reserva, Long> {
 
     List<Reserva> findByStatus(StatusReserva status);
 
-    List<Reserva> findByUser(User user);
+    @Query("""
+        SELECT r
+        FROM Reserva r
+        WHERE LOWER(r.user.name) LIKE LOWER(CONCAT('%', :name, '%'))
+    """)
+    List<Reserva> buscarUser(@Param("name") String name);
+
+    @Query("""
+        SELECT r
+        FROM Reserva r
+        WHERE LOWER(r.user.email) LIKE LOWER(CONCAT('%', :email, '%'))
+    """)
+    List<Reserva> buscarUserEmail(@Param("email") String email);
 
     boolean existsByLivroAndUserAndStatus(
             Livro livro,

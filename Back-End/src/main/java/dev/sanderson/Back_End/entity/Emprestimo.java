@@ -1,18 +1,16 @@
 package dev.sanderson.Back_End.entity;
 
 import dev.sanderson.Back_End.entity.type.StatusEmprestimo;
-import dev.sanderson.Back_End.entity.type.StatusReserva;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDate;
 
 @Entity
-@RequiredArgsConstructor
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "tb_emprestimo")
 public class Emprestimo {
 

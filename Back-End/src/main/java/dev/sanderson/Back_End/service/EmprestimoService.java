@@ -3,6 +3,8 @@ package dev.sanderson.Back_End.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.sanderson.Back_End.dto.EmprestimoDtos.EmprestimoRequest;
 import dev.sanderson.Back_End.dto.EmprestimoDtos.EmprestimoResponse;
+import dev.sanderson.Back_End.dto.LivroDtos.LivroMinDto;
+import dev.sanderson.Back_End.dto.UserDtos.UserMinDto;
 import dev.sanderson.Back_End.entity.Emprestimo;
 import dev.sanderson.Back_End.entity.Livro;
 import dev.sanderson.Back_End.entity.User;
@@ -26,6 +28,49 @@ public class EmprestimoService {
     private final UserRepository userRepository;
     private final LivroRepository livroRepository;
     private final ObjectMapper objectMapper;
+
+    private EmprestimoResponse toResponse(Emprestimo e) {
+        EmprestimoResponse dto = new EmprestimoResponse();
+
+        dto.setId(e.getId());
+        dto.setDataEmprestimo(e.getDataEmprestimo());
+        dto.setDataDevolucao(e.getDataDevolucao());
+        dto.setDataDevolvido(e.getDataDevolvido());
+        dto.setRenovacoes(e.getRenovacoes());
+        dto.setStatus(e.getStatus().name());
+
+        // USER
+        if (e.getUser() != null) {
+            UserMinDto userDto = new UserMinDto();
+            userDto.setName(e.getUser().getName());
+            userDto.setEmail(e.getUser().getEmail());
+            dto.setUser(userDto);
+        }
+
+        // LIVRO
+        if (e.getLivro() != null) {
+            LivroMinDto livroDto = new LivroMinDto();
+            livroDto.setId(e.getLivro().getId());
+            livroDto.setTitulo(e.getLivro().getTitulo());
+            dto.setLivro(livroDto);
+        }
+
+        return dto;
+    }
+
+    private EmprestimoRequest toEmprestimoMinDto(Emprestimo emprestimo) {
+        EmprestimoRequest dto = new EmprestimoRequest();
+        dto.setId(emprestimo.getId());
+        dto.setDataEmprestimo(emprestimo.getDataEmprestimo());
+        dto.setDataDevolucao(emprestimo.getDataDevolucao());
+        dto.setDataDevolvido(emprestimo.getDataDevolvido());
+        dto.setRenovacoes(emprestimo.getRenovacoes());
+        dto.setStatus(emprestimo.getStatus());
+        dto.setLivroId(emprestimo.getLivro().getId());
+        dto.setUserId(emprestimo.getUser().getId());
+
+        return dto;
+    }
 
     // Criar novo empréstimo
     public EmprestimoResponse insertEmprestimo(EmprestimoRequest dto) {
@@ -103,7 +148,7 @@ public class EmprestimoService {
     public List<EmprestimoResponse> todosEmprestimos() {
         return emprestimoRepository.findAll()
                 .stream()
-                .map(e -> objectMapper.convertValue(e, EmprestimoResponse.class))
+                .map(this::toResponse)
                 .toList();
     }
 
@@ -117,7 +162,7 @@ public class EmprestimoService {
     // Buscar por nome do aluno
     public List<EmprestimoResponse> buscarPorUser(String nome) {
         return emprestimoRepository.buscarUser(nome).stream()
-                .map(e -> objectMapper.convertValue(e, EmprestimoResponse.class))
+                .map(this::toResponse)
                 .toList();
     }
 
@@ -125,35 +170,36 @@ public class EmprestimoService {
     public List<EmprestimoResponse> buscarPorLivro(String titulo) {
         return emprestimoRepository.buscarLivro(titulo)
                 .stream()
-                .map(e -> objectMapper.convertValue(e, EmprestimoResponse.class))
+                .map(this::toResponse)
                 .toList();
     }
 
     // Buscar por título do livro para renovação
     public List<EmprestimoResponse> buscarPorLivroRenovacao(String titulo) {
         return emprestimoRepository.buscarRenovacaoLivro(titulo).stream()
-                .map(e -> objectMapper.convertValue(e, EmprestimoResponse.class))
+                .map(this::toResponse)
                 .toList();
     }
 
     // Buscar por nome do aluno para renovação
     public List<EmprestimoResponse> buscarPorUserRenovacao(String nome) {
         return emprestimoRepository.buscarRenovacaoUser(nome).stream()
-                .map(e -> objectMapper.convertValue(e, EmprestimoResponse.class))
+                .map(this::toResponse)
                 .toList();
     }
 
     // Buscar por status
     public List<EmprestimoResponse> buscarPorStatus(StatusEmprestimo status) {
         return emprestimoRepository.buscarStatus(status).stream()
-                .map(e -> objectMapper.convertValue(e, EmprestimoResponse.class))
+                .map(this::toResponse)
                 .toList();
     }
 
     // Buscar devoluções do dia
     public List<EmprestimoResponse> buscarDevolucaoDoDia(LocalDate hoje) {
         return emprestimoRepository.buscarDevolucaoDoDia(hoje).stream()
-                .map(e -> objectMapper.convertValue(e, EmprestimoResponse.class))
+                .map(this::toResponse)
                 .toList();
     }
+
 }
