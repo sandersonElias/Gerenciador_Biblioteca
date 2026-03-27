@@ -20,7 +20,8 @@ export interface UserRequest {
 }
 
 export interface UserResponse {
-  userId: number;
+  id: number;
+  name: string;
   email: string;
 }
 
@@ -129,6 +130,17 @@ export type StatusReserva = 'ATIVA' | 'DISPONIVEL' | 'CONCLUIDA' | 'EXPIRADA' | 
 
 export interface ReservaRequest {
   livroId: number;
+  userId: number;
+}
+
+export interface ReservaResponse {
+    id: number;
+    dataReserva: string;
+    dataExpiracao: string;
+    dataDisponivel: string;
+    status: StatusReserva;
+    livro: Livro;
+    user: UserMinDto
 }
 
 // API Response Types

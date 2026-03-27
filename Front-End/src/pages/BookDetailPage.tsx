@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Livro, Reserva } from '../types';
+import { Livro, ReservaResponse } from '../types';
 import { livroApi, reservaApi } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -12,25 +12,33 @@ import './BookDetailPage.scss';
 const BookDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+
   const [book, setBook] = useState<Livro | null>(null);
-  const [reservations, setReservations] = useState<Reserva[]>([]);
+  const [reservations, setReservations] = useState<ReservaResponse[]>([]);
   const [showReserveModal, setShowReserveModal] = useState(false);
-  const { isAuthenticated, hasAnyRole } = useAuth();
+
+  const { user, isAuthenticated, hasAnyRole } = useAuth();
   const { showToast } = useToast();
   const { withLoading } = useLoading();
 
   useEffect(() => {
-    if (id) {
-      loadBook(parseInt(id));
+    if (!id) return;
+
+    const bookId = Number(id);
+    if (isNaN(bookId)) {
+      showToast('ID do livro inválido', 'error');
+      return;
     }
+
+    loadBook(bookId);
   }, [id]);
 
   const loadBook = async (bookId: number) => {
     try {
       const bookData = await withLoading(livroApi.getById(bookId));
       setBook(bookData);
-      
-      // Load reservations for this book
+
+      // Carregar reservas (somente staff/admin)
       if (hasAnyRole(['ROLE_FUNCIONARIO', 'ROLE_ADMIN'])) {
         const reservas = await reservaApi.getByLivro(bookId);
         setReservations(reservas);
@@ -41,17 +49,25 @@ const BookDetailPage: React.FC = () => {
   };
 
   const handleReserve = async () => {
-    if (!book || !isAuthenticated) return;
-    
-    try {
-      await reservaApi.create(book.id);
-      showToast('Livro reservado com sucesso!', 'success');
-      setShowReserveModal(false);
-      loadBook(book.id);
-    } catch (error: any) {
-      showToast(error.response?.data?.message || 'Erro ao reservar livro', 'error');
-    }
-  };
+  if (!book || !isAuthenticated || !user) return;
+
+  try {
+    await reservaApi.create({
+      livroId: book.id,
+      userId: user.id
+    });
+
+    showToast('Livro reservado com sucesso!', 'success');
+    setShowReserveModal(false);
+    loadBook(book.id);
+
+  } catch (error: any) {
+    showToast(
+      error.response?.data?.message || 'Erro ao reservar livro',
+      'error'
+    );
+  }
+};
 
   if (!book) {
     return (
@@ -64,14 +80,26 @@ const BookDetailPage: React.FC = () => {
   }
 
   const isAvailable = book.quantidadeDisponivel > 0;
-  const canReserve = isAuthenticated && hasAnyRole(['ROLE_ALUNO', 'ROLE_FUNCIONARIO', 'ROLE_ADMIN']);
-  const canEdit = isAuthenticated && hasAnyRole(['ROLE_ADMIN']);
+
+  const canReserve =
+    isAuthenticated &&
+    hasAnyRole(['ROLE_ALUNO', 'ROLE_FUNCIONARIO', 'ROLE_ADMIN']);
+
+  const canEdit =
+    isAuthenticated &&
+    hasAnyRole(['ROLE_ADMIN']);
+
+  const availabilityPercentage =
+    book.totalExemplares > 0
+      ? (book.quantidadeDisponivel / book.totalExemplares) * 100
+      : 0;
 
   return (
     <div className="book-detail-page">
       <div className="container">
         <div className="book-detail">
-          {/* Book Cover */}
+
+          {/* Cover */}
           <div className="book-cover-section">
             <div className="book-cover-large">
               {book.urlImg ? (
@@ -82,32 +110,38 @@ const BookDetailPage: React.FC = () => {
                 </div>
               )}
             </div>
-            
+
             <div className="book-actions-mobile">
               {canReserve && (
                 <Button
                   variant={isAvailable ? 'primary' : 'outline'}
                   fullWidth
-                  onClick={() => isAvailable ? setShowReserveModal(true) : null}
+                  onClick={() => isAvailable && setShowReserveModal(true)}
                   disabled={!isAvailable}
                 >
                   {isAvailable ? 'Reservar' : 'Indisponível'}
                 </Button>
               )}
+
               {canEdit && (
-                <Button variant="secondary" fullWidth onClick={() => navigate(`/admin/livros/editar/${book.id}`)}>
+                <Button
+                  variant="secondary"
+                  fullWidth
+                  onClick={() => navigate(`/admin/livros/editar/${book.id}`)}
+                >
                   Editar Livro
                 </Button>
               )}
             </div>
           </div>
 
-          {/* Book Info */}
+          {/* Info */}
           <div className="book-info-section">
             <div className="book-header">
               <span className={`availability-badge ${isAvailable ? 'available' : 'unavailable'}`}>
                 {isAvailable ? 'Disponível' : 'Indisponível'}
               </span>
+
               <h1>{book.titulo}</h1>
               <p className="book-author">{book.autor?.autor}</p>
             </div>
@@ -117,48 +151,58 @@ const BookDetailPage: React.FC = () => {
                 <span className="meta-label">Editora</span>
                 <span className="meta-value">{book.editora || 'Não informada'}</span>
               </div>
+
               <div className="meta-item">
                 <span className="meta-label">Gênero</span>
                 <span className="meta-value">{book.genero?.genero || 'Não informado'}</span>
               </div>
+
               <div className="meta-item">
                 <span className="meta-label">Catalogação</span>
                 <span className="meta-value">{book.catalogacao?.catalogacao || 'Não informada'}</span>
               </div>
+
               <div className="meta-item">
                 <span className="meta-label">CDD</span>
                 <span className="meta-value">{book.cdd || 'Não informado'}</span>
               </div>
+
               <div className="meta-item">
                 <span className="meta-label">Localização</span>
                 <span className="meta-value">{book.localizacao || 'Não informada'}</span>
               </div>
             </div>
 
+            {/* Disponibilidade */}
             <div className="book-availability">
               <h3>Disponibilidade</h3>
+
               <div className="availability-bar">
-                <div 
+                <div
                   className="availability-fill"
-                  style={{ 
-                    width: `${(book.quantidadeDisponivel / book.totalExemplares) * 100}%`,
+                  style={{
+                    width: `${availabilityPercentage}%`,
                     backgroundColor: isAvailable ? '#28a745' : '#dc3545'
                   }}
                 />
               </div>
+
               <p className="availability-text">
-                <strong>{book.quantidadeDisponivel}</strong> de <strong>{book.totalExemplares}</strong> exemplares disponíveis
+                <strong>{book.quantidadeDisponivel}</strong> de{' '}
+                <strong>{book.totalExemplares}</strong> disponíveis
               </p>
             </div>
 
+            {/* Stats */}
             <div className="book-stats">
               <div className="stat-item">
                 <span className="stat-number">{book.contadorEmprestimos}</span>
-                <span className="stat-label">Empréstimos totais</span>
+                <span className="stat-label">Empréstimos</span>
               </div>
+
               <div className="stat-item">
                 <span className="stat-number">{reservations.length}</span>
-                <span className="stat-label">Reservas ativas</span>
+                <span className="stat-label">Reservas</span>
               </div>
             </div>
 
@@ -174,14 +218,19 @@ const BookDetailPage: React.FC = () => {
                 <Button
                   variant={isAvailable ? 'primary' : 'outline'}
                   size="lg"
-                  onClick={() => isAvailable ? setShowReserveModal(true) : null}
+                  onClick={() => isAvailable && setShowReserveModal(true)}
                   disabled={!isAvailable}
                 >
-                  {isAvailable ? 'Reservar Livro' : 'Indisponível para reserva'}
+                  {isAvailable ? 'Reservar Livro' : 'Indisponível'}
                 </Button>
               )}
+
               {canEdit && (
-                <Button variant="secondary" size="lg" onClick={() => navigate(`/admin/livros/editar/${book.id}`)}>
+                <Button
+                  variant="secondary"
+                  size="lg"
+                  onClick={() => navigate(`/admin/livros/editar/${book.id}`)}
+                >
                   Editar Livro
                 </Button>
               )}
@@ -189,22 +238,24 @@ const BookDetailPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Reservations Table (Staff only) */}
+        {/* Tabela de reservas */}
         {hasAnyRole(['ROLE_FUNCIONARIO', 'ROLE_ADMIN']) && reservations.length > 0 && (
           <div className="reservations-section">
             <h2>Reservas deste livro</h2>
+
             <table className="reservations-table">
               <thead>
                 <tr>
                   <th>Usuário</th>
-                  <th>Data da Reserva</th>
+                  <th>Data</th>
                   <th>Status</th>
                 </tr>
               </thead>
+
               <tbody>
                 {reservations.map(res => (
                   <tr key={res.id}>
-                    <td>{res.user.name}</td>
+                    <td>{res.user?.name}</td>
                     <td>{new Date(res.dataReserva).toLocaleDateString('pt-BR')}</td>
                     <td>
                       <span className={`status-badge ${res.status.toLowerCase()}`}>
@@ -219,7 +270,7 @@ const BookDetailPage: React.FC = () => {
         )}
       </div>
 
-      {/* Reserve Modal */}
+      {/* Modal */}
       <Modal
         isOpen={showReserveModal}
         onClose={() => setShowReserveModal(false)}
@@ -230,16 +281,16 @@ const BookDetailPage: React.FC = () => {
               Cancelar
             </Button>
             <Button variant="primary" onClick={handleReserve}>
-              Confirmar Reserva
+              Confirmar
             </Button>
           </>
         }
       >
         <div className="reserve-confirm">
-          <p>Tem certeza que deseja reservar o livro:</p>
+          <p>Deseja reservar:</p>
           <strong>{book.titulo}</strong>
           <p className="reserve-note">
-            Você será notificado quando o livro estiver disponível para retirada.
+            Você terá prioridade para retirada.
           </p>
         </div>
       </Modal>

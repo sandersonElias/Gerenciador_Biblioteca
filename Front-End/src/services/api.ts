@@ -9,6 +9,8 @@ import {
   EmprestimoRequest,
   EmprestimoResponse,
   Reserva,
+  ReservaRequest,
+  ReservaResponse,
   StatusEmprestimo,
   BookFilterType
 } from '@/types';
@@ -62,6 +64,14 @@ export const authApi = {
   },
 };
 
+// User API
+export const userApi = {
+  getUserName: async (name: string): Promise<UserResponse[]> => {
+    const response = await apiClient.get(`/user/name/${encodeURIComponent(name)}`);
+    return response.data;
+  }
+}
+
 // Book API
 export const livroApi = {
   getAll: async (): Promise<Livro[]> => {
@@ -70,7 +80,7 @@ export const livroApi = {
   },
   
   getById: async (id: number): Promise<Livro> => {
-    const response = await apiClient.get(`/livro/${id}`);
+    const response = await apiClient.get(`/livro/id/${id}`);
     return response.data;
   },
   
@@ -148,18 +158,23 @@ export const emprestimoApi = {
 
 // Reservation API
 export const reservaApi = {
-  getAll: async (): Promise<Reserva[]> => {
+  getAll: async (): Promise<ReservaResponse[]> => {
     const response = await apiClient.get('/reserva/todos');
     return response.data;
   },
   
-  getMinhasReservas: async (): Promise<Reserva[]> => {
-    const response = await apiClient.get('/reserva/minhas');
+  getMinhasReservas: async (): Promise<ReservaResponse[]> => {
+    const response = await apiClient.get(`/reserva/minhas`);
     return response.data;
   },
-  
-  create: async (livroId: number): Promise<Reserva> => {
-    const response = await apiClient.post(`/reserva/${livroId}`);
+
+  getReservaEmail: async (email: string): Promise<ReservaResponse[]> => {
+    const response = await apiClient.get(`/reserva/useremail/${encodeURIComponent(email)}`);
+    return response.data;
+  },
+
+  create: async (reserva: ReservaRequest): Promise<ReservaResponse> => {
+    const response = await apiClient.post('/reserva', reserva);
     return response.data;
   },
   
@@ -167,7 +182,7 @@ export const reservaApi = {
     await apiClient.delete(`/reserva/${reservaId}`);
   },
   
-  getByLivro: async (livroId: number): Promise<Reserva[]> => {
+  getByLivro: async (livroId: number): Promise<ReservaResponse[]> => {
     const response = await apiClient.get(`/reserva/livro/${livroId}`);
     return response.data;
   },

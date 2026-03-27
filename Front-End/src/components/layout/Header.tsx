@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import LogoImg from '../assets/logo_monsa.png';
 import './Header.scss';
 
 const Header: React.FC = () => {
@@ -16,7 +17,9 @@ const Header: React.FC = () => {
     <header className="header" role="banner">
       <div className="header-container">
         <Link to="/" className="header-logo">
-          <div className="logo-icon">📚</div>
+          <div className="logo-icon">
+            <img className='logo-img' src={LogoImg} alt="" />
+          </div>
           <span>Biblioteca Monsa</span>
         </Link>
 
@@ -43,7 +46,7 @@ const Header: React.FC = () => {
         <div className="header-actions">
           {isAuthenticated ? (
             <div className="user-menu">
-              <span className="user-name">{user?.name}</span>
+              <span className="user-name">{user?.email}</span>
               <button 
                 onClick={handleLogout}
                 className="btn-logout"

@@ -1,16 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { Reserva } from '../types';
+import { Reserva, ReservaResponse } from '../types';
 import { reservaApi } from '../services/api';
 import { useToast } from '../context/ToastContext';
 import { useLoading } from '../context/LoadingContext';
 import Button from '../components/common/Button';
 import Modal from '../components/common/Modal';
+import { useAuth } from '../context/AuthContext';
 import './ReservationsPage.scss';
 
 const ReservationsPage: React.FC = () => {
-  const [reservations, setReservations] = useState<Reserva[]>([]);
-  const [selectedReservation, setSelectedReservation] = useState<Reserva | null>(null);
+  const [reservations, setReservations] = useState<ReservaResponse[]>([]);
+  const [selectedReservation, setSelectedReservation] = useState<ReservaResponse | null>(null);
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const { user } = useAuth();
   
   const { showToast } = useToast();
   const { withLoading } = useLoading();
@@ -20,13 +22,18 @@ const ReservationsPage: React.FC = () => {
   }, []);
 
   const loadReservations = async () => {
-    try {
-      const data = await withLoading(reservaApi.getMinhasReservas());
-      setReservations(data);
-    } catch (error) {
-      showToast('Erro ao carregar reservas', 'error');
-    }
-  };
+  try {
+    if (!user) return;
+
+    const data = await withLoading(
+      reservaApi.getReservaEmail(user.email)
+    );
+
+    setReservations(data);
+  } catch (error) {
+    showToast('Erro ao carregar reservas', 'error');
+  }
+};
 
   const handleCancel = async () => {
     if (!selectedReservation) return;

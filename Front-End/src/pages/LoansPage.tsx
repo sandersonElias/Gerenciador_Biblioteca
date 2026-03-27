@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { EmprestimoResponse, StatusEmprestimo } from '../types';
+import { EmprestimoResponse, Livro, StatusEmprestimo, UserResponse } from '../types';
 import { emprestimoApi } from '../services/api';
 import { useToast } from '../context/ToastContext';
 import { useLoading } from '../context/LoadingContext';
+import { userApi, livroApi } from '../services/api';
 import Button from '../components/common/Button';
 import Modal from '../components/common/Modal';
 import Input from '../components/common/Input';
@@ -18,6 +19,12 @@ const LoansPage: React.FC = () => {
   const [showReturnModal, setShowReturnModal] = useState(false);
   const [showNewLoanModal, setShowNewLoanModal] = useState(false);
   const [newLoan, setNewLoan] = useState({ userId: '', livroId: '', dataDevolucao: '' });
+
+  const [userSearch, setUserSearch] = useState('');
+  const [bookSearch, setBookSearch] = useState('');
+
+  const [userSuggestions, setUserSuggestions] = useState<UserResponse[]>([]);
+  const [bookSuggestions, setBookSuggestions] = useState<Livro[]>([]);
   
   const { showToast } = useToast();
   const { withLoading } = useLoading();
@@ -37,6 +44,56 @@ const LoansPage: React.FC = () => {
     } catch (error) {
       showToast('Erro ao carregar empréstimos', 'error');
     }
+  };
+
+  
+
+  useEffect(() => {
+    const delay = setTimeout(async () => {
+      try {
+        if (userSearch.trim().length >= 3) {
+          const users = await userApi.getUserName(userSearch);
+          setUserSuggestions(users ?? []);
+        } else {
+          setUserSuggestions([]);
+        }
+
+        if (bookSearch.trim().length >= 3) {
+          const books = await livroApi.searchByFilter('titulo', bookSearch);
+          setBookSuggestions(books ?? []);
+        } else {
+          setBookSuggestions([]);
+        }
+
+      } catch {
+        setUserSuggestions([]);
+        setBookSuggestions([]);
+      }
+    }, 400);
+
+    return () => clearTimeout(delay);
+  }, [userSearch, bookSearch]); 
+
+  const handleSelectUser = (user: any) => {
+    if (!user?.id) {
+      console.error('User inválido:', user);
+      return;
+    }
+
+    setUserSearch(user.name);
+    setNewLoan(prev => ({ ...prev, userId: String(user.id) }));
+    setUserSuggestions([]);
+  };
+
+  const handleSelectBook = (book: any) => {
+    if (!book?.id) {
+      console.error('Livro inválido:', book);
+      return;
+    }
+
+    setBookSearch(book.titulo);
+    setNewLoan(prev => ({ ...prev, livroId: String(book.id) }));
+    setBookSuggestions([]);
   };
 
   const filterLoans = () => {
@@ -83,21 +140,32 @@ const LoansPage: React.FC = () => {
     }
   };
 
-  const handleNewLoan = async () => {
-    try {
-      await emprestimoApi.create({
-        userId: parseInt(newLoan.userId),
-        livroId: parseInt(newLoan.livroId),
-        dataDevolucao: newLoan.dataDevolucao || undefined,
-      });
-      showToast('Empréstimo criado com sucesso!', 'success');
-      setShowNewLoanModal(false);
-      setNewLoan({ userId: '', livroId: '', dataDevolucao: '' });
-      loadLoans();
-    } catch (error: any) {
-      showToast(error.response?.data?.message || 'Erro ao criar empréstimo', 'error');
-    }
-  };
+const handleNewLoan = async () => {
+  if (!newLoan.userId || !newLoan.livroId) {
+    showToast('Selecione um usuário e um livro válidos', 'error');
+    return;
+  }
+
+  try {
+    await emprestimoApi.create({
+      userId: Number(newLoan.userId),
+      livroId: Number(newLoan.livroId),
+      dataDevolucao: newLoan.dataDevolucao || undefined,
+    });
+
+    showToast('Empréstimo criado com sucesso!', 'success');
+
+    setShowNewLoanModal(false);
+
+    setNewLoan({ userId: '', livroId: '', dataDevolucao: '' });
+    setUserSearch('');
+    setBookSearch('');
+
+    loadLoans();
+  } catch (error: any) {
+    showToast(error.response?.data?.message || 'Erro ao criar empréstimo', 'error');
+  }
+};
 
   const getStatusClass = (status: string) => {
     switch (status) {
@@ -271,30 +339,55 @@ const LoansPage: React.FC = () => {
           </>
         }
       >
-        <div className="form-group">
+
+        <div className="form-group autocomplete">
           <Input
-            label="ID do Usuário"
-            type="number"
-            value={newLoan.userId}
-            onChange={(e) => setNewLoan({...newLoan, userId: e.target.value})}
-            placeholder="Digite o ID do usuário"
+            label="Nome do Usuário"
+            type="text"
+            value={userSearch}
+            onChange={(e) => setUserSearch(e.target.value)}
+            placeholder="Digite o nome do usuário"
           />
+
+          {userSuggestions.length > 0 && (
+            <ul className="autocomplete-list">
+              {userSuggestions.map((u) => (
+                <li key={u.id} onClick={() => handleSelectUser(u)}>
+                  {u.name}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
-        <div className="form-group">
+
+        <div className="form-group autocomplete">
           <Input
-            label="ID do Livro"
-            type="number"
-            value={newLoan.livroId}
-            onChange={(e) => setNewLoan({...newLoan, livroId: e.target.value})}
-            placeholder="Digite o ID do livro"
+            label="Título do Livro"
+            type="text"
+            value={bookSearch}
+            onChange={(e) => setBookSearch(e.target.value)}
+            placeholder="Digite o título do livro"
           />
+
+          {bookSuggestions.length > 0 && (
+            <ul className="autocomplete-list">
+              {bookSuggestions.map((b) => (
+                <li key={b.id} onClick={() => handleSelectBook(b)}>
+                  {b.titulo}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
+
         <div className="form-group">
           <Input
             label="Data de Devolução (opcional)"
             type="date"
             value={newLoan.dataDevolucao}
-            onChange={(e) => setNewLoan({...newLoan, dataDevolucao: e.target.value})}
+            onChange={(e) =>
+              setNewLoan({ ...newLoan, dataDevolucao: e.target.value })
+            }
           />
         </div>
       </Modal>
