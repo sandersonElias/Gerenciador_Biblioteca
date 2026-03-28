@@ -1,4 +1,4 @@
-# Biblioteca Monsa - Frontend
+# Gerenciador Biblioteca - Frontend
 
 Sistema de Gerenciamento de Biblioteca desenvolvido em React.js com TypeScript e SCSS.
 
