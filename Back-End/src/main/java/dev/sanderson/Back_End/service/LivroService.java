@@ -48,13 +48,13 @@ public class LivroService {
 
         livro.setContadorEmprestimos(0);
 
-        Autor autor = autorRepository.findByAutor(dto.getAutor())
+        Autor autor = autorRepository.findById(dto.getAutorId())
                 .orElseThrow(() -> new RuntimeException("Autor não encontrado"));
 
-        Genero genero = generoRepository.findByGenero(dto.getGenero())
+        Genero genero = generoRepository.findById(dto.getGeneroId())
                 .orElseThrow(() -> new RuntimeException("Genero não encontrado"));
 
-        Catalogacao catalogacao = catalogacaoRepository.findByCatalogacao(dto.getCatalogacao())
+        Catalogacao catalogacao = catalogacaoRepository.findById(dto.getCatalogacaoId())
                 .orElseThrow(() -> new RuntimeException("Catalogacao não encontrada"));
 
         livro.setAutor(autor);
