@@ -79,6 +79,21 @@ export interface CatalogacaoDto {
   catalogacao: string;
 }
 
+export interface AutorResponse {
+  id: number;
+  autor: string;
+}
+
+export interface GeneroResponse {
+  id: number
+  genero: string;
+}
+
+export interface CatalogacaoResponse {
+  id: number;
+  catalogacao: string;
+}
+
 // Loan Types
 export interface Emprestimo {
   id: number;

@@ -12,7 +12,13 @@ import {
   ReservaRequest,
   ReservaResponse,
   StatusEmprestimo,
-  BookFilterType
+  BookFilterType,
+  GeneroDto,
+  GeneroResponse,
+  AutorResponse,
+  AutorDto,
+  CatalogacaoDto,
+  CatalogacaoResponse
 } from '@/types';
 
 const API_BASE_URL = 'http://localhost:8080';
@@ -108,6 +114,42 @@ export const livroApi = {
     await apiClient.delete(`/livro/${id}`);
   },
 };
+
+export const autorApi = {
+  create: async (autor: AutorDto): Promise<AutorResponse> => {
+    const response = await apiClient.post('/autor', autor);
+    return response.data;
+  },
+
+  getByAutor: async (autor: string): Promise<AutorResponse> => {
+    const response = await apiClient.get(`/autor/buscar/${autor}`);
+    return response.data;
+  },
+}
+
+export const generoApi = {
+  create: async (genero: GeneroDto): Promise<GeneroResponse> => {
+    const response = await apiClient.post('/genero', genero);
+    return response.data;
+  },
+
+  getByGenero: async (genero: string): Promise<GeneroResponse> => {
+    const response = await apiClient.get(`/genero/buscar/${genero}`);
+    return response.data;
+  },
+}
+
+export const catalogacaoApi = {
+  create: async (catalogacao: CatalogacaoDto): Promise<CatalogacaoResponse> => {
+    const response = await apiClient.post('/catalogacao', catalogacao);
+    return response.data;
+  },
+
+  getByCatalogacao: async (catalogacao: string): Promise<CatalogacaoResponse> => {
+    const response = await apiClient.get(`/catalogacao/buscar/${catalogacao}`);
+    return response.data;
+  },
+}
 
 // Loan API
 export const emprestimoApi = {
