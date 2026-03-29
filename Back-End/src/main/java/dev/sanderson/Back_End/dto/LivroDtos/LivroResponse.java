@@ -1,5 +1,8 @@
 package dev.sanderson.Back_End.dto.LivroDtos;
 
+import dev.sanderson.Back_End.dto.AutorDtos.AutorMinDto;
+import dev.sanderson.Back_End.dto.CatalogacaoDtos.CatalogacaoMinDto;
+import dev.sanderson.Back_End.dto.GeneroDtos.GeneroMinDto;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -17,7 +20,7 @@ public class LivroResponse{
     private String descricao;
     private String urlImg;
     private Integer contadorEmprestimos;
-    private AutorDto autor;
-    private GeneroDto genero;
-    private CatalogacaoDto catalogacao;
+    private AutorMinDto autor;
+    private GeneroMinDto genero;
+    private CatalogacaoMinDto catalogacao;
 }
