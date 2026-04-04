@@ -1,6 +1,7 @@
 package dev.sanderson.Back_End.security;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -31,10 +32,30 @@ public class SecurityConfiguration {
                 .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/auth", "/livro/buscar/**", "/livro/todos", "/livro/populares", "/livro/id/**", "/livro").permitAll()
+                        // permitir recursos estáticos e documentação antes de regras restritivas
+                        .requestMatchers(
+                                "/static/**",
+                                "/css/**",
+                                "/js/**",
+                                "/images/**",
+                                "/favicon.ico",
+                                "/webjars/**",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**"
+                        ).permitAll()
+
+                        // endpoints públicos da API
+                        .requestMatchers("/", "/auth", "/livro/buscar/**", "/livro/todos",
+                                "/livro/populares", "/livro/id/**", "/livro").permitAll()
+
+                        // regras por papel
                         .requestMatchers("/reserva", "/reserva/**").hasAnyRole("ALUNO", "FUNCIONARIO", "ADMIN")
-                        .requestMatchers( "/emprestimo", "/emprestimo/**", "/user/name/**").hasAnyRole("FUNCIONARIO", "ADMIN")
-                        .requestMatchers("/**").hasRole("ADMIN")
+                        .requestMatchers("/emprestimo", "/emprestimo/**", "/user/name/**").hasAnyRole("FUNCIONARIO", "ADMIN")
+
+                        // endpoints administrativos específicos
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
+
+                        // qualquer outra requisição autenticada
                         .anyRequest().authenticated()
                 );
 
@@ -48,12 +69,9 @@ public class SecurityConfiguration {
 
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
-        return (web) -> web.ignoring().requestMatchers(
-                "/v3/api-docs",
-                "/v3/api-docs/**",
-                "/swagger-resources/**",
-                "/swagger-ui/**"
-        );
+        return (web) -> web.ignoring()
+                .requestMatchers(PathRequest.toStaticResources().atCommonLocations())
+                .requestMatchers("/swagger-resources/**", "/swagger-ui/**", "/v3/api-docs/**");
     }
 
     @Bean
