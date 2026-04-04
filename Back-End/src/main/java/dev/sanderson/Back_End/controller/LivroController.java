@@ -52,6 +52,13 @@ public class LivroController {
         return ResponseEntity.ok(livroDto);
     }
 
+    //Atualizar Livro
+    @PutMapping("/{id}")
+    public ResponseEntity<LivroResponse> update(@PathVariable Long id, @RequestBody LivroRequest dto) {
+        LivroResponse updated = livroService.updateLivro(id, dto);
+        return ResponseEntity.ok(updated);
+    }
+
     // Lista todos os livros
     @GetMapping("/todos")
     public ResponseEntity<List<LivroResponse>> todosLivros(){

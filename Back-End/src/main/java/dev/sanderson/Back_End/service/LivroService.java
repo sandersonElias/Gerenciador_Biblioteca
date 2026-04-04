@@ -28,10 +28,22 @@ public class LivroService {
     private final GeneroRepository generoRepository;
     private final ObjectMapper objectMapper;
 
+
     // Criar novo livro
     public LivroResponse insertLivro(LivroRequest dto) {
 
+        Autor autor = autorRepository.findById(dto.getAutorId())
+                .orElseThrow(() -> new RuntimeException("Autor não encontrado"));
+
+        Genero genero = generoRepository.findById(dto.getGeneroId())
+                .orElseThrow(() -> new RuntimeException("Genero não encontrado"));
+
+        Catalogacao catalogacao = catalogacaoRepository.findById(dto.getCatalogacaoId())
+                .orElseThrow(() -> new RuntimeException("Catalogacao não encontrada"));
+
+
         Livro livro = new Livro();
+        livro.setId(dto.getId());
 
         livro.setTitulo(dto.getTitulo());
         livro.setEditora(dto.getEditora());
@@ -48,6 +60,22 @@ public class LivroService {
 
         livro.setContadorEmprestimos(0);
 
+
+        livro.setAutor(autor);
+        livro.setGenero(genero);
+        livro.setCatalogacao(catalogacao);
+
+        Livro salvo = livroRepository.save(livro);
+
+        return objectMapper.convertValue(salvo, LivroResponse.class);
+    }
+
+    public LivroResponse updateLivro(Long id, LivroRequest dto) {
+        // 1) buscar livro existente
+        Livro livroExistente = livroRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Livro não encontrado com id: " + id));
+
+        // 2) validar e buscar entidades relacionadas (autor/genero/catalogacao)
         Autor autor = autorRepository.findById(dto.getAutorId())
                 .orElseThrow(() -> new RuntimeException("Autor não encontrado"));
 
@@ -57,12 +85,30 @@ public class LivroService {
         Catalogacao catalogacao = catalogacaoRepository.findById(dto.getCatalogacaoId())
                 .orElseThrow(() -> new RuntimeException("Catalogacao não encontrada"));
 
-        livro.setAutor(autor);
-        livro.setGenero(genero);
-        livro.setCatalogacao(catalogacao);
+        // 3) atualizar campos (preservando o que for necessário)
+        livroExistente.setTitulo(dto.getTitulo());
+        livroExistente.setEditora(dto.getEditora());
+        livroExistente.setCdd(dto.getCdd());
+        livroExistente.setLocalizacao(dto.getLocalizacao());
+        livroExistente.setDescricao(dto.getDescricao());
+        livroExistente.setUrlImg(dto.getUrlImg());
 
-        Livro salvo = livroRepository.save(livro);
+        // Se quiser garantir que totalExemplares não fique nulo:
+        livroExistente.setTotalExemplares(dto.getTotalExemplares() != null ? dto.getTotalExemplares() : livroExistente.getTotalExemplares());
 
+        // Ajuste de quantidadeDisponivel: você pode querer validar consistência
+        livroExistente.setQuantidadeDisponivel(dto.getQuantidadeDisponivel() != null ? dto.getQuantidadeDisponivel() : livroExistente.getQuantidadeDisponivel());
+
+        // NÃO resetar contadorEmprestimos ao atualizar (preservar histórico)
+        // livroExistente.setContadorEmprestimos(livroExistente.getContadorEmprestimos());
+
+        // Atualizar relacionamentos
+        livroExistente.setAutor(autor);
+        livroExistente.setGenero(genero);
+        livroExistente.setCatalogacao(catalogacao);
+
+        // 4) salvar e retornar
+        Livro salvo = livroRepository.save(livroExistente);
         return objectMapper.convertValue(salvo, LivroResponse.class);
     }
 

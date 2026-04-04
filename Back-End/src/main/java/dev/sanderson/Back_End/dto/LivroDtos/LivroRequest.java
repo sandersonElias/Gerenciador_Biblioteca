@@ -7,6 +7,7 @@ import lombok.Setter;
 @Setter
 public class LivroRequest{
 
+    private Long id;
     private String titulo;
     private String editora;
     private Integer totalExemplares;
