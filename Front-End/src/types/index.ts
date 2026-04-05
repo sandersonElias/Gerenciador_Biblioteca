@@ -61,10 +61,9 @@ export interface LivroRequest {
   localizacao: string;
   descricao: string;
   urlImg: string;
-  contadorEmprestimos?: number;
-  autor: string;
-  genero: string;
-  catalogacao: string;
+  autorId: number;
+  generoId: number;
+  catalogacaoId: number;
 }
 
 export interface AutorDto {
