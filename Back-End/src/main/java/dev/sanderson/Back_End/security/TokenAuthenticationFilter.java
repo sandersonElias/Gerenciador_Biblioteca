@@ -17,23 +17,37 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
     private final String BEARER = "Bearer ";
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain)
             throws ServletException, IOException {
+
         try {
-            String tokenFromHeader = getTokenFromHeader(request);
-            UsernamePasswordAuthenticationToken usuario = tokenService.isValid(tokenFromHeader);
-            SecurityContextHolder.getContext().setAuthentication(usuario);
+            String token = getTokenFromHeader(request);
+
+            if (token != null) {
+                UsernamePasswordAuthenticationToken authentication =
+                        tokenService.isValid(token);
+
+                if (authentication != null) {
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                }
+            }
+
             filterChain.doFilter(request, response);
+
         } catch (ExpiredJwtException ex) {
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token Expired");
         }
     }
 
     private String getTokenFromHeader(HttpServletRequest request) {
-        String token = request.getHeader("Authorization");
-        if (token == null) {
+        String header = request.getHeader("Authorization");
+
+        if (header == null || !header.startsWith(BEARER)) {
             return null;
         }
-        return token.replace(BEARER, "");
+
+        return header.substring(BEARER.length());
     }
 }

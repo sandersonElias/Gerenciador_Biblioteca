@@ -16,6 +16,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.http.HttpMethod;
 
 @Configuration
 @EnableWebSecurity
@@ -32,24 +33,37 @@ public class SecurityConfiguration {
                 .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        // permitir recursos estáticos e documentação antes de regras restritivas
-                        .requestMatchers(
-                                "/swagger-ui/**",
-                                "/v3/api-docs/**"
+
+                        // swagger
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+
+                        // públicos (somente GET)
+                        .requestMatchers(HttpMethod.GET,
+                                "/livro/**"
                         ).permitAll()
 
-                        // endpoints públicos da API
-                        .requestMatchers("/", "/auth", "/livro/buscar/**", "/livro/todos",
-                                "/livro/populares", "/livro/id/**", "/livro").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/**").permitAll()
 
-                        // regras por papel
-                        .requestMatchers("/reserva", "/reserva/**").hasAnyRole("ALUNO", "FUNCIONARIO", "ADMIN")
-                        .requestMatchers("/emprestimo", "/emprestimo/**", "/user/name/**").hasAnyRole("FUNCIONARIO", "ADMIN")
+                        // protegidos
+                        .requestMatchers(HttpMethod.POST, "/livro/**")
+                        .hasRole("ADMIN")
 
-                        // endpoints administrativos específicos
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/livro/**")
+                        .hasRole("ADMIN")
 
-                        // qualquer outra requisição autenticada
+                        .requestMatchers(HttpMethod.DELETE, "/livro/**")
+                        .hasRole("ADMIN")
+
+                        // regras gerais
+                        .requestMatchers("/reserva/**")
+                        .hasAnyRole("ALUNO", "FUNCIONARIO", "ADMIN")
+
+                        .requestMatchers("/emprestimo/**", "/user/**")
+                        .hasAnyRole("FUNCIONARIO", "ADMIN")
+
+                        .requestMatchers("/admin/**")
+                        .hasRole("ADMIN")
+
                         .anyRequest().authenticated()
                 );
 
