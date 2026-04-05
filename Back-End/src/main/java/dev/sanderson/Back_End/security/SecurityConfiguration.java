@@ -34,12 +34,6 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(auth -> auth
                         // permitir recursos estáticos e documentação antes de regras restritivas
                         .requestMatchers(
-                                "/static/**",
-                                "/css/**",
-                                "/js/**",
-                                "/images/**",
-                                "/favicon.ico",
-                                "/webjars/**",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**"
                         ).permitAll()
