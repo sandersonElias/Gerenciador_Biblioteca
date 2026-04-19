@@ -6,6 +6,7 @@ import { useToast } from '../context/ToastContext';
 import { useLoading } from '../context/LoadingContext';
 import BookCard from '../components/books/BookCard';
 import SearchBar from '../components/books/SearchBar';
+import Img from '../components/assets/bookSearch-img-um.png';
 import './BookSearchPage.scss';
 
 const BookSearchPage: React.FC = () => {
@@ -93,7 +94,9 @@ const BookSearchPage: React.FC = () => {
             </div>
           ) : (
             <div className="no-results">
-              <div className="no-results-icon">📚</div>
+              <div className="no-results-img">
+                <img className="img" src={Img} alt="" />
+              </div>
               <h3>Nenhum livro encontrado</h3>
               <p>Tente buscar com outros termos ou filtros</p>
             </div>

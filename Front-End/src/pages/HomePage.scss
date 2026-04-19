@@ -57,7 +57,7 @@
 .hero-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: 0.75rem;
   justify-content: center;
 
   @media (min-width: 768px) {
@@ -66,6 +66,12 @@
 
   a {
     text-decoration: none;
+  }
+
+  // Reduz o tamanho lg para algo mais discreto dentro do hero
+  .btn--lg {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.92rem;
   }
 }
 

@@ -6,6 +6,7 @@ import { useLoading } from '../context/LoadingContext';
 import Button from '../components/common/Button';
 import Modal from '../components/common/Modal';
 import { useAuth } from '../context/AuthContext';
+import Img from '../components/assets/reservation-img.png';
 import './ReservationsPage.scss';
 
 const ReservationsPage: React.FC = () => {
@@ -154,7 +155,9 @@ const ReservationsPage: React.FC = () => {
             ))
           ) : (
             <div className="empty-state">
-              <div className="empty-icon">📚</div>
+              <div className="empty-img">
+                <img src={Img} className="img" alt="" />
+              </div>
               <h3>Nenhuma reserva encontrada</h3>
               <p>Você ainda não fez nenhuma reserva. Explore nosso catálogo e reserve um livro!</p>
               <a href="/buscar" className="btn-browse">Explorar Catálogo</a>

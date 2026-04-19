@@ -8,7 +8,7 @@ import { useLoading } from '../context/LoadingContext';
 import SearchBar from '../components/books/SearchBar';
 import Button from '../components/common/Button';
 import './HomePage.scss';
-import ImgUm from '../components/assets/home-img-dois.png';
+import ImgUm from '../components/assets/home-img.png';
 
 const HomePage: React.FC = () => {
   const [popularBooks, setPopularBooks] = useState<Livro[]>([]);

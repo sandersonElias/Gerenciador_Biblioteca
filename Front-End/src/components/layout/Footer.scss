@@ -26,7 +26,10 @@
   .footer-logo {
     font-size: 1.25rem;
     font-weight: 700;
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: baseline;
+    gap: 5px;
     margin-bottom: 0.5rem;
   }
   

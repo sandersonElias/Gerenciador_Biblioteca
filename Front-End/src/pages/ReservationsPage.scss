@@ -146,15 +146,19 @@
 .empty-state {
   grid-column: 1 / -1;
   text-align: center;
-  padding: 4rem 2rem;
+  padding: 1rem 2rem;
   background-color: white;
   border-radius: var(--border-radius-lg);
   box-shadow: var(--shadow-sm);
 }
 
-.empty-icon {
-  font-size: 4rem;
+.empty-img {
   margin-bottom: 1rem;
+}
+
+.img{
+  height: 100%;
+  width: 17rem;
 }
 
 .empty-state h3 {
