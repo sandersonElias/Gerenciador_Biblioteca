@@ -4,7 +4,6 @@ import dev.sanderson.Back_End.dto.CatalogacaoDtos.CatalogacaoRequest;
 import dev.sanderson.Back_End.dto.CatalogacaoDtos.CatalogacaoResponse;
 import dev.sanderson.Back_End.service.CatalogacaoService;
 import lombok.RequiredArgsConstructor;
-import org.apache.catalina.connector.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@CrossOrigin(origins = "https://biblioteca-monsa.vercel.app/")
 @RequestMapping("/catalogacao")
 @RequiredArgsConstructor
 public class CatalogacaoController {

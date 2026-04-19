@@ -42,7 +42,7 @@ public class SecurityConfiguration {
                                 "/livro/**"
                         ).permitAll()
 
-                        .requestMatchers(HttpMethod.POST, "/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth").permitAll()
 
                         // protegidos
                         .requestMatchers(HttpMethod.POST, "/livro/**")

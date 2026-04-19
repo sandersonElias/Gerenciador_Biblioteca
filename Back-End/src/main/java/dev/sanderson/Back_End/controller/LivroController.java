@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import java.util.List;
 
 @RestController
+@CrossOrigin(origins = "https://biblioteca-monsa.vercel.app/")
 @RequestMapping("/livro")
 @RequiredArgsConstructor
 public class LivroController {
