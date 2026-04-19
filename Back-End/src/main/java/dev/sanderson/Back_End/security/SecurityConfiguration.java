@@ -44,6 +44,8 @@ public class SecurityConfiguration {
 
                         .requestMatchers(HttpMethod.POST, "/auth").permitAll()
 
+                        .requestMatchers(HttpMethod.POST, "/auth/registrar").permitAll()
+
                         // protegidos
                         .requestMatchers(HttpMethod.POST, "/livro/**")
                         .hasRole("ADMIN")
