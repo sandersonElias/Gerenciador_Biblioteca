@@ -50,38 +50,37 @@ O Gerenciador Biblioteca visa automatizar processos operacionais em bibliotecas 
 - Usuários mais ativos
 
 ## 📁 Estrutura de Pastas
+
 ```
 Gerenciador_Biblioteca/
 ├── Back-End/                  # API REST (Spring Boot)
 │   ├── src/main/java/
 │   │   └── dev/sanderson/Back_End/
-│   │       ├── config/         # Configurações (CORS, OpenAPI)
-│   │       ├── controller/   # Endpoints REST
-│   │       ├── dto/          # Data Transfer Objects
-│   │       ├── entity/       # Entidades JPA
-│   │       ├── exception/    # Exceções customizadas
-│   │       ├── repository/   # Interfaces Spring Data
-│   │       ├── security/     # JWT e configurações de segurança
-│   │       └── service/      # Regras de negócio
+│   │       ├── config/        # Configurações (CORS, OpenAPI)
+│   │       ├── controller/    # Endpoints REST
+│   │       ├── dto/           # Data Transfer Objects
+│   │       ├── entity/        # Entidades JPA
+│   │       ├── exception/     # Exceções customizadas
+│   │       ├── repository/    # Interfaces Spring Data
+│   │       ├── security/      # JWT e configurações de segurança
+│   │       └── service/       # Regras de negócio
 │   ├── src/main/resources/
-│   │   └── db/migration/     # Scripts Flyway (V1__ a V10__)
-│   ├── pom.xml               # Dependências Maven
-│   └── README.md             # Documentação específica do backend
+│   │   └── db/migration/      # Scripts Flyway (V1__ a V10__)
+│   ├── Dockerfile             # Imagem Docker do backend
+│   ├── pom.xml                # Dependências Maven
+│   └── README.md              # Documentação específica do backend
 ├── Front-End/                 # Aplicação React (TypeScript)
 │   ├── src/
-│   │   ├── components/       # Componentes reutilizáveis
-│   │   ├── pages/            # Páginas da aplicação
-│   │   ├── services/         # Integração com API
-│   │   ├── context/          # Contextos React (Auth, Toast)
-│   │   └── types/            # Definições TypeScript
+│   │   ├── components/        # Componentes reutilizáveis
+│   │   ├── pages/             # Páginas da aplicação
+│   │   ├── services/          # Integração com API
+│   │   ├── context/           # Contextos React (Auth, Toast, Loading)
+│   │   └── types/             # Definições TypeScript
 │   ├── package.json
 │   └── tsconfig.json
-├── docs/                      # Documentação técnica
-│   └── relatorio_tecnico.pdf
+├── Dockerfile                 # Dockerfile raiz (usado pelo Railway)
 └── README.md                  # Este arquivo
-
 ```
-
 
 ## 🚀 Executando Localmente
 
@@ -98,43 +97,52 @@ Gerenciador_Biblioteca/
 git clone https://github.com/sandersonElias/Gerenciador_Biblioteca.git
 cd Gerenciador_Biblioteca
 ```
+
 ### 2. Configure o Backend
 
 ```bash
 cd Back-End
 
-# Configure o banco de dados em src/main/resources/application.properties:
+# Configure src/main/resources/application.properties:
 # spring.datasource.url=jdbc:postgresql://localhost:5432/biblioteca
-# spring.datasource.username=seu_usuario
+# spring.datasource.username=postgres
 # spring.datasource.password=sua_senha
 # jwt.secret=sua_chave_secreta_minimo_256_bits
 # jwt.expiration=86400000
 
-# Execute as migrações e inicie o servidor
 mvn clean install
 mvn spring-boot:run
 ```
-O backend estará disponível em http://localhost:8080
+
+O backend estará disponível em `http://localhost:8080`
 
 ### 3. Configure o Frontend
 
 ```bash
 cd ../Front-End
 
-# Instale as dependências
 npm install
 
-# Configure a URL da API em .env:
-# REACT_APP_API_BASE_URL=http://localhost:8080
+# Configure o arquivo .env:
+# REACT_APP_API_URL=http://localhost:8080
+# REACT_APP_API_TIMEOUT=10000
 
-# Inicie o servidor de desenvolvimento
 npm start
 ```
-O frontend estará disponível em http://localhost:3000
 
-### 🛠️ Tecnologias Utilizadas
+O frontend estará disponível em `http://localhost:3000`
 
-Backend:
+## 🌐 Deploy em Produção
+
+| Serviço | Plataforma | URL |
+|---------|-----------|-----|
+| Frontend | Vercel | [biblioteca-monsa.vercel.app](https://biblioteca-monsa.vercel.app) |
+| Backend | Railway | gerenciadorbiblioteca-production.up.railway.app |
+| Banco de dados | Railway (PostgreSQL) | — |
+
+## 🛠️ Tecnologias Utilizadas
+
+**Backend:**
 - Java 21 + Spring Boot 3.5.11
 - Spring Security + JWT
 - Spring Data JPA + PostgreSQL
@@ -142,31 +150,29 @@ Backend:
 - Lombok
 - OpenAPI/Swagger
 
-Frontend:
+**Frontend:**
 - React 18 + TypeScript
 - React Router v6
 - Axios (HTTP client)
 - Chart.js (gráficos)
 - SCSS (estilização)
-  
-DevOps:
-- Docker + Docker Compose
+
+**DevOps:**
+- Docker
+- Railway (backend + banco)
+- Vercel (frontend)
 - Maven (build)
-- npm (gerenciamento de pacotes)
 
-### 📄 Licença
+## 📄 Licença
 
-Este projeto está licenciado sob a licença MIT - veja o arquivo LICENSE para detalhes.
+Este projeto está licenciado sob a licença MIT.
 
-### 👤 Autor
+## 👤 Autor
 
-- Sanderson Elias
-- GitHub: @sandersonElias
-- Email: sandersonelias@email.com
-- LinkedIn: linkedin.com/in/sandersonelias
+- **Sanderson Elias**
+- GitHub: [@sandersonElias](https://github.com/sandersonElias)
 
-### 🙏 Agradecimentos
+## 🙏 Agradecimentos
 
-Centro Paula Souza (CPS) pelo suporte acadêmico
-Comunidade Spring e React pelas excelentes documentações
-Professores orientadores pela valiosa contribuição metodológica
+- Comunidade Spring e React pelas excelentes documentações
+- Professores orientadores pela valiosa contribuição metodológica

@@ -4,14 +4,14 @@
 
 ```bash
 # 1. Clone ou extraia o projeto
-cd biblioteca-monsa-frontend
+cd Front-End
 
 # 2. Instale as dependências
 npm install
 
 # 3. Configure o ambiente
 cp .env.example .env
-# Edite .env e ajuste REACT_APP_API_BASE_URL para sua API
+# Edite .env e ajuste REACT_APP_API_URL para sua API
 
 # 4. Inicie o servidor de desenvolvimento
 npm start
@@ -24,11 +24,12 @@ O aplicativo estará disponível em `http://localhost:3000`
 Edite o arquivo `.env`:
 
 ```env
-# Para desenvolvimento local com backend na porta 8080
-REACT_APP_API_BASE_URL=http://localhost:8080
+# Para desenvolvimento local
+REACT_APP_API_URL=http://localhost:8080
+REACT_APP_API_TIMEOUT=10000
 
-# Para produção
-REACT_APP_API_BASE_URL=https://sua-api.com
+# Para produção (Vercel)
+REACT_APP_API_URL=https://gerenciadorbiblioteca-production.up.railway.app
 ```
 
 ## Contas de Teste
@@ -69,38 +70,36 @@ REACT_APP_API_BASE_URL=https://sua-api.com
 ## Estrutura de Rotas
 
 ```
-/                    - Home (público)
-/login               - Login (público)
-/buscar              - Buscar livros (público)
-/livro/:id           - Detalhes do livro (público)
-/reservas            - Minhas reservas (aluno+)
-/emprestimos         - Gerenciar empréstimos (funcionário+)
-/relatorios          - Relatórios (funcionário+)
-/admin               - Painel admin (admin)
-/admin/livros/novo   - Cadastrar livro (admin)
-/admin/usuarios/novo - Cadastrar usuário (admin)
+/                    → Home (público)
+/login               → Login (público)
+/buscar              → Buscar livros (público)
+/livro/:id           → Detalhes do livro (público)
+/reservas            → Minhas reservas (ALUNO+)
+/emprestimos         → Gerenciar empréstimos (FUNCIONARIO+)
+/relatorios          → Relatórios (FUNCIONARIO+)
+/admin               → Painel admin (ADMIN)
+/admin/livros/novo   → Cadastrar livro (ADMIN)
+/admin/usuarios/novo → Cadastrar usuário (ADMIN)
 ```
 
 ## Comandos Disponíveis
 
 ```bash
-npm start      # Inicia servidor de desenvolvimento
-npm run build  # Cria build de produção
-npm test       # Executa testes
-npm run lint   # Executa linter
+npm start        # Inicia servidor de desenvolvimento
+npm run build    # Cria build de produção
+npm test         # Executa testes
 ```
 
 ## Solução de Problemas
 
-### Erro de CORS
-Se encontrar erros de CORS, verifique se o backend está configurado para aceitar requisições do frontend.
+**Erro de CORS:**
+Verifique se o backend está configurado para aceitar requisições do domínio do frontend no `SecurityConfiguration.java`.
 
-### Porta já em uso
+**Tela branca em produção:**
+Confirme que a variável `REACT_APP_API_URL` na Vercel começa com `https://` e que foi feito um novo deploy após a alteração.
+
+**Porta já em uso:**
 Se a porta 3000 estiver ocupada, o React perguntará se deseja usar outra porta.
 
-### Erro "Cannot find module"
+**Erro "Cannot find module":**
 Execute `npm install` novamente para garantir que todas as dependências estão instaladas.
-
-## Suporte
-
-Para mais informações, consulte o README.md completo ou entre em contato com a equipe de desenvolvimento.
