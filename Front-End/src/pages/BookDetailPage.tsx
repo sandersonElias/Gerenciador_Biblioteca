@@ -37,13 +37,11 @@ const BookDetailPage: React.FC = () => {
 
   useEffect(() => {
     if (!id) return;
-
     const bookId = Number(id);
     if (isNaN(bookId)) {
       showToast('ID do livro inválido', 'error');
       return;
     }
-
     loadBook(bookId);
   }, [id, loadBook, showToast]);
 
@@ -51,15 +49,10 @@ const BookDetailPage: React.FC = () => {
     if (!book || !isAuthenticated || !user) return;
 
     try {
-      await reservaApi.create({
-        livroId: book.id,
-        userId: user.id
-      });
-
+      await reservaApi.create({ livroId: book.id, userId: user.id });
       showToast('Livro reservado com sucesso!', 'success');
       setShowReserveModal(false);
       loadBook(book.id);
-
     } catch (error: any) {
       showToast(
         error.response?.data?.message || 'Erro ao reservar livro',
@@ -79,15 +72,8 @@ const BookDetailPage: React.FC = () => {
   }
 
   const isAvailable = book.quantidadeDisponivel > 0;
-
-  const canReserve =
-    isAuthenticated &&
-    hasAnyRole(['ROLE_ALUNO', 'ROLE_FUNCIONARIO', 'ROLE_ADMIN']);
-
-  const canEdit =
-    isAuthenticated &&
-    hasAnyRole(['ROLE_ADMIN']);
-
+  const canReserve = isAuthenticated && hasAnyRole(['ROLE_ALUNO', 'ROLE_FUNCIONARIO', 'ROLE_ADMIN']);
+  const canEdit = isAuthenticated && hasAnyRole(['ROLE_ADMIN']);
   const availabilityPercentage =
     book.totalExemplares > 0
       ? (book.quantidadeDisponivel / book.totalExemplares) * 100
@@ -98,14 +84,17 @@ const BookDetailPage: React.FC = () => {
       <div className="container">
         <div className="book-detail">
 
-          {/* Cover */}
+          {/* ── Capa ── */}
           <div className="book-cover-section">
             <div className="book-cover-large">
               {book.urlImg ? (
                 <img src={book.urlImg} alt={book.titulo} />
               ) : (
                 <div className="cover-placeholder">
-                  <span>📚</span>
+                  <svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                  </svg>
                 </div>
               )}
             </div>
@@ -121,7 +110,6 @@ const BookDetailPage: React.FC = () => {
                   {isAvailable ? 'Reservar' : 'Indisponível'}
                 </Button>
               )}
-
               {canEdit && (
                 <Button
                   variant="secondary"
@@ -134,38 +122,36 @@ const BookDetailPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Info */}
+          {/* ── Informações ── */}
           <div className="book-info-section">
+
+            {/* Cabeçalho */}
             <div className="book-header">
               <span className={`availability-badge ${isAvailable ? 'available' : 'unavailable'}`}>
                 {isAvailable ? 'Disponível' : 'Indisponível'}
               </span>
-
               <h1>{book.titulo}</h1>
               <p className="book-author">{book.autor?.autor}</p>
             </div>
 
+            {/* Metadados */}
             <div className="book-meta">
               <div className="meta-item">
                 <span className="meta-label">Editora</span>
                 <span className="meta-value">{book.editora || 'Não informada'}</span>
               </div>
-
               <div className="meta-item">
                 <span className="meta-label">Gênero</span>
                 <span className="meta-value">{book.genero?.genero || 'Não informado'}</span>
               </div>
-
               <div className="meta-item">
                 <span className="meta-label">Catalogação</span>
                 <span className="meta-value">{book.catalogacao?.catalogacao || 'Não informada'}</span>
               </div>
-
               <div className="meta-item">
                 <span className="meta-label">CDD</span>
                 <span className="meta-value">{book.cdd || 'Não informado'}</span>
               </div>
-
               <div className="meta-item">
                 <span className="meta-label">Localização</span>
                 <span className="meta-value">{book.localizacao || 'Não informada'}</span>
@@ -175,17 +161,15 @@ const BookDetailPage: React.FC = () => {
             {/* Disponibilidade */}
             <div className="book-availability">
               <h3>Disponibilidade</h3>
-
               <div className="availability-bar">
                 <div
                   className="availability-fill"
                   style={{
                     width: `${availabilityPercentage}%`,
-                    backgroundColor: isAvailable ? '#28a745' : '#dc3545'
+                    backgroundColor: isAvailable ? '#0f6e56' : '#993c1d',
                   }}
                 />
               </div>
-
               <p className="availability-text">
                 <strong>{book.quantidadeDisponivel}</strong> de{' '}
                 <strong>{book.totalExemplares}</strong> disponíveis
@@ -198,13 +182,13 @@ const BookDetailPage: React.FC = () => {
                 <span className="stat-number">{book.contadorEmprestimos}</span>
                 <span className="stat-label">Empréstimos</span>
               </div>
-
               <div className="stat-item">
                 <span className="stat-number">{reservations.length}</span>
                 <span className="stat-label">Reservas</span>
               </div>
             </div>
 
+            {/* Descrição */}
             {book.descricao && (
               <div className="book-description">
                 <h3>Descrição</h3>
@@ -212,6 +196,7 @@ const BookDetailPage: React.FC = () => {
               </div>
             )}
 
+            {/* Ações desktop */}
             <div className="book-actions-desktop">
               {canReserve && (
                 <Button
@@ -223,7 +208,6 @@ const BookDetailPage: React.FC = () => {
                   {isAvailable ? 'Reservar Livro' : 'Indisponível'}
                 </Button>
               )}
-
               {canEdit && (
                 <Button
                   variant="secondary"
@@ -237,11 +221,10 @@ const BookDetailPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Tabela de reservas */}
+        {/* ── Tabela de reservas ── */}
         {hasAnyRole(['ROLE_FUNCIONARIO', 'ROLE_ADMIN']) && reservations.length > 0 && (
           <div className="reservations-section">
             <h2>Reservas deste livro</h2>
-
             <table className="reservations-table">
               <thead>
                 <tr>
@@ -250,7 +233,6 @@ const BookDetailPage: React.FC = () => {
                   <th>Status</th>
                 </tr>
               </thead>
-
               <tbody>
                 {reservations.map(res => (
                   <tr key={res.id}>
@@ -269,7 +251,7 @@ const BookDetailPage: React.FC = () => {
         )}
       </div>
 
-      {/* Modal */}
+      {/* ── Modal de reserva ── */}
       <Modal
         isOpen={showReserveModal}
         onClose={() => setShowReserveModal(false)}

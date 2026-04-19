@@ -2,13 +2,13 @@
   padding-bottom: 3rem;
 }
 
-// Hero Section
+// ── Hero Section ──────────────────────────────────────────────────────────────
 .hero {
   background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
   color: white;
   padding: 4rem 1rem;
   margin-bottom: 3rem;
-  
+
   @media (min-width: 768px) {
     padding: 5rem 2rem;
     display: grid;
@@ -22,7 +22,7 @@
   max-width: 600px;
   margin: 0 auto;
   text-align: center;
-  
+
   @media (min-width: 768px) {
     text-align: left;
     margin: 0;
@@ -34,7 +34,7 @@
   font-weight: 800;
   margin-bottom: 1rem;
   line-height: 1.2;
-  
+
   @media (min-width: 768px) {
     font-size: 3.5rem;
   }
@@ -48,7 +48,7 @@
 
 .hero-search {
   margin-bottom: 2rem;
-  
+
   .search-input-wrapper {
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
   }
@@ -59,11 +59,11 @@
   flex-wrap: wrap;
   gap: 1rem;
   justify-content: center;
-  
+
   @media (min-width: 768px) {
     justify-content: flex-start;
   }
-  
+
   a {
     text-decoration: none;
   }
@@ -71,27 +71,26 @@
 
 .hero-image {
   display: none;
-  
+
   @media (min-width: 768px) {
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden; // importante
+    overflow: hidden;
   }
 }
 
 .img-um {
   max-width: none;
-  width: 460px; 
+  width: 460px;
   display: flex;
   margin: 0;
   align-items: center;
   justify-content: center;
-
-  transform: scale(1.4); // aumenta sem afetar a div
+  transform: scale(1.4);
 }
 
-// Popular Books Section
+// ── Popular Books / Carousel ──────────────────────────────────────────────────
 .popular-books {
   padding: 2rem 0;
 }
@@ -107,7 +106,7 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2rem;
-  
+
   h2 {
     font-size: 1.875rem;
     color: var(--color-text-primary);
@@ -118,16 +117,10 @@
   color: var(--color-secondary);
   font-weight: 600;
   text-decoration: none;
-  
+
   &:hover {
     color: var(--color-primary);
   }
-}
-
-.books-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 1.5rem;
 }
 
 .empty-state {
@@ -136,7 +129,261 @@
   color: var(--color-text-muted);
 }
 
-// Features Section
+// Carousel wrapper — posicionamento relativo para as setas
+.carousel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+// ── Setas ─────────────────────────────────────────────────────────────────────
+.carousel-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-60%); // sobe um pouco para ficar no centro do card
+  z-index: 10;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid var(--color-primary);
+  background: white;
+  color: var(--color-primary);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+
+  &:hover {
+    background: var(--color-primary);
+    color: white;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  }
+
+  &--prev { left: 0; }
+  &--next { right: 0; }
+
+  @media (max-width: 600px) {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+// ── Track + animação ──────────────────────────────────────────────────────────
+.carousel-track {
+  width: 100%;
+  padding: 0 3.5rem; // espaço para as setas não sobrepostas ao card
+
+  @media (max-width: 600px) {
+    padding: 0 2.5rem;
+  }
+}
+
+@keyframes slideInFromRight {
+  from { opacity: 0; transform: translateX(40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInFromLeft {
+  from { opacity: 0; transform: translateX(-40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideOutToLeft {
+  from { opacity: 1; transform: translateX(0); }
+  to   { opacity: 0; transform: translateX(-40px); }
+}
+
+@keyframes slideOutToRight {
+  from { opacity: 1; transform: translateX(0); }
+  to   { opacity: 0; transform: translateX(40px); }
+}
+
+.carousel-track--enter {
+  .carousel-card { animation: slideInFromRight 0.35s ease forwards; }
+}
+
+.carousel-track--enter.carousel-track--exit-prev {
+  .carousel-card { animation: slideInFromLeft 0.35s ease forwards; }
+}
+
+.carousel-track--exit-next {
+  .carousel-card { animation: slideOutToLeft 0.35s ease forwards; }
+}
+
+.carousel-track--exit-prev {
+  .carousel-card { animation: slideOutToRight 0.35s ease forwards; }
+}
+
+// ── Card do carrossel ─────────────────────────────────────────────────────────
+.carousel-card {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 2rem;
+
+  background: white;
+  border-radius: var(--border-radius-lg, 16px);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.10);
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  min-height: 320px;
+  transition: box-shadow 0.2s;
+
+  &:hover {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  }
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+    min-height: unset;
+  }
+}
+
+// ── Capa ──────────────────────────────────────────────────────────────────────
+.carousel-cover {
+  flex-shrink: 0;
+  width: 180px;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  @media (max-width: 640px) {
+    width: 100%;
+    height: 220px;
+  }
+}
+
+.carousel-cover-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+// ── Info ──────────────────────────────────────────────────────────────────────
+.carousel-info {
+  flex: 1;
+  padding: 2rem 2rem 2rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  @media (max-width: 640px) {
+    padding: 1.25rem;
+  }
+}
+
+.carousel-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0;
+  line-height: 1.3;
+}
+
+.carousel-author {
+  font-size: 1rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.carousel-description {
+  margin-top: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: var(--color-background, #f5f7fa);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  line-height: 1.55;
+
+  p {
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+.carousel-loans {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  margin-top: auto;
+  padding-top: 0.5rem;
+}
+
+.carousel-badge {
+  display: inline-block;
+  padding: 0.3rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 2px solid;
+  width: fit-content;
+
+  &--available {
+    color: #16a34a;
+    border-color: #16a34a;
+    background: #f0fdf4;
+  }
+
+  &--unavailable {
+    color: #dc2626;
+    border-color: #dc2626;
+    background: #fef2f2;
+  }
+}
+
+// ── Dots ──────────────────────────────────────────────────────────────────────
+.carousel-dots {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
+}
+
+.carousel-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: none;
+  background: var(--color-primary, #4db6ac);
+  opacity: 0.3;
+  cursor: pointer;
+  padding: 0;
+  transition: opacity 0.2s, transform 0.2s;
+
+  &--active {
+    opacity: 1;
+    transform: scale(1.3);
+  }
+
+  &:hover:not(.carousel-dot--active) {
+    opacity: 0.6;
+  }
+}
+
+// ── Features Section ──────────────────────────────────────────────────────────
 .features {
   padding: 4rem 0;
   background-color: white;
@@ -155,7 +402,7 @@
   border-radius: var(--border-radius-lg);
   background-color: var(--color-background);
   transition: transform var(--transition-fast);
-  
+
   &:hover {
     transform: translateY(-4px);
   }
