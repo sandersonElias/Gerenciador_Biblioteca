@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Livro } from '../types';
 import { livroApi } from '../services/api';
@@ -17,21 +17,20 @@ const HomePage: React.FC = () => {
   const { showToast } = useToast();
   const { withLoading } = useLoading();
 
-  useEffect(() => {
-    loadPopularBooks();
-  }, []);
-
-  const loadPopularBooks = async () => {
+  const loadPopularBooks = useCallback(async () => {
     try {
       const books = await withLoading(livroApi.getPopulares(6));
       setPopularBooks(books);
     } catch (error) {
       showToast('Erro ao carregar livros populares', 'error');
     }
-  };
+  }, [withLoading, showToast]);
+
+  useEffect(() => {
+    loadPopularBooks();
+  }, [loadPopularBooks]);
 
   const handleSearch = (filter: string, term: string) => {
-    // Navigate to search page with params
     window.location.href = `/buscar?filter=${filter}&term=${encodeURIComponent(term)}`;
   };
 
@@ -71,7 +70,7 @@ const HomePage: React.FC = () => {
         </div>
         
         <div className="hero-image">
-          <img src={ImgUm} className='img-um' />
+          <img src={ImgUm} className='img-um' alt="Ilustração da biblioteca" />
         </div>
       </section>
 

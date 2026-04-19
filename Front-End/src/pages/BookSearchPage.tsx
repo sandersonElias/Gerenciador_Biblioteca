@@ -19,26 +19,6 @@ const BookSearchPage: React.FC = () => {
   const initialFilter = (searchParams.get('filter') as BookFilterType) || 'titulo';
   const initialTerm = searchParams.get('term') || '';
 
-  useEffect(() => {
-    loadBooks();
-  }, []);
-
-  useEffect(() => {
-    if (initialTerm) {
-      handleSearch(initialFilter, initialTerm);
-    }
-  }, [initialTerm, initialFilter]);
-
-  const loadBooks = async () => {
-    try {
-      const allBooks = await withLoading(livroApi.getAll());
-      setBooks(allBooks);
-      setFilteredBooks(allBooks);
-    } catch (error) {
-      showToast('Erro ao carregar livros', 'error');
-    }
-  };
-
   const handleSearch = useCallback(async (filter: BookFilterType, term: string) => {
     if (!term.trim()) {
       setFilteredBooks(books);
@@ -60,6 +40,26 @@ const BookSearchPage: React.FC = () => {
       setIsLoading(false);
     }
   }, [books, setSearchParams, showToast]);
+
+  const loadBooks = useCallback(async () => {
+    try {
+      const allBooks = await withLoading(livroApi.getAll());
+      setBooks(allBooks);
+      setFilteredBooks(allBooks);
+    } catch (error) {
+      showToast('Erro ao carregar livros', 'error');
+    }
+  }, [withLoading, showToast]);
+
+  useEffect(() => {
+    loadBooks();
+  }, [loadBooks]);
+
+  useEffect(() => {
+    if (initialTerm) {
+      handleSearch(initialFilter, initialTerm);
+    }
+  }, [initialTerm, initialFilter, handleSearch]);
 
   return (
     <div className="book-search-page">

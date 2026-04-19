@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Livro, ReservaResponse } from '../types';
 import { livroApi, reservaApi } from '../services/api';
@@ -21,6 +21,20 @@ const BookDetailPage: React.FC = () => {
   const { showToast } = useToast();
   const { withLoading } = useLoading();
 
+  const loadBook = useCallback(async (bookId: number) => {
+    try {
+      const bookData = await withLoading(livroApi.getById(bookId));
+      setBook(bookData);
+
+      if (hasAnyRole(['ROLE_FUNCIONARIO', 'ROLE_ADMIN'])) {
+        const reservas = await reservaApi.getByLivro(bookId);
+        setReservations(reservas);
+      }
+    } catch (error) {
+      showToast('Erro ao carregar detalhes do livro', 'error');
+    }
+  }, [withLoading, hasAnyRole, showToast]);
+
   useEffect(() => {
     if (!id) return;
 
@@ -31,43 +45,28 @@ const BookDetailPage: React.FC = () => {
     }
 
     loadBook(bookId);
-  }, [id]);
-
-  const loadBook = async (bookId: number) => {
-    try {
-      const bookData = await withLoading(livroApi.getById(bookId));
-      setBook(bookData);
-
-      // Carregar reservas (somente staff/admin)
-      if (hasAnyRole(['ROLE_FUNCIONARIO', 'ROLE_ADMIN'])) {
-        const reservas = await reservaApi.getByLivro(bookId);
-        setReservations(reservas);
-      }
-    } catch (error) {
-      showToast('Erro ao carregar detalhes do livro', 'error');
-    }
-  };
+  }, [id, loadBook, showToast]);
 
   const handleReserve = async () => {
-  if (!book || !isAuthenticated || !user) return;
+    if (!book || !isAuthenticated || !user) return;
 
-  try {
-    await reservaApi.create({
-      livroId: book.id,
-      userId: user.id
-    });
+    try {
+      await reservaApi.create({
+        livroId: book.id,
+        userId: user.id
+      });
 
-    showToast('Livro reservado com sucesso!', 'success');
-    setShowReserveModal(false);
-    loadBook(book.id);
+      showToast('Livro reservado com sucesso!', 'success');
+      setShowReserveModal(false);
+      loadBook(book.id);
 
-  } catch (error: any) {
-    showToast(
-      error.response?.data?.message || 'Erro ao reservar livro',
-      'error'
-    );
-  }
-};
+    } catch (error: any) {
+      showToast(
+        error.response?.data?.message || 'Erro ao reservar livro',
+        'error'
+      );
+    }
+  };
 
   if (!book) {
     return (

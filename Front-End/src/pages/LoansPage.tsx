@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { EmprestimoResponse, Livro, StatusEmprestimo, UserResponse } from '../types';
 import { emprestimoApi } from '../services/api';
 import { useToast } from '../context/ToastContext';
@@ -29,24 +29,40 @@ const LoansPage: React.FC = () => {
   const { showToast } = useToast();
   const { withLoading } = useLoading();
 
-  useEffect(() => {
-    loadLoans();
-  }, []);
-
-  useEffect(() => {
-    filterLoans();
-  }, [loans, searchTerm, statusFilter]);
-
-  const loadLoans = async () => {
+  const loadLoans = useCallback(async () => {
     try {
       const data = await withLoading(emprestimoApi.getAll());
       setLoans(data);
     } catch (error) {
       showToast('Erro ao carregar empréstimos', 'error');
     }
-  };
+  }, [withLoading, showToast]);
 
-  
+  const filterLoans = useCallback(() => {
+    let filtered = loans;
+    
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(loan => 
+        loan.user.name.toLowerCase().includes(term) ||
+        loan.livro.titulo.toLowerCase().includes(term)
+      );
+    }
+    
+    if (statusFilter) {
+      filtered = filtered.filter(loan => loan.status === statusFilter);
+    }
+    
+    setFilteredLoans(filtered);
+  }, [loans, searchTerm, statusFilter]);
+
+  useEffect(() => {
+    loadLoans();
+  }, [loadLoans]);
+
+  useEffect(() => {
+    filterLoans();
+  }, [filterLoans]);
 
   useEffect(() => {
     const delay = setTimeout(async () => {
@@ -96,24 +112,6 @@ const LoansPage: React.FC = () => {
     setBookSuggestions([]);
   };
 
-  const filterLoans = () => {
-    let filtered = loans;
-    
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(loan => 
-        loan.user.name.toLowerCase().includes(term) ||
-        loan.livro.titulo.toLowerCase().includes(term)
-      );
-    }
-    
-    if (statusFilter) {
-      filtered = filtered.filter(loan => loan.status === statusFilter);
-    }
-    
-    setFilteredLoans(filtered);
-  };
-
   const handleRenew = async () => {
     if (!selectedLoan) return;
     
@@ -140,32 +138,29 @@ const LoansPage: React.FC = () => {
     }
   };
 
-const handleNewLoan = async () => {
-  if (!newLoan.userId || !newLoan.livroId) {
-    showToast('Selecione um usuário e um livro válidos', 'error');
-    return;
-  }
+  const handleNewLoan = async () => {
+    if (!newLoan.userId || !newLoan.livroId) {
+      showToast('Selecione um usuário e um livro válidos', 'error');
+      return;
+    }
 
-  try {
-    await emprestimoApi.create({
-      userId: Number(newLoan.userId),
-      livroId: Number(newLoan.livroId),
-      dataDevolucao: newLoan.dataDevolucao || undefined,
-    });
+    try {
+      await emprestimoApi.create({
+        userId: Number(newLoan.userId),
+        livroId: Number(newLoan.livroId),
+        dataDevolucao: newLoan.dataDevolucao || undefined,
+      });
 
-    showToast('Empréstimo criado com sucesso!', 'success');
-
-    setShowNewLoanModal(false);
-
-    setNewLoan({ userId: '', livroId: '', dataDevolucao: '' });
-    setUserSearch('');
-    setBookSearch('');
-
-    loadLoans();
-  } catch (error: any) {
-    showToast(error.response?.data?.message || 'Erro ao criar empréstimo', 'error');
-  }
-};
+      showToast('Empréstimo criado com sucesso!', 'success');
+      setShowNewLoanModal(false);
+      setNewLoan({ userId: '', livroId: '', dataDevolucao: '' });
+      setUserSearch('');
+      setBookSearch('');
+      loadLoans();
+    } catch (error: any) {
+      showToast(error.response?.data?.message || 'Erro ao criar empréstimo', 'error');
+    }
+  };
 
   const getStatusClass = (status: string) => {
     switch (status) {
@@ -274,7 +269,7 @@ const handleNewLoan = async () => {
           
           {filteredLoans.length === 0 && (
             <div className="empty-state">
-              <p>Nenhum emprérstimo encontrado</p>
+              <p>Nenhum empréstimo encontrado</p>
             </div>
           )}
         </div>
@@ -339,7 +334,6 @@ const handleNewLoan = async () => {
           </>
         }
       >
-
         <div className="form-group autocomplete">
           <Input
             label="Nome do Usuário"

@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Reserva, ReservaResponse } from '../types';
+import React, { useEffect, useState, useCallback } from 'react';
+import { ReservaResponse } from '../types';
 import { reservaApi } from '../services/api';
 import { useToast } from '../context/ToastContext';
 import { useLoading } from '../context/LoadingContext';
@@ -17,23 +17,23 @@ const ReservationsPage: React.FC = () => {
   const { showToast } = useToast();
   const { withLoading } = useLoading();
 
+  const loadReservations = useCallback(async () => {
+    try {
+      if (!user) return;
+
+      const data = await withLoading(
+        reservaApi.getReservaEmail(user.email)
+      );
+
+      setReservations(data);
+    } catch (error) {
+      showToast('Erro ao carregar reservas', 'error');
+    }
+  }, [user, withLoading, showToast]);
+
   useEffect(() => {
     loadReservations();
-  }, []);
-
-  const loadReservations = async () => {
-  try {
-    if (!user) return;
-
-    const data = await withLoading(
-      reservaApi.getReservaEmail(user.email)
-    );
-
-    setReservations(data);
-  } catch (error) {
-    showToast('Erro ao carregar reservas', 'error');
-  }
-};
+  }, [loadReservations]);
 
   const handleCancel = async () => {
     if (!selectedReservation) return;

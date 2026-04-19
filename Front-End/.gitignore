@@ -29,3 +29,4 @@ yarn-error.log*
 
 # Storybook
 storybook-static
+.vercel

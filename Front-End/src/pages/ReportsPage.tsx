@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -34,11 +34,7 @@ const ReportsPage: React.FC = () => {
   const { showToast } = useToast();
   const { withLoading } = useLoading();
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const [loansData, reservationsData, popularData] = await Promise.all([
         withLoading(emprestimoApi.getAll()),
@@ -53,7 +49,11 @@ const ReportsPage: React.FC = () => {
     } catch (error) {
       showToast('Erro ao carregar dados dos relatórios', 'error');
     }
-  };
+  }, [withLoading, showToast]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   // 📊 Livros populares
   const popularBooksData = {

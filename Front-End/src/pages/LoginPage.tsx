@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import Input from '../components/common/Input';
@@ -23,9 +23,7 @@ const LoginPage: React.FC = () => {
     
     if (!email) {
       newErrors.email = 'Email é obrigatório';
-    } //else if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) {
-    //  newErrors.email = 'Email inválido';
-    //}
+    }
     
     if (!password) {
       newErrors.password = 'Senha é obrigatória';
@@ -46,7 +44,6 @@ const LoginPage: React.FC = () => {
       await login(email, password);
       showToast('Login realizado com sucesso!', 'success');
       
-      // Redirect to previous page or home
       const from = (location.state as any)?.from?.pathname || '/';
       navigate(from, { replace: true });
     } catch (error: any) {
