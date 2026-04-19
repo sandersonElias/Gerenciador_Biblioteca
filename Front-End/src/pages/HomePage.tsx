@@ -20,9 +20,10 @@ const HomePage: React.FC = () => {
   const loadPopularBooks = useCallback(async () => {
     try {
       const books = await withLoading(livroApi.getPopulares(6));
-      setPopularBooks(books);
+      setPopularBooks(Array.isArray(books) ? books : []);
     } catch (error) {
       showToast('Erro ao carregar livros populares', 'error');
+      setPopularBooks([]);
     }
   }, [withLoading, showToast]);
 
