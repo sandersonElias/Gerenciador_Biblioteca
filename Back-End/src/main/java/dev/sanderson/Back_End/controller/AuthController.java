@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @Validated
 @RequiredArgsConstructor
-@CrossOrigin(origins = "https://biblioteca-monsa.vercel.app/")
 @RequestMapping("/auth")
 public class AuthController implements AuthControllerDoc {
 

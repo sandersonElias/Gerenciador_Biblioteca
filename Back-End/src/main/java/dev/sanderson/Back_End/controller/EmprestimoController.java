@@ -15,7 +15,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@CrossOrigin(origins = "https://biblioteca-monsa.vercel.app/")
 @RequestMapping("/emprestimo")
 @RequiredArgsConstructor
 public class EmprestimoController {

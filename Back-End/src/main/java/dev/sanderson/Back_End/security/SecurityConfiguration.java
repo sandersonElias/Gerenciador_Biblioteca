@@ -88,7 +88,13 @@ public class SecurityConfiguration {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedMethods("*")
+                        .allowedOrigins(
+                                "http://localhost:3000",
+                                "https://biblioteca-monsa.vercel.app"
+                        )
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                        .allowedHeaders("*")
+                        .allowCredentials(true)
                         .exposedHeaders("Authorization");
             }
         };
