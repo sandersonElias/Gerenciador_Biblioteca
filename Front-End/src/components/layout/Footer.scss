@@ -3,6 +3,7 @@
   color: var(--color-text-light);
   padding: 3rem 0 1.5rem;
   margin-top: auto;
+  overflow: hidden; // garante que nada vaza para fora
 }
 
 .footer-container {
@@ -16,7 +17,7 @@
   grid-template-columns: 1fr;
   gap: 2rem;
   margin-bottom: 2rem;
-  
+
   @media (min-width: 768px) {
     grid-template-columns: 1fr 2fr;
   }
@@ -26,13 +27,10 @@
   .footer-logo {
     font-size: 1.25rem;
     font-weight: 700;
-    display: flex;
-    align-items: center;
-    justify-content: baseline;
-    gap: 5px;
+    display: block;
     margin-bottom: 0.5rem;
   }
-  
+
   .footer-tagline {
     color: var(--color-light-cyan);
     font-size: 0.875rem;
@@ -46,6 +44,10 @@
 }
 
 .footer-section {
+  // Impede que conteúdo longo (email, telefone) estoure o container
+  min-width: 0;
+  overflow: hidden;
+
   h4 {
     font-size: 0.875rem;
     font-weight: 600;
@@ -54,21 +56,26 @@
     margin-bottom: 1rem;
     color: var(--color-amber);
   }
-  
+
   ul {
     list-style: none;
     padding: 0;
     margin: 0;
-    
+
     li {
       margin-bottom: 0.5rem;
       font-size: 0.875rem;
-      
+      // Quebra palavras longas como emails e URLs
+      word-break: break-all;
+      overflow-wrap: break-word;
+
       a {
         color: var(--color-light-cyan);
         text-decoration: none;
+        word-break: break-all;
+        overflow-wrap: break-word;
         transition: color var(--transition-fast);
-        
+
         &:hover {
           color: var(--color-amber);
         }
@@ -83,4 +90,5 @@
   text-align: center;
   font-size: 0.875rem;
   color: var(--color-light-cyan);
+  word-break: break-word;
 }

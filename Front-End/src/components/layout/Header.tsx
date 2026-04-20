@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import type { Role } from '../../types';
 import LogoImg from '../assets/logo_monsa.png';
 import './Header.scss';
 
@@ -40,7 +41,7 @@ const Header: React.FC = () => {
 
   const userInitial = user?.email?.charAt(0).toUpperCase() || '?';
 
-  const navLinks = [
+  const navLinks: { to: string; label: string; always?: boolean; roles?: Role[] }[] = [
     { to: '/', label: 'Home', always: true },
     { to: '/buscar', label: 'Buscar Livro', always: true },
     {
@@ -56,13 +57,13 @@ const Header: React.FC = () => {
     {
       to: '/reservas',
       label: 'Minhas Reservas',
-      roles:  ['ROLE_ALUNO', 'ROLE_FUNCIONARIO', 'ROLE_ADMIN'],
+      roles: ['ROLE_ALUNO', 'ROLE_FUNCIONARIO', 'ROLE_ADMIN'],
     },
     { to: '/admin', label: 'Admin', roles: ['ROLE_ADMIN'] },
   ];
 
   const visibleLinks = navLinks.filter(
-    (l) => l.always || (isAuthenticated && l.roles && hasAnyRole(['ROLE_ALUNO', 'ROLE_FUNCIONARIO', 'ROLE_ADMIN']))
+    (l) => l.always || (isAuthenticated && l.roles && hasAnyRole(l.roles))
   );
 
   return (
