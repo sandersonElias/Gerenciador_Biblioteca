@@ -2,6 +2,7 @@ package dev.sanderson.Back_End.controller;
 
 import dev.sanderson.Back_End.dto.EmprestimoDtos.EmprestimoRequest;
 import dev.sanderson.Back_End.dto.EmprestimoDtos.EmprestimoResponse;
+import dev.sanderson.Back_End.dto.EmprestimoDtos.MeusEmprestimosResponse;
 import dev.sanderson.Back_End.entity.type.StatusEmprestimo;
 import dev.sanderson.Back_End.service.EmprestimoService;
 import lombok.RequiredArgsConstructor;
@@ -21,47 +22,49 @@ public class EmprestimoController {
 
     private final EmprestimoService emprestimoService;
 
-    // Novo empréstimo
+    // ── Endpoint do usuário — busca por email passado na URL ──────────────────
+    // Padrão idêntico ao /reserva/useremail/{email}
+    @GetMapping("/minha-conta/{email}")
+    public ResponseEntity<MeusEmprestimosResponse> getMinhaConta(@PathVariable String email) {
+        MeusEmprestimosResponse response = emprestimoService.obterMeusEmprestimos(email);
+        return ResponseEntity.ok(response);
+    }
+
+    // ── Endpoints de gerenciamento (FUNCIONARIO / ADMIN) ──────────────────────
+
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<EmprestimoResponse> novoEmprestimo(@RequestBody EmprestimoRequest emprestimo) {
         EmprestimoResponse dto = emprestimoService.insertEmprestimo(emprestimo);
         return ResponseEntity.status(HttpStatus.CREATED).body(dto);
     }
 
-    // Renovar empréstimo
     @PutMapping("/renovar/{id}")
     public ResponseEntity<EmprestimoResponse> renovar(@PathVariable Long id) {
         EmprestimoResponse dto = emprestimoService.renovarEmprestimo(id);
         return ResponseEntity.ok(dto);
     }
 
-    // Devolver empréstimo
     @PutMapping("/devolver/{id}")
     public ResponseEntity<Void> devolver(@PathVariable Long id) {
         emprestimoService.devolverEmprestimo(id);
         return ResponseEntity.noContent().build();
     }
 
-    // Listar todos
     @GetMapping("/todos")
     public ResponseEntity<List<EmprestimoResponse>> listarTodos() {
-        List<EmprestimoResponse> emprestimo = emprestimoService.todosEmprestimos();
-        return ResponseEntity.ok(emprestimo);
+        return ResponseEntity.ok(emprestimoService.todosEmprestimos());
     }
 
-    // Buscar por ID
     @GetMapping("/id/{id}")
     public ResponseEntity<EmprestimoResponse> buscarPorId(@PathVariable Long id) {
         return ResponseEntity.ok(emprestimoService.buscarId(id));
     }
 
-    // Buscar por nome do usuário
     @GetMapping("/user/{nome}")
     public ResponseEntity<List<EmprestimoResponse>> buscarPorUser(@PathVariable String nome) {
         return ResponseEntity.ok(emprestimoService.buscarPorUser(nome));
     }
 
-    // Buscar por título do livro
     @GetMapping("/livro/{titulo}")
     public ResponseEntity<List<EmprestimoResponse>> buscarPorLivro(@PathVariable String titulo) {
         return ResponseEntity.ok(emprestimoService.buscarPorLivro(titulo));
@@ -77,13 +80,11 @@ public class EmprestimoController {
         return ResponseEntity.ok(emprestimoService.buscarPorUserRenovacao(nome));
     }
 
-    // Buscar por status
     @GetMapping("/status/{status}")
     public ResponseEntity<List<EmprestimoResponse>> buscarPorStatus(@PathVariable StatusEmprestimo status) {
         return ResponseEntity.ok(emprestimoService.buscarPorStatus(status));
     }
 
-    // Buscar devoluções do dia
     @GetMapping("/devolucao/{data}")
     public ResponseEntity<List<EmprestimoResponse>> buscarDevolucaoDoDia(
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate data) {

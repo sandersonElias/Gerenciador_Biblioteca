@@ -6,7 +6,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
@@ -17,6 +16,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 
 @Configuration
 @EnableWebSecurity
@@ -34,35 +34,47 @@ public class SecurityConfiguration {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
 
-                        // swagger
+                        // ── Swagger ──────────────────────────────────────────────────
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
 
-                        // públicos (somente GET)
-                        .requestMatchers(HttpMethod.GET,
-                                "/livro/**"
-                        ).permitAll()
+                        // ── Livro: GET público ────────────────────────────────────────
+                        .requestMatchers(HttpMethod.GET, "/livro/**").permitAll()
 
+                        // ── Auth ──────────────────────────────────────────────────────
                         .requestMatchers(HttpMethod.POST, "/auth").permitAll()
 
-                        // protegidos
-                        .requestMatchers(HttpMethod.POST, "/livro/**")
-                        .hasRole("ADMIN")
+                        // ── Minha conta: qualquer role autenticada ────────────────────
+                        // DEVE vir ANTES de /emprestimo/** — endpoint: /emprestimo/minha-conta/{email}
+                        // hasAnyRole adiciona ROLE_ internamente → "ALUNO" vira "ROLE_ALUNO"
+                        .requestMatchers(HttpMethod.GET, "/emprestimo/minha-conta/**")
+                        .hasAnyRole("ALUNO", "FUNCIONARIO", "ADMIN")
 
-                        .requestMatchers(HttpMethod.PUT, "/livro/**")
-                        .hasRole("ADMIN")
+                        // ── Solicitações: POST — aluno solicita renovação ──────────────
+                        // endpoint: POST /solicitacoes-renovacao/{email}
+                        .requestMatchers(HttpMethod.POST, "/solicitacoes-renovacao/**")
+                        .hasAnyRole("ALUNO", "FUNCIONARIO", "ADMIN")
 
-                        .requestMatchers(HttpMethod.DELETE, "/livro/**")
-                        .hasRole("ADMIN")
+                        // ── Solicitações: GET e PUT — funcionário gerencia ─────────────
+                        .requestMatchers(HttpMethod.GET, "/solicitacoes-renovacao/**")
+                        .hasAnyRole("FUNCIONARIO", "ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/solicitacoes-renovacao/**")
+                        .hasAnyRole("FUNCIONARIO", "ADMIN")
 
-                        // regras gerais
+                        // ── Livro: escrita só para ADMIN ──────────────────────────────
+                        .requestMatchers(HttpMethod.POST,   "/livro/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT,    "/livro/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/livro/**").hasRole("ADMIN")
+
+                        // ── Reservas: qualquer autenticado ────────────────────────────
                         .requestMatchers("/reserva/**")
                         .hasAnyRole("ALUNO", "FUNCIONARIO", "ADMIN")
 
+                        // ── Empréstimos e usuários: FUNCIONARIO/ADMIN ─────────────────
                         .requestMatchers("/emprestimo/**", "/user/**")
                         .hasAnyRole("FUNCIONARIO", "ADMIN")
 
-                        .requestMatchers("/admin/**")
-                        .hasRole("ADMIN")
+                        // ── Admin ─────────────────────────────────────────────────────
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
 
                         .anyRequest().authenticated()
                 );
@@ -102,13 +114,12 @@ public class SecurityConfiguration {
 
     @Bean
     public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration authenticationConfiguration
-    ) throws Exception {
+            AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder(){
+    public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 }

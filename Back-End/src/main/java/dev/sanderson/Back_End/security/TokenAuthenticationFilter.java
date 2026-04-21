@@ -9,12 +9,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
+
 import java.io.IOException;
 
 @RequiredArgsConstructor
 public class TokenAuthenticationFilter extends OncePerRequestFilter {
+
     private final TokenService tokenService;
-    private final String BEARER = "Bearer ";
+    private static final String BEARER_PREFIX = "Bearer";
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -37,17 +39,17 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
 
         } catch (ExpiredJwtException ex) {
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token Expired");
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token expirado");
         }
     }
 
     private String getTokenFromHeader(HttpServletRequest request) {
         String header = request.getHeader("Authorization");
 
-        if (header == null || !header.startsWith(BEARER)) {
+        if (header == null || !header.startsWith(BEARER_PREFIX)) {
             return null;
         }
 
-        return header.substring(BEARER.length());
+        return header.substring(BEARER_PREFIX.length());
     }
 }
