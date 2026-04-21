@@ -55,8 +55,8 @@ const Header: React.FC = () => {
       roles: ['ROLE_FUNCIONARIO', 'ROLE_ADMIN'],
     },
     {
-      to: '/reservas',
-      label: 'Minhas Reservas',
+      to: '/meu-perfil',
+      label: 'Meu Perfil',
       roles: ['ROLE_ALUNO', 'ROLE_FUNCIONARIO', 'ROLE_ADMIN'],
     },
     { to: '/admin', label: 'Admin', roles: ['ROLE_ADMIN'] },

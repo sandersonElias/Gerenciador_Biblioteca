@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import Input from '../components/common/Input';
+// import Input from '../components/common/Input';
 import Button from '../components/common/Button';
 import LoginImg from '../components/assets/login-img.png';
 import './LoginPage.scss';

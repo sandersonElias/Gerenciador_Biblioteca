@@ -12,11 +12,11 @@ import BookSearchPage from './pages/BookSearchPage';
 import BookDetailPage from './pages/BookDetailPage';
 import LoginPage from './pages/LoginPage';
 import LoansPage from './pages/LoansPage';
-import ReservationsPage from './pages/ReservationsPage';
 import ReportsPage from './pages/ReportsPage';
 import AdminPage from './pages/AdminPage';
 import BookFormPage from './pages/BookFormPage';
 import UserFormPage from './pages/UserFormPage';
+import ProfilePage from './pages/ProfilePage';
 
 import './App.scss';
 
@@ -37,11 +37,11 @@ function App() {
               
               {/* Protected Routes - Aluno, Funcionario, Admin */}
               <Route 
-                path="/reservas" 
+                path="/meu-perfil" 
                 element={
                   <Layout>
                     <ProtectedRoute allowedRoles={['ROLE_ALUNO', 'ROLE_FUNCIONARIO', 'ROLE_ADMIN']}>
-                      <ReservationsPage />
+                      <ProfilePage />
                     </ProtectedRoute>
                   </Layout>
                 } 

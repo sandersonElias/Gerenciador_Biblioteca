@@ -50,6 +50,7 @@ export interface Livro {
 export interface LivroMinDto {
   id: number;
   titulo: string;
+  urlImg?: string;  // necessário para empréstimos e histórico
 }
 
 export interface LivroRequest {

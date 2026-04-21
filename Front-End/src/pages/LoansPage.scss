@@ -1,190 +1,490 @@
+// ── Variáveis locais ──────────────────────────────────────────────────────────
+$active:   #0f6e56;
+$active-bg:#e6f4f0;
+$overdue:  #c0392b;
+$overdue-bg:#fdf0ee;
+$returned: #2563eb;
+$returned-bg:#eff6ff;
+$pending:  #d97706;
+$pending-bg:#fef3c7;
+$border:   #e8ecf0;
+$surface:  #ffffff;
+$bg:       #f5f7fa;
+$text:     #1a2333;
+$muted:    #64748b;
+$radius:   12px;
+$shadow:   0 1px 3px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.06);
+
+// ── Layout base ───────────────────────────────────────────────────────────────
 .loans-page {
-  padding: 2rem 0;
-  min-height: 60vh;
+  padding: 2rem 0 4rem;
+  min-height: 80vh;
+  background: $bg;
 }
 
-.page-header {
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+// ── Header ────────────────────────────────────────────────────────────────────
+.lp-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   margin-bottom: 2rem;
   flex-wrap: wrap;
   gap: 1rem;
-  
-  h1 {
-    font-size: 1.875rem;
-    color: var(--color-text-primary);
-    margin-bottom: 0.5rem;
-  }
-  
-  p {
-    color: var(--color-text-secondary);
-  }
-}
 
-.filters-section {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-  flex-wrap: wrap;
-}
-
-.search-box {
-  flex: 1;
-  min-width: 250px;
-  
-  input {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    border: 2px solid #e2e8f0;
-    border-radius: var(--border-radius-md);
-    font-size: 1rem;
-    
-    &:focus {
-      outline: none;
-      border-color: var(--color-secondary);
+  &__text {
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: $text;
+      margin: 0 0 0.25rem;
+      letter-spacing: -0.02em;
+    }
+    p {
+      color: $muted;
+      font-size: 0.9rem;
+      margin: 0;
     }
   }
 }
 
-.status-filter {
-  padding: 0.75rem 1rem;
-  border: 2px solid #e2e8f0;
-  border-radius: var(--border-radius-md);
-  font-size: 1rem;
-  background-color: white;
-  min-width: 150px;
-  
-  &:focus {
-    outline: none;
-    border-color: var(--color-secondary);
-  }
-}
-
-.loans-table-container {
-  background-color: white;
-  border-radius: var(--border-radius-lg);
-  box-shadow: var(--shadow-sm);
-  overflow: hidden;
-}
-
-.loans-table {
-  width: 100%;
-  border-collapse: collapse;
-  
-  th, td {
-    padding: 1rem;
-    text-align: left;
-    border-bottom: 1px solid #e2e8f0;
-  }
-  
-  th {
-    background-color: var(--color-background);
-    font-weight: 600;
-    color: var(--color-text-secondary);
-    font-size: 0.875rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-  
-  tbody tr:hover {
-    background-color: #f8f9fa;
-  }
-}
-
-.book-cell strong {
-  color: var(--color-text-primary);
-  font-weight: 600;
-}
-
-.status-badge {
-  display: inline-block;
-  padding: 0.375rem 0.75rem;
-  border-radius: var(--border-radius-sm);
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  
-  &.status-active {
-    background-color: #d4edda;
-    color: #155724;
-  }
-  
-  &.status-overdue {
-    background-color: #f8d7da;
-    color: #721c24;
-  }
-  
-  &.status-returned {
-    background-color: #d1ecf1;
-    color: #0c5460;
-  }
-}
-
-.action-buttons {
+// ── Tabs ──────────────────────────────────────────────────────────────────────
+.lp-tabs {
   display: flex;
+  gap: 0.25rem;
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: $radius;
+  padding: 0.375rem;
+  margin-bottom: 1.5rem;
+  width: fit-content;
+}
+
+.lp-tab {
+  display: flex;
+  align-items: center;
   gap: 0.5rem;
+  padding: 0.625rem 1.125rem;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: $muted;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover { background: $bg; color: $text; }
+
+  &--active {
+    background: $text;
+    color: #fff;
+    font-weight: 600;
+    &:hover { background: $text; color: #fff; }
+  }
+
+  &__count {
+    background: rgba(255,255,255,.18);
+    color: inherit;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.1rem 0.5rem;
+    border-radius: 20px;
+    min-width: 1.5rem;
+    text-align: center;
+
+    .lp-tab:not(.lp-tab--active) & {
+      background: $bg;
+      color: $muted;
+    }
+  }
+
+  &__badge {
+    background: $overdue;
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.15rem 0.5rem;
+    border-radius: 20px;
+    min-width: 1.5rem;
+    text-align: center;
+    animation: pulse-badge 2s infinite;
+  }
+}
+
+@keyframes pulse-badge {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.7; }
+}
+
+// ── Filtros ───────────────────────────────────────────────────────────────────
+.lp-filters {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
   flex-wrap: wrap;
 }
 
-.empty-state {
-  text-align: center;
-  padding: 3rem;
-  color: var(--color-text-muted);
+.lp-search {
+  flex: 1;
+  min-width: 240px;
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  svg {
+    position: absolute;
+    left: 0.875rem;
+    color: $muted;
+    pointer-events: none;
+  }
+
+  input {
+    width: 100%;
+    padding: 0.7rem 1rem 0.7rem 2.5rem;
+    border: 1.5px solid $border;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    background: $surface;
+    color: $text;
+    transition: border-color 0.15s;
+
+    &::placeholder { color: #a0aec0; }
+    &:focus {
+      outline: none;
+      border-color: darken($active, 5%);
+      box-shadow: 0 0 0 3px rgba($active, .12);
+    }
+  }
 }
 
+.lp-select {
+  padding: 0.7rem 1rem;
+  border: 1.5px solid $border;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  background: $surface;
+  color: $text;
+  min-width: 160px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+
+  &:focus {
+    outline: none;
+    border-color: darken($active, 5%);
+    box-shadow: 0 0 0 3px rgba($active, .12);
+  }
+}
+
+// ── Tabela ────────────────────────────────────────────────────────────────────
+.lp-table-wrap {
+  background: $surface;
+  border-radius: $radius;
+  border: 1px solid $border;
+  box-shadow: $shadow;
+  overflow: hidden;
+}
+
+.lp-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th {
+    padding: 0.875rem 1rem;
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: $muted;
+    background: $bg;
+    border-bottom: 1px solid $border;
+  }
+
+  td {
+    padding: 1rem;
+    border-bottom: 1px solid $border;
+    font-size: 0.875rem;
+    color: $text;
+    vertical-align: middle;
+  }
+
+  tbody tr {
+    transition: background 0.1s;
+    &:hover { background: #fafbfc; }
+    &:last-child td { border-bottom: none; }
+
+    &.row--overdue {
+      background: lighten($overdue-bg, 3%);
+      &:hover { background: $overdue-bg; }
+    }
+  }
+}
+
+.cell-book strong {
+  font-weight: 600;
+  color: $text;
+}
+
+.cell-user {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+
+  .user-name  { font-weight: 500; color: $text; }
+  .user-email { font-size: 0.75rem; color: $muted; }
+}
+
+.cell-center { text-align: center; }
+
+// ── Badges ────────────────────────────────────────────────────────────────────
+.lp-badge {
+  display: inline-block;
+  padding: 0.3rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+
+  &.badge--active   { background: $active-bg;   color: darken($active, 5%); }
+  &.badge--overdue  { background: $overdue-bg;  color: $overdue; }
+  &.badge--returned { background: $returned-bg; color: $returned; }
+}
+
+// ── Botões de ação da tabela ──────────────────────────────────────────────────
+.lp-actions {
+  display: flex;
+  gap: 0.375rem;
+}
+
+.lp-btn {
+  padding: 0.375rem 0.875rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &--renew {
+    background: $active-bg;
+    color: darken($active, 5%);
+    &:hover { background: darken($active-bg, 6%); }
+  }
+
+  &--return {
+    background: $bg;
+    color: $muted;
+    border: 1px solid $border;
+    &:hover { background: darken($bg, 4%); color: $text; }
+  }
+}
+
+// ── Empty state ───────────────────────────────────────────────────────────────
+.lp-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 4rem 2rem;
+  color: $muted;
+  text-align: center;
+
+  svg { opacity: 0.4; }
+  p   { font-size: 0.95rem; margin: 0; }
+}
+
+// ── Seção de solicitações ─────────────────────────────────────────────────────
+.lp-solicitacoes { margin-top: 0.25rem; }
+
+.solic-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.solic-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  background: $surface;
+  border: 1px solid $border;
+  border-left: 4px solid $pending;
+  border-radius: $radius;
+  padding: 1.125rem 1.25rem;
+  box-shadow: $shadow;
+  transition: box-shadow 0.15s;
+
+  &:hover { box-shadow: 0 4px 20px rgba(0,0,0,.1); }
+
+  &__left {
+    flex-shrink: 0;
+    .solic-icon {
+      font-size: 1.5rem;
+      width: 2.5rem;
+      height: 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: $pending-bg;
+      border-radius: 8px;
+    }
+  }
+
+  &__body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__top {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.625rem;
+    flex-wrap: wrap;
+  }
+
+  &__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.5rem;
+    font-size: 0.82rem;
+    color: $muted;
+
+    span { white-space: nowrap; }
+    strong { color: $text; font-weight: 600; }
+    em { font-style: normal; font-size: 0.78rem; }
+  }
+
+  &__actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex-shrink: 0;
+  }
+}
+
+.solic-livro {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: $text;
+}
+
+.solic-badge {
+  background: $pending-bg;
+  color: $pending;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.2rem 0.6rem;
+  border-radius: 20px;
+}
+
+.solic-btn {
+  padding: 0.45rem 1rem;
+  border: none;
+  border-radius: 7px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+
+  &--aprovar {
+    background: $active-bg;
+    color: darken($active, 5%);
+    &:hover { background: $active; color: #fff; }
+  }
+
+  &--rejeitar {
+    background: $overdue-bg;
+    color: $overdue;
+    &:hover { background: $overdue; color: #fff; }
+  }
+}
+
+// ── Textarea do modal ─────────────────────────────────────────────────────────
+.lp-textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1.5px solid $border;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-family: inherit;
+  resize: vertical;
+  color: $text;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+
+  &::placeholder { color: #a0aec0; }
+  &:focus {
+    outline: none;
+    border-color: darken($active, 5%);
+    box-shadow: 0 0 0 3px rgba($active, .12);
+  }
+}
+
+// ── Modal notes ───────────────────────────────────────────────────────────────
 .modal-note {
   margin-top: 1rem;
-  padding: 0.75rem;
-  background-color: var(--color-light-cyan);
-  border-radius: var(--border-radius-md);
-  font-size: 0.875rem;
-  color: var(--color-text-secondary);
+  padding: 0.75rem 1rem;
+  background: #f0f9f6;
+  border-left: 3px solid $active;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  color: darken($active, 10%);
 }
 
-.form-group {
-  margin-bottom: 1rem;
-}
+// ── Autocomplete ──────────────────────────────────────────────────────────────
+.form-group { margin-bottom: 1rem; }
 
-.autocomplete {
-  position: relative;
-}
+.autocomplete { position: relative; }
 
 .autocomplete-list {
   position: absolute;
   top: 100%;
   left: 0;
   width: 100%;
-
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 6px;
+  background: $surface;
+  border: 1.5px solid $border;
+  border-radius: 8px;
   margin-top: 4px;
-
   max-height: 200px;
   overflow-y: auto;
-
   z-index: 999;
   list-style: none;
-  padding: 0;
-}
+  padding: 0.25rem;
+  box-shadow: $shadow;
 
-.autocomplete-list li {
-  padding: 10px;
-  cursor: pointer;
-}
-
-.autocomplete-list li:hover {
-  background: #f5f5f5;
-}
-
-@media (max-width: 768px) {
-  .loans-table {
-    display: block;
-    overflow-x: auto;
-    
-    th, td {
-      white-space: nowrap;
-    }
+  li {
+    padding: 0.625rem 0.875rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: background 0.1s;
+    &:hover { background: $bg; }
   }
+}
+
+// ── Responsivo ────────────────────────────────────────────────────────────────
+@media (max-width: 768px) {
+  .lp-tabs { width: 100%; }
+
+  .lp-table-wrap { overflow-x: auto; }
+  .lp-table th, .lp-table td { white-space: nowrap; }
+
+  .solic-card {
+    flex-direction: column;
+    &__actions { flex-direction: row; width: 100%; }
+    .solic-btn { flex: 1; text-align: center; }
+  }
+
+  .lp-header { flex-direction: column; align-items: flex-start; }
 }
