@@ -34,36 +34,54 @@ public class SecurityConfiguration {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
 
-                        // ── Swagger ──────────────────────────────────────────────────
+                        // ── Swagger ───────────────────────────────────────────────────
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-
-                        // ── Livro: GET público ────────────────────────────────────────
-                        .requestMatchers(HttpMethod.GET, "/livro/**").permitAll()
 
                         // ── Auth ──────────────────────────────────────────────────────
                         .requestMatchers(HttpMethod.POST, "/auth").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/registrar").permitAll()
 
-                        // ── Minha conta: qualquer role autenticada ────────────────────
-                        // DEVE vir ANTES de /emprestimo/** — endpoint: /emprestimo/minha-conta/{email}
-                        // hasAnyRole adiciona ROLE_ internamente → "ALUNO" vira "ROLE_ALUNO"
-                        .requestMatchers(HttpMethod.GET, "/emprestimo/minha-conta/**")
-                        .hasAnyRole("ALUNO", "FUNCIONARIO", "ADMIN")
+                        // ── Livro: GET público ─────────────────────────────────────────
+                        .requestMatchers(HttpMethod.GET, "/livro/**").permitAll()
 
-                        // ── Solicitações: POST — aluno solicita renovação ──────────────
-                        // endpoint: POST /solicitacoes-renovacao/{email}
-                        .requestMatchers(HttpMethod.POST, "/solicitacoes-renovacao/**")
-                        .hasAnyRole("ALUNO", "FUNCIONARIO", "ADMIN")
+                        // ── Autor / Gênero / Catalogação: GET público, escrita só ADMIN ──
+                        // GET público para que o autocomplete funcione sem login
+                        .requestMatchers(HttpMethod.GET, "/autor/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/genero/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/catalogacao/**").permitAll()
 
-                        // ── Solicitações: GET e PUT — funcionário gerencia ─────────────
-                        .requestMatchers(HttpMethod.GET, "/solicitacoes-renovacao/**")
-                        .hasAnyRole("FUNCIONARIO", "ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/solicitacoes-renovacao/**")
-                        .hasAnyRole("FUNCIONARIO", "ADMIN")
+                        // POST/PUT/DELETE dessas entidades só para ADMIN
+                        .requestMatchers(HttpMethod.POST,   "/autor/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT,    "/autor/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/autor/**").hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.POST,   "/genero/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT,    "/genero/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/genero/**").hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.POST,   "/catalogacao/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT,    "/catalogacao/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/catalogacao/**").hasRole("ADMIN")
 
                         // ── Livro: escrita só para ADMIN ──────────────────────────────
                         .requestMatchers(HttpMethod.POST,   "/livro/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT,    "/livro/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/livro/**").hasRole("ADMIN")
+
+                        // ── Minha conta: qualquer role autenticada ────────────────────
+                        // DEVE vir ANTES de /emprestimo/**
+                        .requestMatchers(HttpMethod.GET, "/emprestimo/minha-conta/**")
+                        .hasAnyRole("ALUNO", "FUNCIONARIO", "ADMIN")
+
+                        // ── Solicitações: POST — aluno solicita renovação ─────────────
+                        .requestMatchers(HttpMethod.POST, "/solicitacoes-renovacao/**")
+                        .hasAnyRole("ALUNO", "FUNCIONARIO", "ADMIN")
+
+                        // ── Solicitações: GET e PUT — funcionário gerencia ────────────
+                        .requestMatchers(HttpMethod.GET, "/solicitacoes-renovacao/**")
+                        .hasAnyRole("FUNCIONARIO", "ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/solicitacoes-renovacao/**")
+                        .hasAnyRole("FUNCIONARIO", "ADMIN")
 
                         // ── Reservas: qualquer autenticado ────────────────────────────
                         .requestMatchers("/reserva/**")
