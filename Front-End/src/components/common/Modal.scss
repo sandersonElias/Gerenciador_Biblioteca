@@ -1,56 +1,47 @@
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  inset: 0;
+  background: rgba(15, 31, 61, 0.45);
   backdrop-filter: blur(4px);
   z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 1rem;
-  animation: fadeIn 0.2s ease;
+  animation: modal-fade-in 200ms ease;
 }
 
 .modal {
-  background-color: white;
-  border-radius: var(--border-radius-lg);
-  box-shadow: var(--shadow-xl);
+  background: white;
+  border-radius: var(--border-radius-xl);
+  box-shadow: 0 20px 60px rgba(15, 31, 61, 0.2);
   max-height: 90vh;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  animation: slideUp 0.3s ease;
-  
-  &--sm {
-    width: 100%;
-    max-width: 400px;
-  }
-  
-  &--md {
-    width: 100%;
-    max-width: 600px;
-  }
-  
-  &--lg {
-    width: 100%;
-    max-width: 900px;
-  }
+  animation: modal-slide-up 280ms cubic-bezier(0.34, 1.1, 0.64, 1);
+  border: 1px solid rgba(30, 111, 191, 0.08);
+
+  &--sm  { width: 100%; max-width: 400px; }
+  &--md  { width: 100%; max-width: 560px; }
+  &--lg  { width: 100%; max-width: 860px; }
 }
 
+// ── Cabeçalho ──────────────────────────────────────────────────────────────────
 .modal-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid #e2e8f0;
-  
+  border-bottom: 1px solid rgba(30, 111, 191, 0.08);
+  flex-shrink: 0;
+
   h3 {
     margin: 0;
-    font-size: 1.25rem;
+    font-size: 1.1rem;
+    font-weight: 700;
     color: var(--color-text-primary);
+    letter-spacing: -0.01em;
   }
 }
 
@@ -60,49 +51,55 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--border-radius-md);
-  font-size: 1.5rem;
-  color: var(--color-text-muted);
-  transition: all var(--transition-fast);
-  background: none;
+  border-radius: 50%;
+  background: var(--color-background, #F0F4F8);
   border: none;
   cursor: pointer;
-  
+  color: var(--color-text-muted);
+  transition: background 150ms ease, color 150ms ease;
+  flex-shrink: 0;
+
   &:hover {
-    background-color: #f8f9fa;
-    color: var(--color-text-primary);
+    background: rgba(220, 38, 38, 0.1);
+    color: var(--color-error, #DC2626);
   }
 }
 
+// ── Corpo ──────────────────────────────────────────────────────────────────────
 .modal-body {
   padding: 1.5rem;
   overflow-y: auto;
+  flex: 1;
+  font-size: 0.92rem;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+
+  strong {
+    display: block;
+    font-size: 1rem;
+    color: var(--color-text-primary);
+    margin: 0.5rem 0;
+  }
 }
 
+// ── Rodapé ─────────────────────────────────────────────────────────────────────
 .modal-footer {
   padding: 1rem 1.5rem;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid rgba(30, 111, 191, 0.08);
   display: flex;
   justify-content: flex-end;
   gap: 0.75rem;
+  flex-shrink: 0;
+  background: var(--color-background, #F0F4F8);
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+// ── Animações ──────────────────────────────────────────────────────────────────
+@keyframes modal-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
-@keyframes slideUp {
-  from {
-    transform: translateY(20px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
+@keyframes modal-slide-up {
+  from { transform: translateY(24px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
 }

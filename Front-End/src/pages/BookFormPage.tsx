@@ -1,11 +1,10 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { debounce } from '../utils/debounce'
+import { debounce } from '../utils/debounce';
 import { Livro, LivroRequest, AutorResponse, GeneroResponse, CatalogacaoResponse } from '../types';
 import { livroApi, autorApi, generoApi, catalogacaoApi } from '../services/api';
 import { useToast } from '../context/ToastContext';
 import { useLoading } from '../context/LoadingContext';
-import Input from '../components/common/Input';
 import Button from '../components/common/Button';
 import './BookFormPage.scss';
 
@@ -14,29 +13,18 @@ const BookFormPage: React.FC = () => {
   const navigate = useNavigate();
   const isEditing = !!id;
 
-  // Form visual fields (texto)
   const [formData, setFormData] = useState({
-    titulo: '',
-    editora: '',
-    totalExemplares: 1,
-    quantidadeDisponivel: 1,
-    cdd: '',
-    localizacao: '',
-    descricao: '',
-    urlImg: '',
-    autor: '',
-    genero: '',
-    catalogacao: '',
+    titulo: '', editora: '', totalExemplares: 1, quantidadeDisponivel: 1,
+    cdd: '', localizacao: '', descricao: '', urlImg: '',
+    autor: '', genero: '', catalogacao: '',
   });
 
-  // IDs reais que serão enviados no payload
-  const [autorId, setAutorId] = useState<number | null>(null);
-  const [generoId, setGeneroId] = useState<number | null>(null);
+  const [autorId, setAutorId]           = useState<number | null>(null);
+  const [generoId, setGeneroId]         = useState<number | null>(null);
   const [catalogacaoId, setCatalogacaoId] = useState<number | null>(null);
 
-  // Sugestões
-  const [autorSuggestions, setAutorSuggestions] = useState<AutorResponse[]>([]);
-  const [generoSuggestions, setGeneroSuggestions] = useState<GeneroResponse[]>([]);
+  const [autorSuggestions, setAutorSuggestions]           = useState<AutorResponse[]>([]);
+  const [generoSuggestions, setGeneroSuggestions]         = useState<GeneroResponse[]>([]);
   const [catalogacaoSuggestions, setCatalogacaoSuggestions] = useState<CatalogacaoResponse[]>([]);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -44,202 +32,122 @@ const BookFormPage: React.FC = () => {
   const { withLoading } = useLoading();
 
   useEffect(() => {
-    if (isEditing && id) {
-      loadBook(parseInt(id, 10));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (isEditing && id) loadBook(parseInt(id, 10));
+    // eslint-disable-next-line
   }, [id]);
 
   const loadBook = async (bookId: number) => {
     try {
       const book: Livro = await withLoading(livroApi.getById(bookId));
       setFormData({
-        titulo: book.titulo,
-        editora: book.editora || '',
-        totalExemplares: book.totalExemplares,
-        quantidadeDisponivel: book.quantidadeDisponivel,
-        cdd: book.cdd || '',
-        localizacao: book.localizacao || '',
-        descricao: book.descricao || '',
-        urlImg: book.urlImg || '',
+        titulo: book.titulo, editora: book.editora || '',
+        totalExemplares: book.totalExemplares, quantidadeDisponivel: book.quantidadeDisponivel,
+        cdd: book.cdd || '', localizacao: book.localizacao || '',
+        descricao: book.descricao || '', urlImg: book.urlImg || '',
         autor: (book.autor as any)?.autor || '',
         genero: (book.genero as any)?.genero || '',
         catalogacao: (book.catalogacao as any)?.catalogacao || '',
       });
-
-      // tenta extrair ids se o backend retornar
-      const aId = (book.autor as any)?.id ?? null;
-      const gId = (book.genero as any)?.id ?? null;
-      const cId = (book.catalogacao as any)?.id ?? null;
-      setAutorId(aId);
-      setGeneroId(gId);
-      setCatalogacaoId(cId);
-    } catch (error) {
+      setAutorId((book.autor as any)?.id ?? null);
+      setGeneroId((book.genero as any)?.id ?? null);
+      setCatalogacaoId((book.catalogacao as any)?.id ?? null);
+    } catch {
       showToast('Erro ao carregar livro', 'error');
       navigate('/admin');
     }
   };
 
   const validate = () => {
-    const newErrors: Record<string, string> = {};
-    if (!formData.titulo.trim()) newErrors.titulo = 'Título é obrigatório';
-    if (!formData.autor.trim()) newErrors.autor = 'Autor é obrigatório';
-    if (!formData.genero.trim()) newErrors.genero = 'Gênero é obrigatório';
-    if (!formData.catalogacao.trim()) newErrors.catalogacao = 'Catalogação é obrigatória';
-    if (formData.totalExemplares < 1) newErrors.totalExemplares = 'Deve ter pelo menos 1 exemplar';
-    if (formData.quantidadeDisponivel < 0) newErrors.quantidadeDisponivel = 'Quantidade não pode ser negativa';
-    if (formData.quantidadeDisponivel > formData.totalExemplares) {
-      newErrors.quantidadeDisponivel = 'Disponível não pode ser maior que total';
-    }
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    const e: Record<string, string> = {};
+    if (!formData.titulo.trim())      e.titulo      = 'Título é obrigatório';
+    if (!formData.autor.trim())       e.autor       = 'Autor é obrigatório';
+    if (!formData.genero.trim())      e.genero      = 'Gênero é obrigatório';
+    if (!formData.catalogacao.trim()) e.catalogacao = 'Catalogação é obrigatória';
+    if (formData.totalExemplares < 1) e.totalExemplares = 'Mínimo de 1 exemplar';
+    if (formData.quantidadeDisponivel < 0) e.quantidadeDisponivel = 'Não pode ser negativo';
+    if (formData.quantidadeDisponivel > formData.totalExemplares)
+      e.quantidadeDisponivel = 'Não pode ser maior que o total';
+    setErrors(e);
+    return Object.keys(e).length === 0;
   };
 
-  // ---------- Suggestions helpers (debounced) ----------
-  const fetchAutorSuggestions = async (q: string) => {
+  // Suggestions
+  const fetchSuggestions = async (type: 'autor' | 'genero' | 'catalogacao', q: string) => {
     if (!q.trim()) {
-      setAutorSuggestions([]);
+      if (type === 'autor') setAutorSuggestions([]);
+      if (type === 'genero') setGeneroSuggestions([]);
+      if (type === 'catalogacao') setCatalogacaoSuggestions([]);
       return;
     }
     try {
-      const res = await autorApi.getByAutor(q);
-      // seu endpoint pode retornar um único objeto ou lista; normalize
-      if (Array.isArray(res)) setAutorSuggestions(res);
-      else setAutorSuggestions([res]);
+      if (type === 'autor') {
+        const r = await autorApi.getByAutor(q);
+        setAutorSuggestions(Array.isArray(r) ? r : [r]);
+      }
+      if (type === 'genero') {
+        const r = await generoApi.getByGenero(q);
+        setGeneroSuggestions(Array.isArray(r) ? r : [r]);
+      }
+      if (type === 'catalogacao') {
+        const r = await catalogacaoApi.getByCatalogacao(q);
+        setCatalogacaoSuggestions(Array.isArray(r) ? r : [r]);
+      }
     } catch {
-      setAutorSuggestions([]);
+      if (type === 'autor') setAutorSuggestions([]);
+      if (type === 'genero') setGeneroSuggestions([]);
+      if (type === 'catalogacao') setCatalogacaoSuggestions([]);
     }
   };
 
-  const fetchGeneroSuggestions = async (q: string) => {
-    if (!q.trim()) {
-      setGeneroSuggestions([]);
-      return;
-    }
-    try {
-      const res = await generoApi.getByGenero(q);
-      if (Array.isArray(res)) setGeneroSuggestions(res);
-      else setGeneroSuggestions([res]);
-    } catch {
-      setGeneroSuggestions([]);
-    }
-  };
+  const debouncedAutor       = useMemo(() => debounce((q: string) => fetchSuggestions('autor', q), 300), []);
+  const debouncedGenero      = useMemo(() => debounce((q: string) => fetchSuggestions('genero', q), 300), []);
+  const debouncedCatalogacao = useMemo(() => debounce((q: string) => fetchSuggestions('catalogacao', q), 300), []);
 
-  const fetchCatalogacaoSuggestions = async (q: string) => {
-    if (!q.trim()) {
-      setCatalogacaoSuggestions([]);
-      return;
-    }
-    try {
-      const res = await catalogacaoApi.getByCatalogacao(q);
-      if (Array.isArray(res)) setCatalogacaoSuggestions(res);
-      else setCatalogacaoSuggestions([res]);
-    } catch {
-      setCatalogacaoSuggestions([]);
-    }
-  };
-
-  const debouncedAutor = useMemo(() => debounce(fetchAutorSuggestions, 300), []);
-  const debouncedGenero = useMemo(() => debounce(fetchGeneroSuggestions, 300), []);
-  const debouncedCatalogacao = useMemo(() => debounce(fetchCatalogacaoSuggestions, 300), []);
-
-  // ---------- handle typing and selection ----------
-  const handleChangeField = (field: string, value: any) => {
+  const changeField = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) setErrors(prev => ({ ...prev, [field]: '' }));
   };
 
   const handleTyping = (field: 'autor' | 'genero' | 'catalogacao', value: string) => {
-    handleChangeField(field, value);
-    // reset id quando o texto muda
-    if (field === 'autor') setAutorId(null);
-    if (field === 'genero') setGeneroId(null);
-    if (field === 'catalogacao') setCatalogacaoId(null);
-
-    // buscar sugestões
-    if (field === 'autor') debouncedAutor(value);
-    if (field === 'genero') debouncedGenero(value);
-    if (field === 'catalogacao') debouncedCatalogacao(value);
+    changeField(field, value);
+    if (field === 'autor')       { setAutorId(null);       debouncedAutor(value); }
+    if (field === 'genero')      { setGeneroId(null);      debouncedGenero(value); }
+    if (field === 'catalogacao') { setCatalogacaoId(null); debouncedCatalogacao(value); }
   };
 
-  const handleSelectSuggestion = (field: 'autor' | 'genero' | 'catalogacao', item: any) => {
-    if (field === 'autor') {
-      setAutorId(item.id);
-      handleChangeField('autor', item.autor);
-      setAutorSuggestions([]);
-    }
-    if (field === 'genero') {
-      setGeneroId(item.id);
-      handleChangeField('genero', item.genero);
-      setGeneroSuggestions([]);
-    }
-    if (field === 'catalogacao') {
-      setCatalogacaoId(item.id);
-      handleChangeField('catalogacao', item.catalogacao);
-      setCatalogacaoSuggestions([]);
-    }
+  const selectSuggestion = (field: 'autor' | 'genero' | 'catalogacao', item: any) => {
+    if (field === 'autor')       { setAutorId(item.id);       changeField('autor', item.autor);             setAutorSuggestions([]); }
+    if (field === 'genero')      { setGeneroId(item.id);      changeField('genero', item.genero);           setGeneroSuggestions([]); }
+    if (field === 'catalogacao') { setCatalogacaoId(item.id); changeField('catalogacao', item.catalogacao); setCatalogacaoSuggestions([]); }
   };
 
-  // ---------- ensureEntity: busca por nome e cria se necessário ----------
-  const ensureEntity = async (type: 'autor' | 'genero' | 'catalogacao', name: string) => {
-    const trimmed = name.trim();
-    if (!trimmed) throw new Error(`${type} vazio`);
+  const ensureEntity = async (type: 'autor' | 'genero' | 'catalogacao', name: string): Promise<number> => {
+    const t = name.trim();
     try {
-      if (type === 'autor') {
-        const found = await autorApi.getByAutor(trimmed);
-        if (found && (found as any).id) return (found as any).id;
-      }
-      if (type === 'genero') {
-        const found = await generoApi.getByGenero(trimmed);
-        if (found && (found as any).id) return (found as any).id;
-      }
-      if (type === 'catalogacao') {
-        const found = await catalogacaoApi.getByCatalogacao(trimmed);
-        if (found && (found as any).id) return (found as any).id;
-      }
-    } catch {
-      // se a busca falhar, seguimos para criação
-    }
-
-    // criar novo
-    if (type === 'autor') {
-      const created = await autorApi.create({ autor: trimmed });
-      return created.id;
-    }
-    if (type === 'genero') {
-      const created = await generoApi.create({ genero: trimmed });
-      return created.id;
-    }
-    if (type === 'catalogacao') {
-      const created = await catalogacaoApi.create({ catalogacao: trimmed });
-      return created.id;
-    }
-    throw new Error('Tipo inválido');
+      if (type === 'autor')       { const f = await autorApi.getByAutor(t);             if ((f as any)?.id) return (f as any).id; }
+      if (type === 'genero')      { const f = await generoApi.getByGenero(t);           if ((f as any)?.id) return (f as any).id; }
+      if (type === 'catalogacao') { const f = await catalogacaoApi.getByCatalogacao(t); if ((f as any)?.id) return (f as any).id; }
+    } catch {}
+    if (type === 'autor')       return (await autorApi.create({ autor: t })).id;
+    if (type === 'genero')      return (await generoApi.create({ genero: t })).id;
+    return (await catalogacaoApi.create({ catalogacao: t })).id;
   };
 
-  // ---------- submit ----------
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (ev: React.FormEvent) => {
+    ev.preventDefault();
     if (!validate()) return;
-
     try {
-      // garantir ids: se já selecionado usa, senão cria/busca
       const aId = autorId ?? await ensureEntity('autor', formData.autor);
       const gId = generoId ?? await ensureEntity('genero', formData.genero);
       const cId = catalogacaoId ?? await ensureEntity('catalogacao', formData.catalogacao);
 
       const payload: LivroRequest = {
-        titulo: formData.titulo,
-        editora: formData.editora || '',
+        titulo: formData.titulo, editora: formData.editora,
         totalExemplares: Number(formData.totalExemplares),
         quantidadeDisponivel: Number(formData.quantidadeDisponivel),
-        cdd: formData.cdd || '',
-        localizacao: formData.localizacao || '',
-        descricao: formData.descricao || '',
-        urlImg: formData.urlImg || '',
-        autorId: aId,
-        generoId: gId,
-        catalogacaoId: cId,
+        cdd: formData.cdd, localizacao: formData.localizacao,
+        descricao: formData.descricao, urlImg: formData.urlImg,
+        autorId: aId, generoId: gId, catalogacaoId: cId,
       };
 
       if (isEditing && id) {
@@ -256,166 +164,180 @@ const BookFormPage: React.FC = () => {
   };
 
   return (
-    <div className="book-form-page">
+    <div className="form-page">
       <div className="container">
-        <div className="form-header">
-          <h1>{isEditing ? 'Editar Livro' : 'Cadastrar Novo Livro'}</h1>
-          <p>Preencha os dados do livro abaixo</p>
+
+        <div className="form-page__header">
+          <button className="btn-back" onClick={() => navigate('/admin')}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="15 18 9 12 15 6"/>
+            </svg>
+            Voltar
+          </button>
+          <div>
+            <h1>{isEditing ? 'Editar Livro' : 'Cadastrar Novo Livro'}</h1>
+            <p>Preencha os dados do livro abaixo</p>
+          </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="book-form" autoComplete="off">
-          <div className="form-grid">
+        <form onSubmit={handleSubmit} className="form-card" autoComplete="off" noValidate>
+          <div className="form-grid-2">
+
+            {/* ── Coluna esquerda: Informações básicas ── */}
             <div className="form-section">
-              <h3>Informações Básicas</h3>
+              <div className="form-section__title">
+                <div className="form-section__icon form-section__icon--blue">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                  </svg>
+                </div>
+                Informações Básicas
+              </div>
 
-              <Input
-                label="Título *"
-                value={formData.titulo}
-                onChange={(e) => handleChangeField('titulo', e.target.value)}
-                error={errors.titulo}
-                placeholder="Digite o título do livro"
-              />
+              <div className="field-group">
+                <div className={`field ${errors.titulo ? 'field--error' : ''}`}>
+                  <label className="field__label">Título *</label>
+                  <input className="field__input" value={formData.titulo}
+                    onChange={e => changeField('titulo', e.target.value)} placeholder="Título do livro" />
+                  {errors.titulo && <span className="field__error">{errors.titulo}</span>}
+                </div>
 
-              {/* AUTOCOMPLETE AUTOR */}
-              <div className="autocomplete">
-                <Input
-                  label="Autor *"
-                  value={formData.autor}
-                  onChange={(e) => handleTyping('autor', e.target.value)}
-                  error={errors.autor}
-                  placeholder="Nome do autor"
-                />
-                {autorSuggestions.length > 0 && (
-                  <ul className="suggestions-list">
-                    {autorSuggestions.map(s => (
-                      <li key={s.id} onClick={() => handleSelectSuggestion('autor', s)}>
-                        {s.autor}
-                      </li>
-                    ))}
-                  </ul>
+                <div className={`field autocomplete ${errors.autor ? 'field--error' : ''}`}>
+                  <label className="field__label">Autor *</label>
+                  <input className="field__input" value={formData.autor}
+                    onChange={e => handleTyping('autor', e.target.value)} placeholder="Nome do autor" />
+                  {errors.autor && <span className="field__error">{errors.autor}</span>}
+                  {autorSuggestions.length > 0 && (
+                    <ul className="suggestions-list">
+                      {autorSuggestions.map(s => <li key={s.id} onClick={() => selectSuggestion('autor', s)}>{s.autor}</li>)}
+                    </ul>
+                  )}
+                </div>
+
+                <div className="field">
+                  <label className="field__label">Editora</label>
+                  <input className="field__input" value={formData.editora}
+                    onChange={e => changeField('editora', e.target.value)} placeholder="Nome da editora" />
+                </div>
+
+                <div className="field-row">
+                  <div className={`field autocomplete ${errors.genero ? 'field--error' : ''}`}>
+                    <label className="field__label">Gênero *</label>
+                    <input className="field__input" value={formData.genero}
+                      onChange={e => handleTyping('genero', e.target.value)} placeholder="Ex: Ficção" />
+                    {errors.genero && <span className="field__error">{errors.genero}</span>}
+                    {generoSuggestions.length > 0 && (
+                      <ul className="suggestions-list">
+                        {generoSuggestions.map(s => <li key={s.id} onClick={() => selectSuggestion('genero', s)}>{s.genero}</li>)}
+                      </ul>
+                    )}
+                  </div>
+
+                  <div className={`field autocomplete ${errors.catalogacao ? 'field--error' : ''}`}>
+                    <label className="field__label">Catalogação *</label>
+                    <input className="field__input" value={formData.catalogacao}
+                      onChange={e => handleTyping('catalogacao', e.target.value)} placeholder="Ex: 800" />
+                    {errors.catalogacao && <span className="field__error">{errors.catalogacao}</span>}
+                    {catalogacaoSuggestions.length > 0 && (
+                      <ul className="suggestions-list">
+                        {catalogacaoSuggestions.map(s => <li key={s.id} onClick={() => selectSuggestion('catalogacao', s)}>{s.catalogacao}</li>)}
+                      </ul>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* ── Coluna direita: Detalhes físicos ── */}
+            <div className="form-section">
+              <div className="form-section__title">
+                <div className="form-section__icon form-section__icon--teal">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                  </svg>
+                </div>
+                Detalhes Físicos
+              </div>
+
+              <div className="field-group">
+                <div className="field-row">
+                  <div className={`field ${errors.totalExemplares ? 'field--error' : ''}`}>
+                    <label className="field__label">Total de Exemplares *</label>
+                    <input className="field__input" type="number" min={1}
+                      value={formData.totalExemplares}
+                      onChange={e => changeField('totalExemplares', parseInt(e.target.value, 10) || 0)} />
+                    {errors.totalExemplares && <span className="field__error">{errors.totalExemplares}</span>}
+                  </div>
+
+                  <div className={`field ${errors.quantidadeDisponivel ? 'field--error' : ''}`}>
+                    <label className="field__label">Disponíveis *</label>
+                    <input className="field__input" type="number" min={0}
+                      value={formData.quantidadeDisponivel}
+                      onChange={e => changeField('quantidadeDisponivel', parseInt(e.target.value, 10) || 0)} />
+                    {errors.quantidadeDisponivel && <span className="field__error">{errors.quantidadeDisponivel}</span>}
+                  </div>
+                </div>
+
+                <div className="field-row">
+                  <div className="field">
+                    <label className="field__label">CDD</label>
+                    <input className="field__input" value={formData.cdd}
+                      onChange={e => changeField('cdd', e.target.value)} placeholder="Código de classificação" />
+                  </div>
+
+                  <div className="field">
+                    <label className="field__label">Localização</label>
+                    <input className="field__input" value={formData.localizacao}
+                      onChange={e => changeField('localizacao', e.target.value)} placeholder="Prateleira/seção" />
+                  </div>
+                </div>
+
+                <div className="field">
+                  <label className="field__label">URL da Capa</label>
+                  <input className="field__input" value={formData.urlImg}
+                    onChange={e => changeField('urlImg', e.target.value)}
+                    placeholder="https://exemplo.com/capa.jpg" />
+                </div>
+
+                {formData.urlImg && (
+                  <div className="image-preview">
+                    <div className="image-preview__cover">
+                      <img src={formData.urlImg} alt="Preview da capa"
+                        onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                    </div>
+                    <p className="image-preview__info">Preview da capa</p>
+                  </div>
                 )}
               </div>
-
-              <Input
-                label="Editora"
-                value={formData.editora}
-                onChange={(e) => handleChangeField('editora', e.target.value)}
-                placeholder="Nome da editora"
-              />
-
-              <div className="form-row">
-                {/* AUTOCOMPLETE GÊNERO */}
-                <div className="autocomplete">
-                  <Input
-                    label="Gênero *"
-                    value={formData.genero}
-                    onChange={(e) => handleTyping('genero', e.target.value)}
-                    error={errors.genero}
-                    placeholder="Ex: Ficção, Romance"
-                  />
-                  {generoSuggestions.length > 0 && (
-                    <ul className="suggestions-list">
-                      {generoSuggestions.map(s => (
-                        <li key={s.id} onClick={() => handleSelectSuggestion('genero', s)}>
-                          {s.genero}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-
-                {/* AUTOCOMPLETE CATALOGAÇÃO */}
-                <div className="autocomplete">
-                  <Input
-                    label="Catalogação *"
-                    value={formData.catalogacao}
-                    onChange={(e) => handleTyping('catalogacao', e.target.value)}
-                    error={errors.catalogacao}
-                    placeholder="Ex: 800 - Literatura"
-                  />
-                  {catalogacaoSuggestions.length > 0 && (
-                    <ul className="suggestions-list">
-                      {catalogacaoSuggestions.map(s => (
-                        <li key={s.id} onClick={() => handleSelectSuggestion('catalogacao', s)}>
-                          {s.catalogacao}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              </div>
             </div>
 
-            <div className="form-section">
-              <h3>Detalhes Físicos</h3>
-
-              <div className="form-row">
-                <Input
-                  label="Total de Exemplares *"
-                  type="number"
-                  value={formData.totalExemplares}
-                  onChange={(e) => handleChangeField('totalExemplares', parseInt(e.target.value, 10) || 0)}
-                  error={errors.totalExemplares}
-                  min={1}
-                />
-
-                <Input
-                  label="Disponíveis *"
-                  type="number"
-                  value={formData.quantidadeDisponivel}
-                  onChange={(e) => handleChangeField('quantidadeDisponivel', parseInt(e.target.value, 10) || 0)}
-                  error={errors.quantidadeDisponivel}
-                  min={0}
-                />
-              </div>
-
-              <div className="form-row">
-                <Input
-                  label="CDD"
-                  value={formData.cdd}
-                  onChange={(e) => handleChangeField('cdd', e.target.value)}
-                  placeholder="Código de classificação"
-                />
-
-                <Input
-                  label="Localização"
-                  value={formData.localizacao}
-                  onChange={(e) => handleChangeField('localizacao', e.target.value)}
-                  placeholder="Prateleira/seção"
-                />
-              </div>
-
-              <Input
-                label="URL da Imagem da Capa"
-                value={formData.urlImg}
-                onChange={(e) => handleChangeField('urlImg', e.target.value)}
-                placeholder="https://exemplo.com/imagem.jpg"
-              />
-
-              {formData.urlImg && (
-                <div className="image-preview">
-                  <img src={formData.urlImg} alt="Preview da capa" />
-                </div>
-              )}
-            </div>
-
+            {/* ── Descrição (full width) ── */}
             <div className="form-section full-width">
-              <h3>Descrição</h3>
-              <textarea
-                value={formData.descricao}
-                onChange={(e) => handleChangeField('descricao', e.target.value)}
-                placeholder="Descrição ou sinopse do livro..."
-                rows={4}
-              />
+              <div className="form-section__title">
+                <div className="form-section__icon form-section__icon--amber">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="17" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/>
+                    <line x1="21" y1="14" x2="3" y2="14"/><line x1="17" y1="18" x2="3" y2="18"/>
+                  </svg>
+                </div>
+                Descrição / Sinopse
+              </div>
+
+              <div className="field">
+                <textarea
+                  className="field__textarea"
+                  value={formData.descricao}
+                  onChange={e => changeField('descricao', e.target.value)}
+                  placeholder="Descrição ou sinopse do livro..."
+                  rows={4}
+                />
+              </div>
             </div>
+
           </div>
 
           <div className="form-actions">
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => navigate('/admin')}
-            >
+            <Button type="button" variant="ghost" onClick={() => navigate('/admin')}>
               Cancelar
             </Button>
             <Button type="submit" variant="primary" size="lg">

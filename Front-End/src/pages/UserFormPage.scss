@@ -1,79 +1,396 @@
-.user-form-page {
-  padding: 2rem 0;
+// ── Compartilhado: UserFormPage.scss e BookFormPage.scss usam as mesmas classes ──
+
+// ── Page wrapper ──────────────────────────────────────────────────────────────
+.form-page {
+  padding: 2.5rem 0 4rem;
   min-height: 60vh;
-}
 
-.form-header {
-  margin-bottom: 2rem;
-  
-  h1 {
-    font-size: 1.875rem;
-    color: var(--color-text-primary);
-    margin-bottom: 0.5rem;
+  &__header {
+    margin-bottom: 2rem;
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: var(--color-text-primary);
+      margin-bottom: 0.3rem;
+      letter-spacing: -0.01em;
+    }
+
+    p {
+      font-size: 0.88rem;
+      color: var(--color-text-muted);
+    }
   }
-  
-  p {
-    color: var(--color-text-secondary);
+}
+
+// ── Botão voltar ───────────────────────────────────────────────────────────────
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.9rem 0.4rem 0.6rem;
+  background: white;
+  border: 1px solid rgba(30, 111, 191, 0.15);
+  border-radius: var(--border-radius-md);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  margin-bottom: 1.25rem;
+  transition: background 150ms ease, color 150ms ease;
+
+  &:hover {
+    background: var(--color-background);
+    color: var(--color-blue, #1E6FBF);
   }
 }
 
-.user-form {
-  background-color: white;
-  border-radius: var(--border-radius-lg);
-  padding: 2rem;
-  box-shadow: var(--shadow-sm);
-  max-width: 600px;
+// ── Card do formulário ─────────────────────────────────────────────────────────
+.form-card {
+  background: white;
+  border-radius: var(--border-radius-xl);
+  border: 1px solid rgba(30, 111, 191, 0.07);
+  box-shadow: 0 2px 8px rgba(15, 31, 61, 0.07);
+  overflow: hidden;
 }
 
+// ── Seção interna ──────────────────────────────────────────────────────────────
 .form-section {
-  margin-bottom: 2rem;
-  
-  h3 {
-    font-size: 1.125rem;
-    color: var(--color-text-primary);
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid var(--color-light-cyan);
+  padding: 1.75rem 2rem;
+  border-bottom: 1px solid rgba(30, 111, 191, 0.07);
+
+  &:last-of-type { border-bottom: none; }
+
+  &__title {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--color-text-muted);
+    margin-bottom: 1.25rem;
+  }
+
+  &__icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    &--blue  { background: rgba(30,111,191,0.1);  color: #1E6FBF; }
+    &--amber { background: rgba(245,158,11,0.1);  color: #D97706; }
+    &--green { background: rgba(16,185,129,0.1);  color: #10B981; }
+    &--teal  { background: rgba(74,159,212,0.1);  color: #4A9FD4; }
   }
 }
 
-.select-group {
+// ── Grid de campos ─────────────────────────────────────────────────────────────
+.field-group {
   display: flex;
   flex-direction: column;
-  gap: 0.375rem;
-  
-  label {
-    font-size: 0.875rem;
-    font-weight: 500;
+  gap: 1rem;
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+
+  @media (max-width: 560px) { grid-template-columns: 1fr; }
+}
+
+// ── Campo ──────────────────────────────────────────────────────────────────────
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+
+  &__label {
+    font-size: 0.82rem;
+    font-weight: 600;
     color: var(--color-text-primary);
   }
-}
 
-.form-select {
-  padding: 0.625rem 0.875rem;
-  border: 2px solid #e2e8f0;
-  border-radius: var(--border-radius-md);
-  font-size: 1rem;
-  background-color: white;
-  cursor: pointer;
-  
-  &:focus {
+  &__input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  &__input {
+    width: 100%;
+    padding: 0.7rem 0.95rem;
+    border: 1.5px solid #d1d9e0;
+    border-radius: var(--border-radius-md);
+    font-size: 0.92rem;
+    font-family: inherit;
+    color: var(--color-text-primary);
+    background: white;
+    transition: border-color 180ms ease, box-shadow 180ms ease;
     outline: none;
-    border-color: var(--color-secondary);
-    box-shadow: 0 0 0 3px rgba(66, 158, 189, 0.1);
+    appearance: none;
+    -webkit-appearance: none;
+
+    &::placeholder { color: #b0bec5; }
+
+    &:focus {
+      border-color: var(--color-blue, #1E6FBF);
+      box-shadow: 0 0 0 3px rgba(30, 111, 191, 0.12);
+    }
+
+    // quando está dentro de input-wrap, dá espaço pro olhinho
+    .field__input-wrap & { padding-right: 2.5rem; }
+  }
+
+  &__eye {
+    position: absolute;
+    right: 0.75rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--color-text-muted);
+    display: flex;
+    padding: 0;
+    transition: color 150ms ease;
+
+    &:hover { color: var(--color-blue, #1E6FBF); }
+  }
+
+  &__error {
+    font-size: 0.75rem;
+    color: var(--color-error, #dc2626);
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+
+    &::before {
+      content: '!';
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      background: var(--color-error, #dc2626);
+      color: white;
+      font-size: 0.6rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+  }
+
+  &--error .field__input {
+    border-color: var(--color-error, #dc2626);
+    &:focus { box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1); }
   }
 }
 
-.select-help {
-  font-size: 0.875rem;
-  color: var(--color-text-muted);
-  margin-top: 0.25rem;
+// ── Select estilizado ──────────────────────────────────────────────────────────
+.field__select {
+  width: 100%;
+  padding: 0.7rem 0.95rem;
+  border: 1.5px solid #d1d9e0;
+  border-radius: var(--border-radius-md);
+  font-size: 0.92rem;
+  font-family: inherit;
+  color: var(--color-text-primary);
+  background: white;
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.9rem center;
+  padding-right: 2.5rem;
+  transition: border-color 180ms ease, box-shadow 180ms ease;
+
+  &:focus {
+    border-color: var(--color-blue, #1E6FBF);
+    box-shadow: 0 0 0 3px rgba(30, 111, 191, 0.12);
+  }
 }
 
+// ── Textarea ───────────────────────────────────────────────────────────────────
+.field__textarea {
+  width: 100%;
+  padding: 0.75rem 0.95rem;
+  border: 1.5px solid #d1d9e0;
+  border-radius: var(--border-radius-md);
+  font-size: 0.92rem;
+  font-family: inherit;
+  color: var(--color-text-primary);
+  background: white;
+  resize: vertical;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  transition: border-color 180ms ease, box-shadow 180ms ease;
+
+  &::placeholder { color: #b0bec5; }
+
+  &:focus {
+    border-color: var(--color-blue, #1E6FBF);
+    box-shadow: 0 0 0 3px rgba(30, 111, 191, 0.12);
+  }
+}
+
+// ── Role cards (UserForm) ──────────────────────────────────────────────────────
+.role-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.role-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.9rem;
+  padding: 1rem 1.1rem;
+  border: 1.5px solid #d1d9e0;
+  border-radius: var(--border-radius-lg);
+  cursor: pointer;
+  transition: border-color 150ms ease, background 150ms ease;
+  background: var(--color-background, #F0F4F8);
+
+  &:hover {
+    border-color: rgba(30, 111, 191, 0.35);
+    background: rgba(30, 111, 191, 0.03);
+  }
+
+  &--selected {
+    border-color: var(--color-blue, #1E6FBF);
+    background: rgba(30, 111, 191, 0.05);
+  }
+
+  &__radio { display: none; }
+
+  &__check {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2px solid #d1d9e0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+    transition: background 150ms ease, border-color 150ms ease;
+
+    .role-card--selected & {
+      background: var(--color-blue, #1E6FBF);
+      border-color: var(--color-blue, #1E6FBF);
+      color: white;
+    }
+  }
+
+  &__label {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin-bottom: 0.15rem;
+  }
+
+  &__desc {
+    font-size: 0.76rem;
+    color: var(--color-text-muted);
+    line-height: 1.5;
+  }
+}
+
+// ── Autocomplete ───────────────────────────────────────────────────────────────
+.autocomplete {
+  position: relative;
+}
+
+.suggestions-list {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1.5px solid rgba(30, 111, 191, 0.2);
+  border-radius: var(--border-radius-md);
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 100;
+  box-shadow: 0 8px 24px rgba(15, 31, 61, 0.12);
+  list-style: none;
+  margin: 0;
+  padding: 0.35rem 0;
+
+  li {
+    padding: 0.55rem 0.95rem;
+    font-size: 0.88rem;
+    cursor: pointer;
+    color: var(--color-text-primary);
+    transition: background 120ms ease;
+
+    &:hover { background: rgba(30, 111, 191, 0.07); }
+  }
+}
+
+// ── Preview de imagem (BookForm) ───────────────────────────────────────────────
+.image-preview {
+  margin-top: 0.85rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
+
+  &__cover {
+    width: 100px;
+    height: 140px;
+    border-radius: var(--border-radius-md);
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(15, 31, 61, 0.15);
+    border: 1px solid rgba(30, 111, 191, 0.1);
+    flex-shrink: 0;
+
+    img { width: 100%; height: 100%; object-fit: cover; }
+  }
+
+  &__info {
+    padding-top: 0.5rem;
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+  }
+}
+
+// ── Ações do formulário ────────────────────────────────────────────────────────
 .form-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 1rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid #e2e8f0;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 1.5rem 2rem;
+  border-top: 1px solid rgba(30, 111, 191, 0.07);
+  background: var(--color-background, #F0F4F8);
+}
+
+// ── Form grid para BookForm (2 colunas) ───────────────────────────────────────
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+
+  @media (max-width: 768px) { grid-template-columns: 1fr; }
+
+  .form-section {
+    border-right: 1px solid rgba(30, 111, 191, 0.07);
+
+    &:nth-child(even) { border-right: none; }
+
+    @media (max-width: 768px) { border-right: none; }
+
+    &.full-width {
+      grid-column: 1 / -1;
+      border-right: none;
+    }
+  }
 }

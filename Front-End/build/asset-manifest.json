@@ -1,20 +1,19 @@
 {
   "files": {
-    "main.css": "/static/css/main.82f011a5.css",
-    "main.js": "/static/js/main.031e8e0f.js",
+    "main.css": "/static/css/main.c239b948.css",
+    "main.js": "/static/js/main.e4185142.js",
     "static/js/845.6fa209cc.chunk.js": "/static/js/845.6fa209cc.chunk.js",
-    "static/media/reservation-img.png": "/static/media/reservation-img.2129bf994b0f72d66102.png",
     "static/media/login-img.png": "/static/media/login-img.8f0913006ea8912eb2a4.png",
     "static/media/home-img.png": "/static/media/home-img.08dc4cd87ec26f4c197b.png",
     "static/media/bookSearch-img-um.png": "/static/media/bookSearch-img-um.598777e9442feaf781c9.png",
     "static/media/logo_monsa.png": "/static/media/logo_monsa.608a576d4c532483465f.png",
     "index.html": "/index.html",
-    "main.82f011a5.css.map": "/static/css/main.82f011a5.css.map",
-    "main.031e8e0f.js.map": "/static/js/main.031e8e0f.js.map",
+    "main.c239b948.css.map": "/static/css/main.c239b948.css.map",
+    "main.e4185142.js.map": "/static/js/main.e4185142.js.map",
     "845.6fa209cc.chunk.js.map": "/static/js/845.6fa209cc.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.82f011a5.css",
-    "static/js/main.031e8e0f.js"
+    "static/css/main.c239b948.css",
+    "static/js/main.e4185142.js"
   ]
 }
