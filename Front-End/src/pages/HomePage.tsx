@@ -137,7 +137,7 @@ const HomePage: React.FC = () => {
               </div>
               <div>
                 <p className="hero-stat__label">Livros no acervo</p>
-                <p className="hero-stat__value">1.248</p>
+                <p className="hero-stat__value">---</p>
               </div>
             </div>
             <div className="hero-stat">
@@ -148,7 +148,7 @@ const HomePage: React.FC = () => {
               </div>
               <div>
                 <p className="hero-stat__label">Empréstimos este mês</p>
-                <p className="hero-stat__value">342</p>
+                <p className="hero-stat__value">---</p>
               </div>
             </div>
             <div className="hero-stat">
@@ -160,7 +160,7 @@ const HomePage: React.FC = () => {
               </div>
               <div>
                 <p className="hero-stat__label">Usuários ativos</p>
-                <p className="hero-stat__value">89</p>
+                <p className="hero-stat__value">---</p>
               </div>
             </div>
           </div>

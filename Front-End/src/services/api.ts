@@ -145,35 +145,41 @@ export const livroApi = {
   },
 };
 
+// ── Autor ─────────────────────────────────────────────────────────────────────
 export const autorApi = {
   create: async (autor: AutorDto): Promise<AutorResponse> => {
     const response = await apiClient.post('/autor', autor);
     return response.data;
   },
-  getByAutor: async (autor: string): Promise<AutorResponse> => {
-    const response = await apiClient.get(`/autor/buscar/${autor}`);
+  // ✅ backend retorna List<AutorResponse> — tipagem corrigida para array
+  getByAutor: async (autor: string): Promise<AutorResponse[]> => {
+    const response = await apiClient.get(`/autor/buscar/${encodeURIComponent(autor)}`);
     return response.data;
   },
 };
 
+// ── Gênero ────────────────────────────────────────────────────────────────────
 export const generoApi = {
   create: async (genero: GeneroDto): Promise<GeneroResponse> => {
     const response = await apiClient.post('/genero', genero);
     return response.data;
   },
-  getByGenero: async (genero: string): Promise<GeneroResponse> => {
-    const response = await apiClient.get(`/genero/buscar/${genero}`);
+  // ✅ backend retorna List<GeneroResponse> — tipagem corrigida para array
+  getByGenero: async (genero: string): Promise<GeneroResponse[]> => {
+    const response = await apiClient.get(`/genero/buscar/${encodeURIComponent(genero)}`);
     return response.data;
   },
 };
 
+// ── Catalogação ───────────────────────────────────────────────────────────────
 export const catalogacaoApi = {
   create: async (catalogacao: CatalogacaoDto): Promise<CatalogacaoResponse> => {
     const response = await apiClient.post('/catalogacao', catalogacao);
     return response.data;
   },
-  getByCatalogacao: async (catalogacao: string): Promise<CatalogacaoResponse> => {
-    const response = await apiClient.get(`/catalogacao/buscar/${catalogacao}`);
+  // ✅ backend retorna List<CatalogacaoResponse> — tipagem corrigida para array
+  getByCatalogacao: async (catalogacao: string): Promise<CatalogacaoResponse[]> => {
+    const response = await apiClient.get(`/catalogacao/buscar/${encodeURIComponent(catalogacao)}`);
     return response.data;
   },
 };
@@ -224,7 +230,7 @@ export const reservaApi = {
     return response.data;
   },
   getReservaEmail: async (email: string): Promise<ReservaResponse[]> => {
-    const response = await apiClient.get(`/reserva/useremail/${email}`);
+    const response = await apiClient.get(`/reserva/useremail/${encodeURIComponent(email)}`);
     return response.data;
   },
   create: async (reserva: ReservaRequest): Promise<ReservaResponse> => {
@@ -241,16 +247,14 @@ export const reservaApi = {
 };
 
 // ── Meus Empréstimos — email obrigatório na URL ───────────────────────────────
-// Padrão idêntico ao /reserva/useremail/{email}
 export const meusEmprestimosApi = {
   getMeusEmprestimos: async (email: string): Promise<MeusEmprestimosResponse> => {
-    const response = await apiClient.get(`/emprestimo/minha-conta/${email}`);
+    const response = await apiClient.get(`/emprestimo/minha-conta/${encodeURIComponent(email)}`);
     return response.data;
   },
 };
 
 // ── Solicitação de Renovação — email obrigatório na URL ───────────────────────
-// Padrão idêntico ao /reserva/useremail/{email}
 export const solicitacaoRenovacaoApi = {
   solicitar: async (emprestimoId: number, email: string): Promise<SolicitacaoRenovacaoResponse> => {
     const response = await apiClient.post(

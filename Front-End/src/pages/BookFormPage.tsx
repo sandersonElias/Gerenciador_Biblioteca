@@ -19,13 +19,13 @@ const BookFormPage: React.FC = () => {
     autor: '', genero: '', catalogacao: '',
   });
 
-  const [autorId, setAutorId]           = useState<number | null>(null);
-  const [generoId, setGeneroId]         = useState<number | null>(null);
+  const [autorId, setAutorId]             = useState<number | null>(null);
+  const [generoId, setGeneroId]           = useState<number | null>(null);
   const [catalogacaoId, setCatalogacaoId] = useState<number | null>(null);
 
-  const [autorSuggestions, setAutorSuggestions]           = useState<AutorResponse[]>([]);
-  const [generoSuggestions, setGeneroSuggestions]         = useState<GeneroResponse[]>([]);
-  const [catalogacaoSuggestions, setCatalogacaoSuggestions] = useState<CatalogacaoResponse[]>([]);
+  const [autorSuggestions, setAutorSuggestions]               = useState<AutorResponse[]>([]);
+  const [generoSuggestions, setGeneroSuggestions]             = useState<GeneroResponse[]>([]);
+  const [catalogacaoSuggestions, setCatalogacaoSuggestions]   = useState<CatalogacaoResponse[]>([]);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const { showToast } = useToast();
@@ -71,30 +71,32 @@ const BookFormPage: React.FC = () => {
     return Object.keys(e).length === 0;
   };
 
-  // Suggestions
+  // ── Autocomplete suggestions ───────────────────────────────────────────────
+
   const fetchSuggestions = async (type: 'autor' | 'genero' | 'catalogacao', q: string) => {
     if (!q.trim()) {
-      if (type === 'autor') setAutorSuggestions([]);
-      if (type === 'genero') setGeneroSuggestions([]);
+      if (type === 'autor')       setAutorSuggestions([]);
+      if (type === 'genero')      setGeneroSuggestions([]);
       if (type === 'catalogacao') setCatalogacaoSuggestions([]);
       return;
     }
     try {
+      // ✅ todas as funções retornam array agora
       if (type === 'autor') {
         const r = await autorApi.getByAutor(q);
-        setAutorSuggestions(Array.isArray(r) ? r : [r]);
+        setAutorSuggestions(Array.isArray(r) ? r : []);
       }
       if (type === 'genero') {
         const r = await generoApi.getByGenero(q);
-        setGeneroSuggestions(Array.isArray(r) ? r : [r]);
+        setGeneroSuggestions(Array.isArray(r) ? r : []);
       }
       if (type === 'catalogacao') {
         const r = await catalogacaoApi.getByCatalogacao(q);
-        setCatalogacaoSuggestions(Array.isArray(r) ? r : [r]);
+        setCatalogacaoSuggestions(Array.isArray(r) ? r : []);
       }
     } catch {
-      if (type === 'autor') setAutorSuggestions([]);
-      if (type === 'genero') setGeneroSuggestions([]);
+      if (type === 'autor')       setAutorSuggestions([]);
+      if (type === 'genero')      setGeneroSuggestions([]);
       if (type === 'catalogacao') setCatalogacaoSuggestions([]);
     }
   };
@@ -121,24 +123,42 @@ const BookFormPage: React.FC = () => {
     if (field === 'catalogacao') { setCatalogacaoId(item.id); changeField('catalogacao', item.catalogacao); setCatalogacaoSuggestions([]); }
   };
 
+  // ── Garante que autor/genero/catalogacao existem no banco ─────────────────
+  // ✅ corrigido: getByAutor retorna array — pega o primeiro item com match exato
   const ensureEntity = async (type: 'autor' | 'genero' | 'catalogacao', name: string): Promise<number> => {
     const t = name.trim();
     try {
-      if (type === 'autor')       { const f = await autorApi.getByAutor(t);             if ((f as any)?.id) return (f as any).id; }
-      if (type === 'genero')      { const f = await generoApi.getByGenero(t);           if ((f as any)?.id) return (f as any).id; }
-      if (type === 'catalogacao') { const f = await catalogacaoApi.getByCatalogacao(t); if ((f as any)?.id) return (f as any).id; }
+      if (type === 'autor') {
+        const list = await autorApi.getByAutor(t);
+        const found = list.find(a => a.autor.toLowerCase() === t.toLowerCase());
+        if (found?.id) return found.id;
+      }
+      if (type === 'genero') {
+        const list = await generoApi.getByGenero(t);
+        const found = list.find(g => g.genero.toLowerCase() === t.toLowerCase());
+        if (found?.id) return found.id;
+      }
+      if (type === 'catalogacao') {
+        const list = await catalogacaoApi.getByCatalogacao(t);
+        const found = list.find(c => c.catalogacao.toLowerCase() === t.toLowerCase());
+        if (found?.id) return found.id;
+      }
     } catch {}
+
+    // Não encontrou — cria novo
     if (type === 'autor')       return (await autorApi.create({ autor: t })).id;
     if (type === 'genero')      return (await generoApi.create({ genero: t })).id;
     return (await catalogacaoApi.create({ catalogacao: t })).id;
   };
 
+  // ── Submit ─────────────────────────────────────────────────────────────────
+
   const handleSubmit = async (ev: React.FormEvent) => {
     ev.preventDefault();
     if (!validate()) return;
     try {
-      const aId = autorId ?? await ensureEntity('autor', formData.autor);
-      const gId = generoId ?? await ensureEntity('genero', formData.genero);
+      const aId = autorId       ?? await ensureEntity('autor', formData.autor);
+      const gId = generoId      ?? await ensureEntity('genero', formData.genero);
       const cId = catalogacaoId ?? await ensureEntity('catalogacao', formData.catalogacao);
 
       const payload: LivroRequest = {
@@ -162,6 +182,8 @@ const BookFormPage: React.FC = () => {
       showToast(err.response?.data?.message || err.message || 'Erro ao salvar livro', 'error');
     }
   };
+
+  // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
     <div className="form-page">

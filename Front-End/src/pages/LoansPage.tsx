@@ -1,9 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { EmprestimoResponse, Livro, StatusEmprestimo, UserResponse } from '../types';
 import { emprestimoApi, userApi, livroApi } from '../services/api';
-import {
-  solicitacaoRenovacaoApi,
-} from '../services/api';
 import { useToast } from '../context/ToastContext';
 import { useLoading } from '../context/LoadingContext';
 import Button from '../components/common/Button';
