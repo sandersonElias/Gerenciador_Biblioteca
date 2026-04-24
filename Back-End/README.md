@@ -93,6 +93,8 @@ Scripts em `src/main/resources/db/migration/`:
 | `V8__create_tb_aluno.sql` | Cria tabela de alunos |
 | `V9__create_tb_emprestimo.sql` | Cria tabela de empréstimos |
 | `V10__create_tb_reserva.sql` | Cria tabela de reservas |
+| `V11__create_tb_solicitacao_renovacao.sql` | Cria tabela de solicitações de renovação |
+| `V12__create_tb_exemplar.sql` | Cria tabela de exemplares |
 
 ## 🌐 Deploy (Railway)
 
@@ -140,19 +142,67 @@ DELETE /livro/{id}            # Deletar livro (ADMIN)
 
 ### Empréstimos
 ```bash
-GET /emprestimo/todos         # Listar todos (FUNCIONARIO+)
-POST /emprestimo              # Criar empréstimo (FUNCIONARIO+)
-PUT /emprestimo/renovar/{id}  # Renovar (FUNCIONARIO+)
-PUT /emprestimo/devolver/{id} # Devolver (FUNCIONARIO+)
+GET  /emprestimo/todos                  # Listar todos (FUNCIONARIO+)
+GET  /emprestimo/id/{id}               # Buscar por ID (FUNCIONARIO+)
+GET  /emprestimo/minha-conta/{email}   # Empréstimos do usuário (ALUNO+)
+GET  /emprestimo/user/{nome}           # Buscar por nome do usuário (FUNCIONARIO+)
+GET  /emprestimo/livro/{titulo}        # Buscar por título do livro (FUNCIONARIO+)
+GET  /emprestimo/livro/renovar/{titulo} # Buscar para renovação por livro (FUNCIONARIO+)
+GET  /emprestimo/user/renovar/{nome}   # Buscar para renovação por usuário (FUNCIONARIO+)
+GET  /emprestimo/status/{status}       # Buscar por status (FUNCIONARIO+)
+GET  /emprestimo/devolucao/{data}      # Devoluções do dia (FUNCIONARIO+)
+POST /emprestimo                       # Criar empréstimo (FUNCIONARIO+)
+PUT  /emprestimo/renovar/{id}          # Renovar (FUNCIONARIO+)
+PUT  /emprestimo/devolver/{id}         # Devolver (FUNCIONARIO+)
 ```
 
 ### Reservas
 ```bash
 GET    /reserva/todos                  # Listar todas (FUNCIONARIO+)
-GET    /reserva/useremail/{email}      # Reservas por email (ALUNO+)
+GET    /reserva/username/{name}        # Reservas por nome do usuário (ALUNO+)
+GET    /reserva/useremail/{email}      # Reservas por email do usuário (ALUNO+)
+GET    /reserva/livro/{livroId}        # Reservas por livro (FUNCIONARIO+)
 POST   /reserva                        # Criar reserva (ALUNO+)
 DELETE /reserva/{id}                   # Cancelar reserva (ALUNO+)
-GET    /reserva/livro/{livroId}        # Reservas por livro (FUNCIONARIO+)
+```
+
+### Exemplares
+```bash
+GET  /exemplar/livro/{livroId}              # Todos os exemplares do livro (FUNCIONARIO+)
+GET  /exemplar/livro/{livroId}/disponiveis  # Exemplares disponíveis (FUNCIONARIO+)
+GET  /exemplar/livro/{livroId}/sugestao     # Sugerir exemplar disponível (FUNCIONARIO+)
+POST /exemplar/livro/{livroId}/adicionar    # Adicionar exemplares manualmente (ADMIN)
+```
+
+### Solicitações de Renovação
+```bash
+POST /solicitacoes-renovacao/{email}              # Solicitar renovação (ALUNO+)
+GET  /solicitacoes-renovacao/pendentes            # Listar pendentes (FUNCIONARIO+)
+PUT  /solicitacoes-renovacao/{id}/aprovar/{email} # Aprovar solicitação (FUNCIONARIO+)
+PUT  /solicitacoes-renovacao/{id}/rejeitar/{email} # Rejeitar solicitação (FUNCIONARIO+)
+```
+
+### Autores
+```bash
+POST /autor                  # Criar autor (ADMIN)
+GET  /autor/buscar/{autor}   # Buscar autores (FUNCIONARIO+)
+```
+
+### Gêneros
+```bash
+POST /genero                 # Criar gênero (ADMIN)
+GET  /genero/buscar/{genero} # Buscar gêneros (FUNCIONARIO+)
+```
+
+### Catalogação (CDD)
+```bash
+POST /catalogacao                        # Criar catalogação (ADMIN)
+GET  /catalogacao/buscar/{catalogacao}   # Buscar catalogações (FUNCIONARIO+)
+```
+
+### Usuários
+```bash
+GET /user/name/{name}   # Buscar usuários por nome (FUNCIONARIO+)
 ```
 
 ## 📚 Documentação API (Swagger)

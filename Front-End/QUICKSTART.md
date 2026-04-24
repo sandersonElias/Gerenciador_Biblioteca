@@ -49,9 +49,10 @@ REACT_APP_API_URL=https://gerenciadorbiblioteca-production.up.railway.app
 
 ### 🎓 Aluno (ROLE_ALUNO)
 - Tudo do público +
-- Fazer reservas
-- Ver minhas reservas
-- Cancelar reservas
+- Meu Perfil: empréstimo ativo e histórico
+- Fazer reservas (na página de detalhes do livro)
+- Cancelar reservas (no Meu Perfil)
+- Solicitar renovação de empréstimo
 
 ### 👔 Funcionário (ROLE_FUNCIONARIO)
 - Tudo do aluno +
@@ -62,24 +63,25 @@ REACT_APP_API_URL=https://gerenciadorbiblioteca-production.up.railway.app
 
 ### 👑 Administrador (ROLE_ADMIN)
 - Tudo do funcionário +
-- Cadastrar novos livros
-- Editar livros
+- Cadastrar e editar livros
+- Gerenciar exemplares
 - Cadastrar usuários
 - Acesso total ao sistema
 
 ## Estrutura de Rotas
 
 ```
-/                    → Home (público)
-/login               → Login (público)
-/buscar              → Buscar livros (público)
-/livro/:id           → Detalhes do livro (público)
-/reservas            → Minhas reservas (ALUNO+)
-/emprestimos         → Gerenciar empréstimos (FUNCIONARIO+)
-/relatorios          → Relatórios (FUNCIONARIO+)
-/admin               → Painel admin (ADMIN)
-/admin/livros/novo   → Cadastrar livro (ADMIN)
-/admin/usuarios/novo → Cadastrar usuário (ADMIN)
+/                          → Home (público)
+/login                     → Login (público)
+/buscar                    → Buscar livros (público)
+/livro/:id                 → Detalhes do livro (público)
+/meu-perfil                → Meu perfil (ALUNO+)
+/emprestimos               → Gerenciar empréstimos (FUNCIONARIO+)
+/relatorios                → Relatórios (FUNCIONARIO+)
+/admin                     → Painel admin (ADMIN)
+/admin/livros/novo         → Cadastrar livro (ADMIN)
+/admin/livros/editar/:id   → Editar livro (ADMIN)
+/admin/usuarios/novo       → Cadastrar usuário (ADMIN)
 ```
 
 ## Comandos Disponíveis

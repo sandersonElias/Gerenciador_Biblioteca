@@ -9,7 +9,7 @@ O arquivo `src/services/api.ts` contém toda a configuração de comunicação c
 ```typescript
 const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000,
+  timeout: Number(process.env.REACT_APP_API_TIMEOUT) || 10000,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -34,7 +34,7 @@ apiClient.interceptors.request.use(
 ```
 
 ### Response Interceptor
-Trata erros 401 (não autorizado) redirecionando para login:
+Trata erros 401 (não autorizado) redirecionando para login e limpando o storage:
 
 ```typescript
 apiClient.interceptors.response.use(
@@ -42,6 +42,7 @@ apiClient.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('auth_token');
+      localStorage.removeItem('user');
       window.location.href = '/login';
     }
     return Promise.reject(error);
@@ -58,6 +59,12 @@ authApi.login({ email, password }): Promise<string>
 
 // Registrar usuário (apenas admin)
 authApi.register(userData): Promise<UserResponse>
+```
+
+### User API
+```typescript
+// Buscar usuários por nome (para autocomplete em formulários)
+userApi.getUserName(name): Promise<UserResponse[]>
 ```
 
 ### Livro API
@@ -81,6 +88,48 @@ livroApi.update(id, livro): Promise<Livro>
 livroApi.delete(id): Promise<void>
 ```
 
+### Autor API
+```typescript
+// Criar autor (admin)
+autorApi.create(autor): Promise<AutorResponse>
+
+// Buscar autores por nome (para autocomplete)
+autorApi.getByAutor(autor): Promise<AutorResponse[]>
+```
+
+### Gênero API
+```typescript
+// Criar gênero (admin)
+generoApi.create(genero): Promise<GeneroResponse>
+
+// Buscar gêneros por nome (para autocomplete)
+generoApi.getByGenero(genero): Promise<GeneroResponse[]>
+```
+
+### Catalogação API
+```typescript
+// Criar catalogação CDD (admin)
+catalogacaoApi.create(catalogacao): Promise<CatalogacaoResponse>
+
+// Buscar catalogações por nome (para autocomplete)
+catalogacaoApi.getByCatalogacao(catalogacao): Promise<CatalogacaoResponse[]>
+```
+
+### Exemplar API
+```typescript
+// Listar todos os exemplares de um livro
+exemplarApi.listarPorLivro(livroId): Promise<Exemplar[]>
+
+// Listar apenas os exemplares disponíveis
+exemplarApi.listarDisponiveisPorLivro(livroId): Promise<Exemplar[]>
+
+// Obter sugestão de exemplar disponível (para autocomplete no empréstimo)
+exemplarApi.sugerirExemplar(livroId): Promise<Exemplar>
+
+// Adicionar exemplares manualmente (admin)
+exemplarApi.adicionarExemplares(livroId, quantidade): Promise<Exemplar[]>
+```
+
 ### Empréstimo API
 ```typescript
 // Listar todos (funcionário+)
@@ -90,11 +139,7 @@ emprestimoApi.getAll(): Promise<EmprestimoResponse[]>
 emprestimoApi.getById(id): Promise<EmprestimoResponse>
 
 // Criar empréstimo
-emprestimoApi.create({
-  userId: number,
-  livroId: number,
-  dataDevolucao?: string
-}): Promise<EmprestimoResponse>
+emprestimoApi.create(emprestimo): Promise<EmprestimoResponse>
 
 // Renovar empréstimo
 emprestimoApi.renovar(id): Promise<EmprestimoResponse>
@@ -102,32 +147,63 @@ emprestimoApi.renovar(id): Promise<EmprestimoResponse>
 // Devolver livro
 emprestimoApi.devolver(id): Promise<void>
 
-// Buscar por usuário
+// Buscar por nome do usuário
 emprestimoApi.searchByUser(nome): Promise<EmprestimoResponse[]>
 
-// Buscar por livro
+// Buscar por título do livro
 emprestimoApi.searchByLivro(titulo): Promise<EmprestimoResponse[]>
 
 // Buscar por status
 emprestimoApi.searchByStatus(status): Promise<EmprestimoResponse[]>
+// status: StatusEmprestimo enum
+
+// Buscar devoluções de uma data específica (formato YYYY-MM-DD)
+emprestimoApi.getDevolucoesDoDia(data): Promise<EmprestimoResponse[]>
+```
+
+### Meus Empréstimos API (perfil do aluno)
+```typescript
+// Retorna empréstimo ativo + histórico do usuário pelo email
+meusEmprestimosApi.getMeusEmprestimos(email): Promise<MeusEmprestimosResponse>
+
+// MeusEmprestimosResponse:
+// {
+//   emprestimosAtivo: EmprestimosAtivoDto | null,
+//   historico: EmprestimoHistoricoDto[]
+// }
 ```
 
 ### Reserva API
 ```typescript
 // Listar todas (funcionário+)
-reservaApi.getAll(): Promise<Reserva[]>
+reservaApi.getAll(): Promise<ReservaResponse[]>
 
-// Minhas reservas (aluno+)
-reservaApi.getMinhasReservas(): Promise<Reserva[]>
+// Reservas do usuário por email (aluno+)
+reservaApi.getReservaEmail(email): Promise<ReservaResponse[]>
 
 // Criar reserva
-reservaApi.create(livroId): Promise<Reserva>
+reservaApi.create(reserva): Promise<ReservaResponse>
 
 // Cancelar reserva
 reservaApi.cancelar(reservaId): Promise<void>
 
-// Buscar por livro
-reservaApi.getByLivro(livroId): Promise<Reserva[]>
+// Buscar reservas por livro
+reservaApi.getByLivro(livroId): Promise<ReservaResponse[]>
+```
+
+### Solicitação de Renovação API
+```typescript
+// Aluno solicita renovação de um empréstimo
+solicitacaoRenovacaoApi.solicitar(emprestimoId, email): Promise<SolicitacaoRenovacaoResponse>
+
+// Listar solicitações pendentes (funcionário+)
+solicitacaoRenovacaoApi.getPendentes(): Promise<SolicitacaoPendenteDto[]>
+
+// Aprovar solicitação (funcionário+)
+solicitacaoRenovacaoApi.aprovar(id, email): Promise<void>
+
+// Rejeitar solicitação com observação opcional (funcionário+)
+solicitacaoRenovacaoApi.rejeitar(id, email, observacao?): Promise<void>
 ```
 
 ## Exemplos de Uso
@@ -148,10 +224,16 @@ const books = await livroApi.searchByFilter('autor', 'J.K. Rowling');
 import { emprestimoApi } from '@/services/api';
 
 const newLoan = await emprestimoApi.create({
-  userId: 1,
-  livroId: 5,
-  dataDevolucao: '2024-12-31'
+  exemplarId: 10,
+  userEmail: 'aluno@monsa.com'
 });
+```
+
+### Meu Perfil — Empréstimos do Aluno
+```typescript
+import { meusEmprestimosApi } from '@/services/api';
+
+const { emprestimosAtivo, historico } = await meusEmprestimosApi.getMeusEmprestimos('aluno@monsa.com');
 ```
 
 ### Gerenciar Reservas
@@ -159,10 +241,17 @@ const newLoan = await emprestimoApi.create({
 import { reservaApi } from '@/services/api';
 
 // Fazer reserva
-const reservation = await reservaApi.create(123);
+const reservation = await reservaApi.create({ livroId: 123 });
 
 // Cancelar reserva
 await reservaApi.cancelar(456);
+```
+
+### Solicitar Renovação
+```typescript
+import { solicitacaoRenovacaoApi } from '@/services/api';
+
+await solicitacaoRenovacaoApi.solicitar(emprestimoId, 'aluno@monsa.com');
 ```
 
 ## Tratamento de Erros
@@ -213,7 +302,7 @@ import { useAuth } from '@/context/AuthContext';
 
 const MyComponent = () => {
   const { isAuthenticated, user, hasAnyRole } = useAuth();
-  
+
   if (isAuthenticated) {
     console.log('Usuário:', user.name);
     console.log('É admin?', hasAnyRole(['ROLE_ADMIN']));
@@ -239,17 +328,17 @@ Você pode testar os endpoints usando:
 
 1. **Browser DevTools** - Network tab
 2. **Postman/Insomnia** - Coleção de requisições
-3. **curl** - Linha de comando
+3. **Swagger UI** - `http://localhost:8080/swagger-ui.html`
 
 Exemplo com curl:
 ```bash
 # Login
-curl -X POST http://localhost:8080/auth \\
-  -H "Content-Type: application/json" \\
+curl -X POST http://localhost:8080/auth \
+  -H "Content-Type: application/json" \
   -d '{"email":"admin@monsa.com","password":"123"}'
 
 # Listar livros (com token)
-curl http://localhost:8080/livro/todos \\
+curl http://localhost:8080/livro/todos \
   -H "Authorization: Bearer SEU_TOKEN"
 ```
 

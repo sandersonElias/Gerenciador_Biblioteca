@@ -20,8 +20,8 @@
 - [x] Filtros e busca
 
 ### 📋 Reservas
-- [x] Alunos podem reservar
-- [x] Listagem de reservas
+- [x] Alunos podem reservar (na página de detalhes do livro)
+- [x] Visualização de reservas no Meu Perfil
 - [x] Cancelamento
 
 ### 📊 Relatórios
@@ -29,8 +29,18 @@
 - [x] Gráficos interativos
 - [x] Tabelas de dados
 
+### 🔄 Solicitação de Renovação
+- [x] Aluno solicita renovação no Meu Perfil
+- [x] Funcionário aprova ou rejeita no painel de empréstimos
+
+### 📦 Exemplares
+- [x] Listagem de exemplares por livro
+- [x] Sugestão automática de exemplar disponível no empréstimo
+- [x] Admin pode adicionar exemplares manualmente
+
 ### 👤 Administração
 - [x] Painel administrativo
+- [x] Cadastro e edição de livros
 - [x] Cadastro de usuários
 - [x] Gestão completa do sistema
 

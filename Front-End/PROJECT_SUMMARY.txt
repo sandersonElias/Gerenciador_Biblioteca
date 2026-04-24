@@ -7,7 +7,7 @@
 ═══════════════════════════════════════════════════════════════════════════════
 
 ✅ ESTRUTURA COMPLETA
-   ├── 13 Páginas implementadas
+   ├── 10 Páginas implementadas
    ├── 15+ Componentes reutilizáveis
    ├── 3 Contexts (Auth, Toast, Loading)
    ├── 2 Hooks customizados
@@ -15,37 +15,46 @@
    └── Testes unitários estruturados
 
 ✅ FUNCIONALIDADES IMPLEMENTADAS
-   
+
    🔐 Autenticação
    • Login com JWT
    • Proteção de rotas por perfil
    • Controle de acesso granular
-   
+
    📚 Livros
    • Busca com filtros (título, autor, gênero, catalogação)
    • Grid responsivo com cards
    • Página de detalhes completa
-   • CRUD para administradores
-   
+   • CRUD para administradores (criar, editar, remover)
+
    📖 Empréstimos (Funcionário+)
    • Listagem completa
    • Criar empréstimo
    • Renovar empréstimo
    • Registrar devolução
-   
+
    📋 Reservas (Aluno+)
-   • Fazer reserva
-   • Listar minhas reservas
+   • Fazer reserva a partir da página de detalhes do livro
+   • Visualizar reservas no Meu Perfil
    • Cancelar reserva
-   
+
+   🔄 Solicitação de Renovação (Aluno+)
+   • Solicitar renovação a partir do Meu Perfil
+   • Funcionário aprova ou rejeita no painel de empréstimos
+
+   👤 Meu Perfil (Aluno+)
+   • Empréstimo ativo com dias restantes
+   • Histórico de empréstimos
+   • Indicador se pode renovar
+
    📊 Relatórios (Funcionário+)
    • Dashboard com estatísticas
    • Gráficos interativos (Chart.js)
    • Tabelas de dados
-   
-   👤 Administração (Admin)
+
+   👑 Administração (Admin)
    • Painel administrativo
-   • Cadastrar/editar livros
+   • Cadastrar e editar livros
    • Cadastrar usuários
 
 ✅ DESIGN SYSTEM
@@ -98,8 +107,8 @@ Código Fonte (src/):
 │   ├── BookSearchPage.tsx
 │   ├── BookDetailPage.tsx
 │   ├── LoginPage.tsx
+│   ├── ProfilePage.tsx
 │   ├── LoansPage.tsx
-│   ├── ReservationsPage.tsx
 │   ├── ReportsPage.tsx
 │   ├── AdminPage.tsx
 │   ├── BookFormPage.tsx
@@ -117,7 +126,7 @@ Código Fonte (src/):
 
 2. Configurar ambiente:
    cp .env.example .env
-   # Editar REACT_APP_API_BASE_URL
+   # Editar REACT_APP_API_URL
 
 3. Iniciar desenvolvimento:
    npm start
@@ -137,21 +146,53 @@ Aluno          | aluno@monsa.com    | 123
 📡 API ENDPOINTS INTEGRADOS
 ═══════════════════════════════════════════════════════════════════════════════
 
-POST   /auth                    Login
-POST   /auth/registrar          Registrar usuário
-GET    /livro/todos             Listar livros
-GET    /livro/{id}              Buscar livro
-GET    /livro/buscar/{f}/{t}    Buscar com filtro
-GET    /livro/populares         Livros populares
-POST   /livro                   Criar livro
-PUT    /livro/{id}              Atualizar livro
-GET    /emprestimo/todos        Listar empréstimos
-POST   /emprestimo              Criar empréstimo
-PUT    /emprestimo/renovar/{id} Renovar
-PUT    /emprestimo/devolver/{id} Devolver
-GET    /reserva/minhas          Minhas reservas
-POST   /reserva/{livroId}       Criar reserva
-DELETE /reserva/{id}            Cancelar reserva
+POST   /auth                                    Login
+POST   /auth/registrar                          Registrar usuário (ADMIN)
+GET    /user/name/{name}                        Buscar usuários por nome
+
+GET    /livro/todos                             Listar livros
+GET    /livro/id/{id}                           Buscar livro por ID
+GET    /livro/buscar/{filtro}/{termo}            Buscar com filtro
+GET    /livro/populares                         Livros populares
+POST   /livro                                   Criar livro (ADMIN)
+PUT    /livro/{id}                              Atualizar livro (ADMIN)
+DELETE /livro/{id}                              Remover livro (ADMIN)
+
+POST   /autor                                   Criar autor (ADMIN)
+GET    /autor/buscar/{autor}                    Buscar autores
+
+POST   /genero                                  Criar gênero (ADMIN)
+GET    /genero/buscar/{genero}                  Buscar gêneros
+
+POST   /catalogacao                             Criar catalogação (ADMIN)
+GET    /catalogacao/buscar/{catalogacao}        Buscar catalogações
+
+GET    /exemplar/livro/{id}                     Todos os exemplares
+GET    /exemplar/livro/{id}/disponiveis         Exemplares disponíveis
+GET    /exemplar/livro/{id}/sugestao            Sugerir exemplar disponível
+POST   /exemplar/livro/{id}/adicionar           Adicionar exemplares (ADMIN)
+
+GET    /emprestimo/todos                        Listar empréstimos (FUNCIONARIO+)
+GET    /emprestimo/id/{id}                      Buscar por ID
+GET    /emprestimo/minha-conta/{email}          Empréstimos do usuário (ALUNO+)
+GET    /emprestimo/user/{nome}                  Buscar por usuário
+GET    /emprestimo/livro/{titulo}               Buscar por livro
+GET    /emprestimo/status/{status}              Buscar por status
+GET    /emprestimo/devolucao/{data}             Devoluções do dia
+POST   /emprestimo                              Criar empréstimo
+PUT    /emprestimo/renovar/{id}                 Renovar
+PUT    /emprestimo/devolver/{id}                Devolver
+
+GET    /reserva/todos                           Listar reservas (FUNCIONARIO+)
+GET    /reserva/useremail/{email}               Reservas do usuário (ALUNO+)
+GET    /reserva/livro/{livroId}                 Reservas por livro
+POST   /reserva                                 Criar reserva (ALUNO+)
+DELETE /reserva/{id}                            Cancelar reserva (ALUNO+)
+
+POST   /solicitacoes-renovacao/{email}          Solicitar renovação (ALUNO+)
+GET    /solicitacoes-renovacao/pendentes        Listar pendentes (FUNCIONARIO+)
+PUT    /solicitacoes-renovacao/{id}/aprovar/{email}  Aprovar (FUNCIONARIO+)
+PUT    /solicitacoes-renovacao/{id}/rejeitar/{email} Rejeitar (FUNCIONARIO+)
 
 🎨 PALETA DE CORES
 ═══════════════════════════════════════════════════════════════════════════════
