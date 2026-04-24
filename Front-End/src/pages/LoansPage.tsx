@@ -1,24 +1,19 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { EmprestimoResponse, Livro, StatusEmprestimo, UserResponse } from '../types';
-import { emprestimoApi, userApi, livroApi } from '../services/api';
+import { EmprestimoResponse, Exemplar, Livro, StatusEmprestimo, UserResponse } from '../types';
+import {
+  emprestimoApi,
+  exemplarApi,
+  solicitacaoRenovacaoApi,
+  userApi,
+  livroApi,
+  SolicitacaoPendenteDto,
+} from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useLoading } from '../context/LoadingContext';
 import Button from '../components/common/Button';
 import Modal from '../components/common/Modal';
 import './LoansPage.scss';
-
-// ── tipos locais ──────────────────────────────────────────────────────────────
-interface SolicitacaoPendenteDto {
-  id: number;
-  emprestimoId: number;
-  livroTitulo: string;
-  solicitanteNome: string;
-  solicitanteEmail: string;
-  dataEmprestimo: string;
-  dataDevolucaoPrevista: string;
-  renovacoesRealizadas: number;
-  dataSolicitacao: string;
-}
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 const fmt = (d?: string) =>
@@ -58,13 +53,16 @@ const LoansPage: React.FC = () => {
   const [showRenewModal, setShowRenewModal]       = useState(false);
   const [showReturnModal, setShowReturnModal]     = useState(false);
   const [showNewLoanModal, setShowNewLoanModal]   = useState(false);
-  const [newLoan, setNewLoan] = useState({ userId: '', livroId: '', dataDevolucao: '' });
+  const [newLoan, setNewLoan] = useState({ userId: '', livroId: '', dataDevolucao: '', exemplarId: '' });
 
-  const [userSearch, setUserSearch]           = useState('');
-  const [bookSearch, setBookSearch]           = useState('');
-  const [userSuggestions, setUserSuggestions] = useState<UserResponse[]>([]);
-  const [bookSuggestions, setBookSuggestions] = useState<Livro[]>([]);
+  const [userSearch, setUserSearch]                   = useState('');
+  const [bookSearch, setBookSearch]                   = useState('');
+  const [userSuggestions, setUserSuggestions]         = useState<UserResponse[]>([]);
+  const [bookSuggestions, setBookSuggestions]         = useState<Livro[]>([]);
+  const [exemplaresDisponiveis, setExemplaresDisponiveis] = useState<Exemplar[]>([]);
+  const [loadingExemplares, setLoadingExemplares]     = useState(false);
 
+  const { user: authUser } = useAuth();
   const { showToast } = useToast();
   const { withLoading } = useLoading();
 
@@ -80,13 +78,8 @@ const LoansPage: React.FC = () => {
 
   const loadPendentes = useCallback(async () => {
     try {
-      const res = await fetch('/solicitacoes-renovacao/pendentes', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('auth_token')}` },
-      });
-      if (res.ok) {
-        const data: SolicitacaoPendenteDto[] = await res.json();
-        setPendentes(data);
-      }
+      const data = await solicitacaoRenovacaoApi.getPendentes();
+      setPendentes(data);
     } catch { /* silencioso */ }
   }, []);
 
@@ -106,23 +99,55 @@ const LoansPage: React.FC = () => {
     setFiltered(f);
   }, [loans, searchTerm, statusFilter]);
 
-  // ── autocomplete ──────────────────────────────────────────────────────────
+  // ── autocomplete usuário ──────────────────────────────────────────────────
+  // Só busca quando o usuário ainda NÃO foi selecionado (userId vazio)
   useEffect(() => {
+    if (newLoan.userId) { setUserSuggestions([]); return; }
     const delay = setTimeout(async () => {
       try {
         if (userSearch.trim().length >= 3) {
           setUserSuggestions(await userApi.getUserName(userSearch) ?? []);
-        } else setUserSuggestions([]);
-
-        if (bookSearch.trim().length >= 3) {
-          setBookSuggestions(await livroApi.searchByFilter('titulo', bookSearch) ?? []);
-        } else setBookSuggestions([]);
+        } else {
+          setUserSuggestions([]);
+        }
       } catch {
-        setUserSuggestions([]); setBookSuggestions([]);
+        setUserSuggestions([]);
       }
     }, 400);
     return () => clearTimeout(delay);
-  }, [userSearch, bookSearch]);
+  }, [userSearch, newLoan.userId]);
+
+  // ── autocomplete livro ────────────────────────────────────────────────────
+  // Só busca quando o livro ainda NÃO foi selecionado (livroId vazio)
+  useEffect(() => {
+    if (newLoan.livroId) { setBookSuggestions([]); return; }
+    const delay = setTimeout(async () => {
+      try {
+        if (bookSearch.trim().length >= 3) {
+          setBookSuggestions(await livroApi.searchByFilter('titulo', bookSearch) ?? []);
+        } else {
+          setBookSuggestions([]);
+        }
+      } catch {
+        setBookSuggestions([]);
+      }
+    }, 400);
+    return () => clearTimeout(delay);
+  }, [bookSearch, newLoan.livroId]);
+
+  // ── busca exemplares disponíveis ao selecionar livro ─────────────────────
+  useEffect(() => {
+    if (!newLoan.livroId) {
+      setExemplaresDisponiveis([]);
+      setNewLoan(p => ({ ...p, exemplarId: '' }));
+      return;
+    }
+    setLoadingExemplares(true);
+    exemplarApi.listarDisponiveisPorLivro(Number(newLoan.livroId))
+      .then(setExemplaresDisponiveis)
+      .catch(() => setExemplaresDisponiveis([]))
+      .finally(() => setLoadingExemplares(false));
+  }, [newLoan.livroId]);
 
   // ── handlers empréstimo ───────────────────────────────────────────────────
   const handleRenew = async () => {
@@ -159,11 +184,13 @@ const LoansPage: React.FC = () => {
         userId: Number(newLoan.userId),
         livroId: Number(newLoan.livroId),
         dataDevolucao: newLoan.dataDevolucao || undefined,
+        exemplarId: newLoan.exemplarId ? Number(newLoan.exemplarId) : undefined,
       });
       showToast('Empréstimo criado com sucesso!', 'success');
       setShowNewLoanModal(false);
-      setNewLoan({ userId: '', livroId: '', dataDevolucao: '' });
+      setNewLoan({ userId: '', livroId: '', dataDevolucao: '', exemplarId: '' });
       setUserSearch(''); setBookSearch('');
+      setExemplaresDisponiveis([]);
       loadLoans();
     } catch (e: any) {
       showToast(e.response?.data?.message || 'Erro ao criar empréstimo', 'error');
@@ -172,15 +199,9 @@ const LoansPage: React.FC = () => {
 
   // ── handlers solicitação ──────────────────────────────────────────────────
   const handleAprovar = async () => {
-    if (!selectedSolic) return;
+    if (!selectedSolic || !authUser) return;
     try {
-      const token = localStorage.getItem('auth_token') ?? '';
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      const email = payload.email as string;
-      await fetch(`/solicitacoes-renovacao/${selectedSolic.id}/aprovar/${encodeURIComponent(email)}`, {
-        method: 'PUT',
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await solicitacaoRenovacaoApi.aprovar(selectedSolic.id, authUser.email);
       showToast('Solicitação aprovada!', 'success');
       setShowAprovarModal(false);
       loadPendentes(); loadLoans();
@@ -190,16 +211,9 @@ const LoansPage: React.FC = () => {
   };
 
   const handleRejeitar = async () => {
-    if (!selectedSolic) return;
+    if (!selectedSolic || !authUser) return;
     try {
-      const token = localStorage.getItem('auth_token') ?? '';
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      const email = payload.email as string;
-      await fetch(`/solicitacoes-renovacao/${selectedSolic.id}/rejeitar/${encodeURIComponent(email)}`, {
-        method: 'PUT',
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ observacao }),
-      });
+      await solicitacaoRenovacaoApi.rejeitar(selectedSolic.id, authUser.email, observacao || undefined);
       showToast('Solicitação rejeitada.', 'success');
       setShowRejeitarModal(false);
       setObservacao('');
@@ -289,6 +303,7 @@ const LoansPage: React.FC = () => {
                   <tr>
                     <th>Livro</th>
                     <th>Usuário</th>
+                    <th>Exemplar</th>
                     <th>Emprestado em</th>
                     <th>Devolver até</th>
                     <th>Renov.</th>
@@ -307,6 +322,11 @@ const LoansPage: React.FC = () => {
                           <span className="user-name">{loan.user.name}</span>
                           <span className="user-email">{loan.user.email}</span>
                         </div>
+                      </td>
+                      <td className="cell-center cell-exemplar">
+                        {loan.exemplar ? (
+                          <span className="exemplar-codigo">{loan.exemplar.codigo}</span>
+                        ) : '—'}
                       </td>
                       <td>{fmt(loan.dataEmprestimo)}</td>
                       <td>{fmt(loan.dataDevolucao)}</td>
@@ -445,7 +465,7 @@ const LoansPage: React.FC = () => {
       </Modal>
 
       {/* ── Modal Novo Empréstimo ── */}
-      <Modal isOpen={showNewLoanModal} onClose={() => { setShowNewLoanModal(false); setUserSearch(''); setBookSearch(''); setNewLoan({ userId: '', livroId: '', dataDevolucao: '' }); }}
+      <Modal isOpen={showNewLoanModal} onClose={() => { setShowNewLoanModal(false); setUserSearch(''); setBookSearch(''); setNewLoan({ userId: '', livroId: '', dataDevolucao: '', exemplarId: '' }); setExemplaresDisponiveis([]); }}
         title="Novo Empréstimo" size="md"
         footer={<>
           <Button variant="ghost" onClick={() => setShowNewLoanModal(false)}>Cancelar</Button>
@@ -533,6 +553,43 @@ const LoansPage: React.FC = () => {
             )}
           </div>
 
+          {/* Seleção de exemplar — aparece após selecionar livro */}
+          {newLoan.livroId && (
+            <div className="loan-form__field loan-form__field--exemplar">
+              <label className="loan-form__label">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+                </svg>
+                Exemplar
+                {!loadingExemplares && exemplaresDisponiveis.length > 0 && (
+                  <span className="loan-form__optional">
+                    ({exemplaresDisponiveis.length} disponível{exemplaresDisponiveis.length !== 1 ? 'is' : ''})
+                  </span>
+                )}
+              </label>
+              {loadingExemplares ? (
+                <p className="loan-form__hint">Buscando exemplares disponíveis…</p>
+              ) : exemplaresDisponiveis.length === 0 ? (
+                <p className="loan-form__hint loan-form__hint--warn">
+                  Nenhum exemplar disponível para este livro
+                </p>
+              ) : (
+                <select
+                  className="loan-form__input"
+                  value={newLoan.exemplarId}
+                  onChange={e => setNewLoan(p => ({ ...p, exemplarId: e.target.value }))}
+                >
+                  <option value="">Automático — {exemplaresDisponiveis[0]?.codigo}</option>
+                  {exemplaresDisponiveis.map(ex => (
+                    <option key={ex.id} value={String(ex.id)}>
+                      Exemplar {ex.codigo}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+          )}
+
           {/* Data de devolução */}
           <div className="loan-form__field">
             <label className="loan-form__label">
@@ -552,8 +609,9 @@ const LoansPage: React.FC = () => {
 
           {/* Info */}
           <div className="modal-note modal-note--info">
-            Selecione o usuário e o livro digitando e clicando na sugestão.
-            Se não informar a data de devolução, o prazo padrão será de 7 dias.
+            Digite e <strong>clique na sugestão</strong> para selecionar usuário e livro.
+            Após selecionar o livro, os exemplares disponíveis serão carregados automaticamente.
+            {!newLoan.dataDevolucao && ' O prazo padrão é de 7 dias.'}
           </div>
         </div>
       </Modal>

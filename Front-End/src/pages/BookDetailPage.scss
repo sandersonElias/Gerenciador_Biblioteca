@@ -227,13 +227,13 @@
 .reservations-table {
   width: 100%;
   border-collapse: collapse;
-  
+
   th, td {
     padding: 0.875rem;
     text-align: left;
     border-bottom: 1px solid #e2e8f0;
   }
-  
+
   th {
     font-weight: 600;
     color: var(--color-text-secondary);
@@ -241,9 +241,37 @@
     text-transform: uppercase;
     letter-spacing: 0.05em;
   }
-  
+
   td {
     color: var(--color-text-primary);
+  }
+}
+
+.exemplares-section {
+  margin-top: 1.5rem;
+}
+
+.exemplar-badge {
+  display: inline-block;
+  padding: 0.25rem 0.625rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+
+  &--disponivel {
+    background-color: #d1fae5;
+    color: #065f46;
+  }
+
+  &--emprestado {
+    background-color: #fed7aa;
+    color: #92400e;
+  }
+
+  &--reservado {
+    background-color: #fee2e2;
+    color: #991b1b;
   }
 }
 

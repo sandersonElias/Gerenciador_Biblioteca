@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Livro, ReservaResponse } from '../types';
-import { livroApi, reservaApi } from '../services/api';
+import { Exemplar, Livro, ReservaResponse } from '../types';
+import { exemplarApi, livroApi, reservaApi } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useLoading } from '../context/LoadingContext';
@@ -15,6 +15,7 @@ const BookDetailPage: React.FC = () => {
 
   const [book, setBook] = useState<Livro | null>(null);
   const [reservations, setReservations] = useState<ReservaResponse[]>([]);
+  const [exemplares, setExemplares] = useState<Exemplar[]>([]);
   const [showReserveModal, setShowReserveModal] = useState(false);
 
   const { user, isAuthenticated, hasAnyRole } = useAuth();
@@ -27,8 +28,12 @@ const BookDetailPage: React.FC = () => {
       setBook(bookData);
 
       if (hasAnyRole(['ROLE_FUNCIONARIO', 'ROLE_ADMIN'])) {
-        const reservas = await reservaApi.getByLivro(bookId);
+        const [reservas, exs] = await Promise.all([
+          reservaApi.getByLivro(bookId),
+          exemplarApi.listarPorLivro(bookId),
+        ]);
         setReservations(reservas);
+        setExemplares(exs);
       }
     } catch (error) {
       showToast('Erro ao carregar detalhes do livro', 'error');
@@ -241,6 +246,35 @@ const BookDetailPage: React.FC = () => {
                     <td>
                       <span className={`status-badge ${res.status.toLowerCase()}`}>
                         {res.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* ── Tabela de exemplares ── */}
+        {hasAnyRole(['ROLE_FUNCIONARIO', 'ROLE_ADMIN']) && exemplares.length > 0 && (
+          <div className="reservations-section exemplares-section">
+            <h2>Exemplares</h2>
+            <table className="reservations-table">
+              <thead>
+                <tr>
+                  <th>Código</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {exemplares.map(ex => (
+                  <tr key={ex.id}>
+                    <td><strong>{ex.codigo}</strong></td>
+                    <td>
+                      <span className={`exemplar-badge exemplar-badge--${ex.status.toLowerCase()}`}>
+                        {ex.status === 'DISPONIVEL' ? 'Disponível'
+                          : ex.status === 'EMPRESTADO' ? 'Emprestado'
+                          : 'Reservado'}
                       </span>
                     </td>
                   </tr>

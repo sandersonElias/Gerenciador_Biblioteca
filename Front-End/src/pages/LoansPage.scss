@@ -575,6 +575,34 @@
   }
 }
 
+// ── Hint do formulário ────────────────────────────────────────────────────────
+.loan-form__hint {
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+  margin-top: 0.25rem;
+
+  &--warn {
+    color: #b45309;
+    font-weight: 500;
+  }
+}
+
+// ── Exemplar na tabela ────────────────────────────────────────────────────────
+.cell-exemplar {
+  font-size: 0.85rem;
+}
+
+.exemplar-codigo {
+  display: inline-block;
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+  background: #f0f4ff;
+  color: #1e40af;
+  font-weight: 600;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+}
+
 // ── Modal notes ───────────────────────────────────────────────────────────────
 .modal-note {
   margin-top: 0.5rem;

@@ -44,6 +44,12 @@ public class SecurityConfiguration {
                         // ── Livro: GET público ─────────────────────────────────────────
                         .requestMatchers(HttpMethod.GET, "/livro/**").permitAll()
 
+                        // ── Exemplar: GET para FUNCIONARIO/ADMIN, POST para ADMIN ──────
+                        .requestMatchers(HttpMethod.GET, "/exemplar/**")
+                        .hasAnyRole("FUNCIONARIO", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/exemplar/**")
+                        .hasRole("ADMIN")
+
                         // ── Autor / Gênero / Catalogação: GET público, escrita só ADMIN ──
                         // GET público para que o autocomplete funcione sem login
                         .requestMatchers(HttpMethod.GET, "/autor/**").permitAll()

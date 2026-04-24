@@ -1,9 +1,9 @@
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
-import { 
-  UserLoginDto, 
-  UserRequest, 
-  UserResponse, 
-  Livro, 
+import {
+  UserLoginDto,
+  UserRequest,
+  UserResponse,
+  Livro,
   LivroRequest,
   EmprestimoRequest,
   EmprestimoResponse,
@@ -16,7 +16,8 @@ import {
   AutorResponse,
   AutorDto,
   CatalogacaoDto,
-  CatalogacaoResponse
+  CatalogacaoResponse,
+  Exemplar,
 } from '@/types';
 
 // ── Tipos adicionais para Meu Perfil ──────────────────────────────────────────
@@ -56,6 +57,18 @@ export interface SolicitacaoRenovacaoResponse {
   emprestimoId: number;
   livroTitulo: string;
   status: string;
+  dataSolicitacao: string;
+}
+
+export interface SolicitacaoPendenteDto {
+  id: number;
+  emprestimoId: number;
+  livroTitulo: string;
+  solicitanteNome: string;
+  solicitanteEmail: string;
+  dataEmprestimo: string;
+  dataDevolucaoPrevista: string;
+  renovacoesRealizadas: number;
   dataSolicitacao: string;
 }
 
@@ -261,6 +274,36 @@ export const solicitacaoRenovacaoApi = {
       `/solicitacoes-renovacao/${encodeURIComponent(email)}`,
       { emprestimoId }
     );
+    return response.data;
+  },
+  getPendentes: async (): Promise<SolicitacaoPendenteDto[]> => {
+    const response = await apiClient.get('/solicitacoes-renovacao/pendentes');
+    return response.data;
+  },
+  aprovar: async (id: number, email: string): Promise<void> => {
+    await apiClient.put(`/solicitacoes-renovacao/${id}/aprovar/${encodeURIComponent(email)}`);
+  },
+  rejeitar: async (id: number, email: string, observacao?: string): Promise<void> => {
+    await apiClient.put(`/solicitacoes-renovacao/${id}/rejeitar/${encodeURIComponent(email)}`, { observacao });
+  },
+};
+
+// ── Exemplar ──────────────────────────────────────────────────────────────────
+export const exemplarApi = {
+  listarPorLivro: async (livroId: number): Promise<Exemplar[]> => {
+    const response = await apiClient.get(`/exemplar/livro/${livroId}`);
+    return response.data;
+  },
+  listarDisponiveisPorLivro: async (livroId: number): Promise<Exemplar[]> => {
+    const response = await apiClient.get(`/exemplar/livro/${livroId}/disponiveis`);
+    return response.data;
+  },
+  sugerirExemplar: async (livroId: number): Promise<Exemplar> => {
+    const response = await apiClient.get(`/exemplar/livro/${livroId}/sugestao`);
+    return response.data;
+  },
+  adicionarExemplares: async (livroId: number, quantidade: number): Promise<Exemplar[]> => {
+    const response = await apiClient.post(`/exemplar/livro/${livroId}/adicionar`, { quantidade });
     return response.data;
   },
 };

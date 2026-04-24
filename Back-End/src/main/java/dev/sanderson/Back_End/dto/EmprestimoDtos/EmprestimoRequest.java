@@ -21,4 +21,5 @@ public class EmprestimoRequest {
     private StatusEmprestimo status;
     private Long livroId;
     private Long userId;
+    private Long exemplarId;
 }

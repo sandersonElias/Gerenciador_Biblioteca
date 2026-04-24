@@ -3,6 +3,7 @@ package dev.sanderson.Back_End.dto.EmprestimoDtos;
 import dev.sanderson.Back_End.dto.LivroDtos.LivroMinDto;
 import dev.sanderson.Back_End.dto.UserDtos.UserMinDto;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import java.time.LocalDate;
 
@@ -17,4 +18,13 @@ public class EmprestimoResponse {
     private String status;
     private LivroMinDto livro;
     private UserMinDto user;
+    private ExemplarMinDto exemplar;
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    public static class ExemplarMinDto {
+        private Long id;
+        private String codigo;
+    }
 }

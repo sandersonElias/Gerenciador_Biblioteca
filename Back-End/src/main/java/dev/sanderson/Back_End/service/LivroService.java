@@ -15,6 +15,7 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.domain.PageRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -26,10 +27,12 @@ public class LivroService {
     private final AutorRepository autorRepository;
     private final CatalogacaoRepository catalogacaoRepository;
     private final GeneroRepository generoRepository;
+    private final ExemplarService exemplarService;
     private final ObjectMapper objectMapper;
 
 
     // Criar novo livro
+    @Transactional
     public LivroResponse insertLivro(LivroRequest dto) {
 
         Autor autor = autorRepository.findById(dto.getAutorId())
@@ -67,9 +70,13 @@ public class LivroService {
 
         Livro salvo = livroRepository.save(livro);
 
+        // ✅ Cria os exemplares físicos correspondentes ao totalExemplares
+        exemplarService.criarExemplaresParaLivro(salvo);
+
         return objectMapper.convertValue(salvo, LivroResponse.class);
     }
 
+    @Transactional
     public LivroResponse updateLivro(Long id, LivroRequest dto) {
         // 1) buscar livro existente
         Livro livroExistente = livroRepository.findById(id)
@@ -85,7 +92,7 @@ public class LivroService {
         Catalogacao catalogacao = catalogacaoRepository.findById(dto.getCatalogacaoId())
                 .orElseThrow(() -> new RuntimeException("Catalogacao não encontrada"));
 
-        // 3) atualizar campos (preservando o que for necessário)
+        // 3) atualizar campos
         livroExistente.setTitulo(dto.getTitulo());
         livroExistente.setEditora(dto.getEditora());
         livroExistente.setCdd(dto.getCdd());
@@ -93,22 +100,22 @@ public class LivroService {
         livroExistente.setDescricao(dto.getDescricao());
         livroExistente.setUrlImg(dto.getUrlImg());
 
-        // Se quiser garantir que totalExemplares não fique nulo:
-        livroExistente.setTotalExemplares(dto.getTotalExemplares() != null ? dto.getTotalExemplares() : livroExistente.getTotalExemplares());
-
-        // Ajuste de quantidadeDisponivel: você pode querer validar consistência
-        livroExistente.setQuantidadeDisponivel(dto.getQuantidadeDisponivel() != null ? dto.getQuantidadeDisponivel() : livroExistente.getQuantidadeDisponivel());
-
-        // NÃO resetar contadorEmprestimos ao atualizar (preservar histórico)
-        // livroExistente.setContadorEmprestimos(livroExistente.getContadorEmprestimos());
-
         // Atualizar relacionamentos
         livroExistente.setAutor(autor);
         livroExistente.setGenero(genero);
         livroExistente.setCatalogacao(catalogacao);
 
-        // 4) salvar e retornar
+        // 4) salvar e retornar — captura o total anterior ANTES de sobrescrever
+        int totalAnterior = livroExistente.getTotalExemplares() != null ? livroExistente.getTotalExemplares() : 0;
+
+        livroExistente.setTotalExemplares(dto.getTotalExemplares() != null ? dto.getTotalExemplares() : totalAnterior);
+        livroExistente.setQuantidadeDisponivel(dto.getQuantidadeDisponivel() != null ? dto.getQuantidadeDisponivel() : livroExistente.getQuantidadeDisponivel());
+
         Livro salvo = livroRepository.save(livroExistente);
+
+        // ✅ Se total de exemplares aumentou, cria os novos exemplares físicos
+        exemplarService.ajustarExemplares(salvo, totalAnterior);
+
         return objectMapper.convertValue(salvo, LivroResponse.class);
     }
 

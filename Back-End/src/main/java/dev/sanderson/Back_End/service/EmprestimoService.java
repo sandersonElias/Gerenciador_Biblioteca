@@ -9,10 +9,13 @@ import dev.sanderson.Back_End.dto.EmprestimoDtos.MeusEmprestimosResponse;
 import dev.sanderson.Back_End.dto.LivroDtos.LivroMinDto;
 import dev.sanderson.Back_End.dto.UserDtos.UserMinDto;
 import dev.sanderson.Back_End.entity.Emprestimo;
+import dev.sanderson.Back_End.entity.Exemplar;
 import dev.sanderson.Back_End.entity.Livro;
 import dev.sanderson.Back_End.entity.User;
 import dev.sanderson.Back_End.entity.type.StatusEmprestimo;
+import dev.sanderson.Back_End.entity.type.StatusExemplar;
 import dev.sanderson.Back_End.repository.EmprestimoRepository;
+import dev.sanderson.Back_End.repository.ExemplarRepository;
 import dev.sanderson.Back_End.repository.LivroRepository;
 import dev.sanderson.Back_End.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -34,6 +37,7 @@ public class EmprestimoService {
     private final EmprestimoRepository emprestimoRepository;
     private final UserRepository userRepository;
     private final LivroRepository livroRepository;
+    private final ExemplarRepository exemplarRepository;
     private final ObjectMapper objectMapper;
 
     // ── Mapper ────────────────────────────────────────────────────────────────
@@ -61,6 +65,13 @@ public class EmprestimoService {
             dto.setLivro(livroDto);
         }
 
+        if (e.getExemplar() != null) {
+            EmprestimoResponse.ExemplarMinDto exDto = new EmprestimoResponse.ExemplarMinDto();
+            exDto.setId(e.getExemplar().getId());
+            exDto.setCodigo(e.getExemplar().getCodigo());
+            dto.setExemplar(exDto);
+        }
+
         return dto;
     }
 
@@ -79,9 +90,31 @@ public class EmprestimoService {
             throw new IllegalStateException("Não há exemplares disponíveis para empréstimo.");
         }
 
+        // ── Selecionar exemplar ──────────────────────────────────────────────
+        Exemplar exemplar = null;
+        if (dto.getExemplarId() != null) {
+            exemplar = exemplarRepository.findById(dto.getExemplarId())
+                    .orElseThrow(() -> new EntityNotFoundException("Exemplar não encontrado"));
+            if (exemplar.getStatus() != StatusExemplar.DISPONIVEL) {
+                throw new IllegalStateException("O exemplar selecionado não está disponível.");
+            }
+        } else {
+            // Seleciona automaticamente o primeiro disponível
+            exemplar = exemplarRepository
+                    .findFirstByLivroIdAndStatusOrderByCodigo(livro.getId(), StatusExemplar.DISPONIVEL)
+                    .orElse(null);
+        }
+
+        // Marca o exemplar como EMPRESTADO
+        if (exemplar != null) {
+            exemplar.setStatus(StatusExemplar.EMPRESTADO);
+            exemplarRepository.save(exemplar);
+        }
+
         Emprestimo emp = new Emprestimo();
         emp.setUser(user);
         emp.setLivro(livro);
+        emp.setExemplar(exemplar);
 
         LocalDate hoje = dto.getDataEmprestimo() != null ? dto.getDataEmprestimo() : LocalDate.now();
         emp.setDataEmprestimo(hoje);
@@ -116,6 +149,12 @@ public class EmprestimoService {
 
         emp.setStatus(StatusEmprestimo.DEVOLVIDO);
         emp.setDataDevolvido(LocalDate.now());
+
+        // ✅ Libera o exemplar ao devolver
+        if (emp.getExemplar() != null) {
+            emp.getExemplar().setStatus(StatusExemplar.DISPONIVEL);
+            exemplarRepository.save(emp.getExemplar());
+        }
 
         // ✅ Incrementa quantidade disponível ao devolver
         Livro livro = emp.getLivro();

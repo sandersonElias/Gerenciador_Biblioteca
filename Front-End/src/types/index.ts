@@ -117,6 +117,7 @@ export interface EmprestimoRequest {
   status?: StatusEmprestimo;
   livroId: number;
   userId: number;
+  exemplarId?: number;
 }
 
 export interface EmprestimoResponse {
@@ -128,6 +129,18 @@ export interface EmprestimoResponse {
   status: string;
   livro: LivroMinDto;
   user: UserMinDto;
+  exemplar?: { id: number; codigo: string } | null;
+}
+
+// Exemplar Types
+export type StatusExemplar = 'DISPONIVEL' | 'EMPRESTADO' | 'RESERVADO';
+
+export interface Exemplar {
+  id: number;
+  codigo: string;
+  status: StatusExemplar;
+  livroId: number;
+  livroTitulo: string;
 }
 
 // Reservation Types
