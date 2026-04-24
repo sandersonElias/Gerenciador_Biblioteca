@@ -163,6 +163,11 @@ O frontend estará disponível em `http://localhost:3000`
 - Vercel (frontend)
 - Maven (build)
 
+## 📄 Documentação Técnica
+Este projeto possui um relatório técnico completo de 27 páginas, documentando arquitetura, modelo de dados, API, metodologia e decisões de design.
+
+👉 [**Ler o Relatório Técnico (PDF)**](./docs/Relatorio_Biblioteca_Monsa.pdf)
+
 ## 📄 Licença
 
 Este projeto está licenciado sob a licença MIT.
