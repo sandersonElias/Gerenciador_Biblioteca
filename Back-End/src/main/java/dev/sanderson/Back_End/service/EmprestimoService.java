@@ -1,6 +1,7 @@
 package dev.sanderson.Back_End.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.sanderson.Back_End.config.EmprestimoConfig;
 import dev.sanderson.Back_End.dto.EmprestimoDtos.EmprestimoHistoricoDto;
 import dev.sanderson.Back_End.dto.EmprestimoDtos.EmprestimoRequest;
 import dev.sanderson.Back_End.dto.EmprestimoDtos.EmprestimoResponse;
@@ -39,6 +40,11 @@ public class EmprestimoService {
     private final LivroRepository livroRepository;
     private final ExemplarRepository exemplarRepository;
     private final ObjectMapper objectMapper;
+    private final EmprestimoConfig emprestimoConfig;
+
+    // Status que ocupam "vaga" no limite do usuário
+    private static final List<StatusEmprestimo> STATUS_EM_CURSO =
+            List.of(StatusEmprestimo.ATIVO, StatusEmprestimo.ATRASADO);
 
     // ── Mapper ────────────────────────────────────────────────────────────────
 
@@ -84,7 +90,10 @@ public class EmprestimoService {
         User user = userRepository.findById(dto.getUserId())
                 .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
 
-        // ✅ Verifica quantidadeDisponivel — campo correto (era contarEmprestimosPendentes com status 'PENDENTE' que nunca existe)
+        // ✅ NOVO: Valida limite de empréstimos simultâneos por perfil do usuário
+        validarLimiteEmprestimos(user);
+
+        // Verifica quantidadeDisponivel
         int disponiveis = livro.getQuantidadeDisponivel() != null ? livro.getQuantidadeDisponivel() : 0;
         if (disponiveis < 1) {
             throw new IllegalStateException("Não há exemplares disponíveis para empréstimo.");
@@ -99,13 +108,11 @@ public class EmprestimoService {
                 throw new IllegalStateException("O exemplar selecionado não está disponível.");
             }
         } else {
-            // Seleciona automaticamente o primeiro disponível
             exemplar = exemplarRepository
                     .findFirstByLivroIdAndStatusOrderByCodigo(livro.getId(), StatusExemplar.DISPONIVEL)
                     .orElse(null);
         }
 
-        // Marca o exemplar como EMPRESTADO
         if (exemplar != null) {
             exemplar.setStatus(StatusExemplar.EMPRESTADO);
             exemplarRepository.save(exemplar);
@@ -119,14 +126,15 @@ public class EmprestimoService {
         LocalDate hoje = dto.getDataEmprestimo() != null ? dto.getDataEmprestimo() : LocalDate.now();
         emp.setDataEmprestimo(hoje);
 
-        LocalDate devolucao = dto.getDataDevolucao() != null ? dto.getDataDevolucao() : hoje.plusDays(7);
+        // ✅ MUDOU: usa prazo configurável (antes era hardcoded "7")
+        LocalDate devolucao = dto.getDataDevolucao() != null
+                ? dto.getDataDevolucao()
+                : hoje.plusDays(emprestimoConfig.getPrazoDias());
         emp.setDataDevolucao(devolucao);
 
-        // Status sempre ATIVO ao criar — nunca deixar o front-end definir o status
         emp.setStatus(StatusEmprestimo.ATIVO);
         emp.setRenovacoes(0);
 
-        // ✅ Decrementa quantidade disponível e incrementa contador ao emprestar
         livro.setQuantidadeDisponivel(disponiveis - 1);
         livro.setContadorEmprestimos(
                 Objects.requireNonNullElse(livro.getContadorEmprestimos(), 0) + 1
@@ -134,6 +142,26 @@ public class EmprestimoService {
 
         livroRepository.save(livro);
         return toResponse(emprestimoRepository.save(emp));
+    }
+
+    /**
+     * Valida se o usuário não atingiu o limite de empréstimos simultâneos
+     * de acordo com seu perfil. Considera empréstimos ATIVOS + ATRASADOS.
+     */
+    private void validarLimiteEmprestimos(User user) {
+        if (user.getRole() == null) {
+            throw new IllegalStateException("Usuário sem perfil definido.");
+        }
+        String roleName = user.getRole().getRole();
+        int limite = emprestimoConfig.limitePorRole(roleName);
+
+        long emCurso = emprestimoRepository.countByUserIdAndStatusIn(user.getId(), STATUS_EM_CURSO);
+
+        if (emCurso >= limite) {
+            throw new IllegalStateException(
+                    "Limite de empréstimos atingido (" + limite + " livros simultâneos para este perfil)."
+            );
+        }
     }
 
     // ── Devolver empréstimo ───────────────────────────────────────────────────
@@ -150,13 +178,11 @@ public class EmprestimoService {
         emp.setStatus(StatusEmprestimo.DEVOLVIDO);
         emp.setDataDevolvido(LocalDate.now());
 
-        // ✅ Libera o exemplar ao devolver
         if (emp.getExemplar() != null) {
             emp.getExemplar().setStatus(StatusExemplar.DISPONIVEL);
             exemplarRepository.save(emp.getExemplar());
         }
 
-        // ✅ Incrementa quantidade disponível ao devolver
         Livro livro = emp.getLivro();
         livro.setQuantidadeDisponivel(
                 Objects.requireNonNullElse(livro.getQuantidadeDisponivel(), 0) + 1
@@ -178,8 +204,10 @@ public class EmprestimoService {
         }
 
         emp.setRenovacoes(Objects.requireNonNullElse(emp.getRenovacoes(), 0) + 1);
+        // ✅ MUDOU: usa prazo configurável (antes era hardcoded "7")
         emp.setDataDevolucao(
-                Objects.requireNonNullElse(emp.getDataDevolucao(), LocalDate.now()).plusDays(7)
+                Objects.requireNonNullElse(emp.getDataDevolucao(), LocalDate.now())
+                        .plusDays(emprestimoConfig.getPrazoDias())
         );
         emp.setStatus(StatusEmprestimo.ATIVO);
 
@@ -188,7 +216,6 @@ public class EmprestimoService {
 
     // ── JOB: marcar ATRASADO (roda todo dia à meia-noite) ────────────────────
 
-    // ✅ Job novo — varre todos ATIVO e marca ATRASADO quando passa da data de devolução
     @Scheduled(cron = "0 0 0 * * *")
     @Transactional
     public void marcarEmprestimosAtrasados() {
@@ -243,7 +270,6 @@ public class EmprestimoService {
     public MeusEmprestimosResponse obterMeusEmprestimos(String email) {
         MeusEmprestimosResponse response = new MeusEmprestimosResponse();
 
-        // ✅ Busca ATIVO **ou** ATRASADO — os dois são "empréstimo em curso"
         Optional<Emprestimo> ativoOpt = emprestimoRepository
                 .findByUserEmailAndStatusIn(email,
                         List.of(StatusEmprestimo.ATIVO, StatusEmprestimo.ATRASADO));
@@ -307,8 +333,8 @@ public class EmprestimoService {
 
     private Boolean podeRenovar(Emprestimo e) {
         if (e == null) return false;
-        if (Objects.requireNonNullElse(e.getRenovacoes(), 0) >= 3) return false;
-        // ATRASADO nunca pode renovar
+        // ✅ MUDOU: usa max-renovacoes configurável (antes era hardcoded "3")
+        if (Objects.requireNonNullElse(e.getRenovacoes(), 0) >= emprestimoConfig.getMaxRenovacoes()) return false;
         if (e.getStatus() == StatusEmprestimo.ATRASADO) return false;
         if (e.getStatus() != StatusEmprestimo.ATIVO) return false;
         if (e.getDataDevolucao() != null && e.getDataDevolucao().isBefore(LocalDate.now())) return false;

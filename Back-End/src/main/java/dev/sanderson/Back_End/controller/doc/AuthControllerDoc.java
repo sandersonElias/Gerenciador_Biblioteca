@@ -1,5 +1,6 @@
 package dev.sanderson.Back_End.controller.doc;
 
+import dev.sanderson.Back_End.dto.UserDtos.LoginResponse;
 import dev.sanderson.Back_End.dto.UserDtos.UserLoginDto;
 import dev.sanderson.Back_End.dto.UserDtos.UserRequest;
 import dev.sanderson.Back_End.dto.UserDtos.UserResponse;
@@ -11,13 +12,17 @@ import org.springframework.http.ResponseEntity;
 
 public interface AuthControllerDoc {
 
-    @Operation(summary = "Realizar login de usuário", description = "Realiza autenticação e retorna uma chave bearer de autenticação")
+    @Operation(
+            summary = "Realizar login de usuário",
+            description = "Realiza autenticação e retorna o token JWT junto com a flag senhaAlterada. " +
+                    "Se senhaAlterada for false, o front deve exibir banner solicitando a troca de senha."
+    )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Autenticado com sucesso, chave bearer retornada"),
+            @ApiResponse(responseCode = "200", description = "Autenticado com sucesso, token e status retornados"),
             @ApiResponse(responseCode = "400", description = "Login ou senha incorretos"),
             @ApiResponse(responseCode = "500", description = "Erro interno do servidor")
     })
-    public ResponseEntity<String> auth(@Valid UserLoginDto userLoginDto) throws Exception;
+    public ResponseEntity<LoginResponse> auth(@Valid UserLoginDto userLoginDto) throws Exception;
 
     @Operation(summary = "Registrar um novo usuário", description = "Registra um novo usuário no sistema com as informações fornecidas")
     @ApiResponses(value = {

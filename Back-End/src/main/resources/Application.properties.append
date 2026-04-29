@@ -1,0 +1,14 @@
+# ═══════════════════════════════════════════════════════════════════
+#  Regras de empréstimo (Biblioteca Monsa)
+# ═══════════════════════════════════════════════════════════════════
+# Prazo padrão de devolução, em dias
+biblioteca.emprestimo.prazo-dias=7
+
+# Quantidade máxima de renovações por empréstimo
+biblioteca.emprestimo.max-renovacoes=3
+
+# Limite de empréstimos ATIVOS+ATRASADOS simultâneos por perfil
+biblioteca.emprestimo.limite.aluno=2
+biblioteca.emprestimo.limite.professor=5
+biblioteca.emprestimo.limite.funcionario=10
+biblioteca.emprestimo.limite.admin=10

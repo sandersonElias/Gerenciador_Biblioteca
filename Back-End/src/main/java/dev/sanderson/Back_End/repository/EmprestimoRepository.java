@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -77,4 +78,7 @@ public interface EmprestimoRepository extends JpaRepository<Emprestimo, Long> {
             @Param("email") String email,
             @Param("status") StatusEmprestimo status
     );
+
+    // ✅ NOVO: Conta empréstimos em curso de um usuário (para validar limite)
+    long countByUserIdAndStatusIn(Long userId, Collection<StatusEmprestimo> statuses);
 }

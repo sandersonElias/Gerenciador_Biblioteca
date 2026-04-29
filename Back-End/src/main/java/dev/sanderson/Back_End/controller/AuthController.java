@@ -1,6 +1,7 @@
 package dev.sanderson.Back_End.controller;
 
 import dev.sanderson.Back_End.controller.doc.AuthControllerDoc;
+import dev.sanderson.Back_End.dto.UserDtos.LoginResponse;
 import dev.sanderson.Back_End.dto.UserDtos.UserLoginDto;
 import dev.sanderson.Back_End.dto.UserDtos.UserRequest;
 import dev.sanderson.Back_End.dto.UserDtos.UserResponse;
@@ -19,7 +20,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-
 @RestController
 @Validated
 @RequiredArgsConstructor
@@ -31,7 +31,7 @@ public class AuthController implements AuthControllerDoc {
     private final TokenService tokenService;
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> auth(@RequestBody @Valid UserLoginDto userLoginDto)  {
+    public ResponseEntity<LoginResponse> auth(@RequestBody @Valid UserLoginDto userLoginDto) {
 
         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
                 new UsernamePasswordAuthenticationToken(
@@ -40,20 +40,21 @@ public class AuthController implements AuthControllerDoc {
                 );
 
         Authentication authentication =
-                authenticationManager.authenticate(
-                        usernamePasswordAuthenticationToken);
+                authenticationManager.authenticate(usernamePasswordAuthenticationToken);
 
         User userValidado = (User) authentication.getPrincipal();
 
-        return new ResponseEntity<>(tokenService.generateToken(userValidado), HttpStatus.OK);
+        String token = tokenService.generateToken(userValidado);
+        LoginResponse response = new LoginResponse(token, userValidado.isSenhaAlterada());
 
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PostMapping(
             value = "/registrar",
             consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public ResponseEntity<UserResponse> registrar (@RequestBody @Valid UserRequest userRequest) throws BusinessRuleException {
+    public ResponseEntity<UserResponse> registrar(@RequestBody @Valid UserRequest userRequest) throws BusinessRuleException {
         UserResponse user = userService.registrar(userRequest);
         return new ResponseEntity<>(user, HttpStatus.CREATED);
     }

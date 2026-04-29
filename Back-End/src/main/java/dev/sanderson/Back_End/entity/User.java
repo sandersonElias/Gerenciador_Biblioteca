@@ -38,6 +38,22 @@ public class User implements UserDetails {
     @JoinColumn(name = "role_id", nullable = false)
     private Roles role;
 
+    /** ID do aluno na SEE-MG. Único e nulo para perfis não-aluno. */
+    @Column(unique = true, length = 20)
+    private String matricula;
+
+    /**
+     * Indica se o usuário já trocou a senha padrão.
+     * Default false para alunos novos, true para admins/funcionários
+     * (definido na migração V13).
+     */
+    @Column(name = "senha_alterada", nullable = false)
+    private boolean senhaAlterada = false;
+
+    public boolean precisaTrocarSenha() {
+        return !senhaAlterada;
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(role.getRole()));
