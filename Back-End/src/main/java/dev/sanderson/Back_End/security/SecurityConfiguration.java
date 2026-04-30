@@ -39,7 +39,7 @@ public class SecurityConfiguration {
 
                         // ── Auth ──────────────────────────────────────────────────────
                         .requestMatchers(HttpMethod.POST, "/auth").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/auth/registrar").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/registrar").hasRole("ADMIN")
 
                         // ── Livro: GET público ─────────────────────────────────────────
                         .requestMatchers(HttpMethod.GET, "/livro/**").permitAll()
@@ -78,6 +78,10 @@ public class SecurityConfiguration {
                         // DEVE vir ANTES de /emprestimo/**
                         .requestMatchers(HttpMethod.GET, "/emprestimo/minha-conta/**")
                         .hasAnyRole("ALUNO", "FUNCIONARIO", "ADMIN")
+
+                        // Trocar senha :
+                        .requestMatchers(HttpMethod.POST, "/user/me/trocar-senha")
+                        .hasRole("ALUNO")
 
                         // ── Solicitações: POST — aluno solicita renovação ─────────────
                         .requestMatchers(HttpMethod.POST, "/solicitacoes-renovacao/**")
