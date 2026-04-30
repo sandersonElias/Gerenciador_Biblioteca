@@ -30,3 +30,4 @@ yarn-error.log*
 # Storybook
 storybook-static
 .vercel
+.env*.local

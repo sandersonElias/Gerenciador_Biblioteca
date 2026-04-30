@@ -1,0 +1,87 @@
+.trocar-senha-banner {
+  background: linear-gradient(90deg, #fff7e6 0%, #ffeccc 100%);
+  border-bottom: 1px solid #f0b962;
+  color: #7a4c00;
+  font-size: 0.9rem;
+
+  &__content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0.75rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+  }
+
+  &__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: rgba(240, 153, 56, 0.18);
+    color: #b8730a;
+  }
+
+  &__text {
+    flex: 1;
+    line-height: 1.4;
+
+    strong {
+      color: #6a3d00;
+      font-weight: 600;
+      margin-right: 0.25rem;
+    }
+  }
+
+  &__action {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.45rem 1rem;
+    background: #c97a17;
+    color: #fff;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background-color 0.15s ease, transform 0.15s ease;
+
+    &:hover {
+      background: #a86411;
+      transform: translateY(-1px);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+
+  // Responsivo
+  @media (max-width: 600px) {
+    &__content {
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    &__text {
+      flex: 1 1 100%;
+      order: 2;
+
+      strong {
+        display: block;
+      }
+    }
+
+    &__icon {
+      order: 1;
+    }
+
+    &__action {
+      order: 3;
+      margin-left: auto;
+    }
+  }
+}

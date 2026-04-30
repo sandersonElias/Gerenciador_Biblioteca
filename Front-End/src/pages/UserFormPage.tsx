@@ -9,6 +9,7 @@ import './UserFormPage.scss';
 
 const roles: { value: Role; label: string; desc: string }[] = [
   { value: 'ROLE_ALUNO',       label: 'Aluno',          desc: 'Pode buscar livros, fazer reservas e acompanhar empréstimos' },
+  { value: 'ROLE_PROFESSOR',       label: 'Professor',  desc: 'Pode buscar livros, fazer reservas e acompanhar empréstimos' },
   { value: 'ROLE_FUNCIONARIO', label: 'Funcionário',    desc: 'Pode gerenciar empréstimos, renovações e devoluções' },
   { value: 'ROLE_ADMIN',       label: 'Administrador',  desc: 'Acesso total ao sistema, incluindo cadastro de livros e usuários' },
 ];

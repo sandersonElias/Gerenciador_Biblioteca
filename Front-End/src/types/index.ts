@@ -3,9 +3,10 @@ export interface User {
   name: string;
   email: string;
   role: Role;
+  senhaAlterada: boolean;
 }
 
-export type Role = 'ROLE_ADMIN' | 'ROLE_FUNCIONARIO' | 'ROLE_ALUNO';
+export type Role = 'ROLE_ADMIN' | 'ROLE_FUNCIONARIO' | 'ROLE_ALUNO' | 'ROLE_PROFESSOR';
 
 export interface UserLoginDto {
   email: string;
@@ -30,6 +31,24 @@ export interface UserMinDto {
   email: string;
 }
 
+// ── Auth ──────────────────────────────────────────────────────────────────────
+export interface LoginResponse {
+  token: string;
+  senhaAlterada: boolean;
+}
+
+export interface TrocarSenhaRequest {
+  senhaAtual: string;
+  novaSenha: string;
+  confirmacaoNovaSenha: string;
+}
+
+export interface CadastrarProfessorRequest {
+  matricula: string;
+  nome: string;
+  email: string;
+}
+
 // Book Types
 export interface Livro {
   id: number;
@@ -50,7 +69,7 @@ export interface Livro {
 export interface LivroMinDto {
   id: number;
   titulo: string;
-  urlImg?: string;  // necessário para empréstimos e histórico
+  urlImg?: string;
 }
 
 export interface LivroRequest {

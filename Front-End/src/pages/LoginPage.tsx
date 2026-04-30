@@ -2,20 +2,17 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-// import Input from '../components/common/Input';
 import Button from '../components/common/Button';
 import LoginImg from '../components/assets/login-img.png';
 import './LoginPage.scss';
 
 const EyeIcon = ({ open }: { open: boolean }) =>
   open ? (
-    // Olho aberto
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
       <circle cx="12" cy="12" r="3" />
     </svg>
   ) : (
-    // Olho fechado
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
       <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
@@ -49,10 +46,18 @@ const LoginPage: React.FC = () => {
 
     setIsLoading(true);
     try {
-      await login(email, password);
-      showToast('Login realizado com sucesso!', 'success');
-      const from = (location.state as any)?.from?.pathname || '/';
-      navigate(from, { replace: true });
+      // ✅ login agora retorna { senhaAlterada }
+      const { senhaAlterada } = await login(email, password);
+
+      if (!senhaAlterada) {
+        // Aluno usando senha padrão (matrícula): direciona direto para troca de senha
+        showToast('Bem-vindo! Por favor, defina uma nova senha.', 'info');
+        navigate('/trocar-senha', { replace: true });
+      } else {
+        showToast('Login realizado com sucesso!', 'success');
+        const from = (location.state as any)?.from?.pathname || '/';
+        navigate(from, { replace: true });
+      }
     } catch (error: any) {
       showToast(error.response?.data?.message || 'Credenciais inválidas', 'error');
     } finally {
@@ -62,7 +67,6 @@ const LoginPage: React.FC = () => {
 
   return (
     <div className="login-page">
-      {/* Botão X — volta para o home */}
       <Link to="/" className="login-close" aria-label="Voltar para o início">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
           <line x1="18" y1="6" x2="6" y2="18" />
@@ -71,7 +75,6 @@ const LoginPage: React.FC = () => {
       </Link>
 
       <div className="login-container">
-        {/* Painel esquerdo — ilustração */}
         <div className="login-illustration">
           <div className="illustration-content">
             <img className="illustration-icon" src={LoginImg} alt="Ilustração biblioteca" />
@@ -80,11 +83,8 @@ const LoginPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Painel direito — formulário */}
         <div className="login-form-section">
           <div className="login-form-wrapper">
-
-            {/* Cabeçalho do form */}
             <div className="login-header">
               <div className="login-logo-mark">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -97,11 +97,8 @@ const LoginPage: React.FC = () => {
             </div>
 
             <form onSubmit={handleSubmit} className="login-form" noValidate>
-              {/* Campo e-mail */}
               <div className="form-field">
-                <label htmlFor="email" className="form-label">
-                  E-mail
-                </label>
+                <label htmlFor="email" className="form-label">E-mail</label>
                 <div className={`form-input-wrapper ${errors.email ? 'form-input-wrapper--error' : ''}`}>
                   <span className="form-input-icon">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -130,11 +127,8 @@ const LoginPage: React.FC = () => {
                 )}
               </div>
 
-              {/* Campo senha */}
               <div className="form-field">
-                <label htmlFor="password" className="form-label">
-                  Senha
-                </label>
+                <label htmlFor="password" className="form-label">Senha</label>
                 <div className={`form-input-wrapper ${errors.password ? 'form-input-wrapper--error' : ''}`}>
                   <span className="form-input-icon">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -181,7 +175,6 @@ const LoginPage: React.FC = () => {
                 Entrar
               </Button>
             </form>
-
           </div>
         </div>
       </div>

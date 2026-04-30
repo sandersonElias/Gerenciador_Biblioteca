@@ -18,6 +18,9 @@ import {
   CatalogacaoDto,
   CatalogacaoResponse,
   Exemplar,
+  LoginResponse,
+  TrocarSenhaRequest,
+  CadastrarProfessorRequest,
 } from '@/types';
 
 // ── Tipos adicionais para Meu Perfil ──────────────────────────────────────────
@@ -82,7 +85,8 @@ const apiClient: AxiosInstance = axios.create({
   },
 });
 
-// Injeta o token em todas as requisições
+// Injeta o token em todas as requisições.
+// O token é armazenado SEM o prefixo "Bearer" — adicionamos aqui de forma centralizada.
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = localStorage.getItem('auth_token');
@@ -109,8 +113,9 @@ apiClient.interceptors.response.use(
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
 export const authApi = {
-  login: async (credentials: UserLoginDto): Promise<string> => {
-    const response = await apiClient.post('/auth', credentials);
+  // ✅ Backend agora retorna { token, senhaAlterada } em vez de string pura
+  login: async (credentials: UserLoginDto): Promise<LoginResponse> => {
+    const response = await apiClient.post<LoginResponse>('/auth', credentials);
     return response.data;
   },
   register: async (userData: UserRequest): Promise<UserResponse> => {
@@ -123,6 +128,22 @@ export const authApi = {
 export const userApi = {
   getUserName: async (name: string): Promise<UserResponse[]> => {
     const response = await apiClient.get(`/user/name/${encodeURIComponent(name)}`);
+    return response.data;
+  },
+
+  // ✅ Troca de senha do usuário autenticado (apenas ALUNO)
+  trocarSenha: async (request: TrocarSenhaRequest): Promise<void> => {
+    await apiClient.post('/user/me/trocar-senha', request);
+  },
+};
+
+// ── Admin ─────────────────────────────────────────────────────────────────────
+export const adminUsuariosApi = {
+  cadastrarProfessor: async (request: CadastrarProfessorRequest): Promise<UserResponse> => {
+    const response = await apiClient.post<UserResponse>(
+      '/admin/usuarios/cadastrar-professor',
+      request,
+    );
     return response.data;
   },
 };
@@ -164,7 +185,6 @@ export const autorApi = {
     const response = await apiClient.post('/autor', autor);
     return response.data;
   },
-  // ✅ backend retorna List<AutorResponse> — tipagem corrigida para array
   getByAutor: async (autor: string): Promise<AutorResponse[]> => {
     const response = await apiClient.get(`/autor/buscar/${encodeURIComponent(autor)}`);
     return response.data;
@@ -177,7 +197,6 @@ export const generoApi = {
     const response = await apiClient.post('/genero', genero);
     return response.data;
   },
-  // ✅ backend retorna List<GeneroResponse> — tipagem corrigida para array
   getByGenero: async (genero: string): Promise<GeneroResponse[]> => {
     const response = await apiClient.get(`/genero/buscar/${encodeURIComponent(genero)}`);
     return response.data;
@@ -190,7 +209,6 @@ export const catalogacaoApi = {
     const response = await apiClient.post('/catalogacao', catalogacao);
     return response.data;
   },
-  // ✅ backend retorna List<CatalogacaoResponse> — tipagem corrigida para array
   getByCatalogacao: async (catalogacao: string): Promise<CatalogacaoResponse[]> => {
     const response = await apiClient.get(`/catalogacao/buscar/${encodeURIComponent(catalogacao)}`);
     return response.data;

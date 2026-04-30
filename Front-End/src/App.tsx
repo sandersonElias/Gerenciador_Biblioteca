@@ -17,6 +17,8 @@ import AdminPage from './pages/AdminPage';
 import BookFormPage from './pages/BookFormPage';
 import UserFormPage from './pages/UserFormPage';
 import ProfilePage from './pages/ProfilePage';
+import TrocarSenhaPage from './pages/Trocarsenhapage';
+import CadastrarProfessorPage from './pages/Cadastrarprofessorpage';
 
 import './App.scss';
 
@@ -29,92 +31,116 @@ function App() {
             <Routes>
               {/* Public Routes */}
               <Route path="/login" element={<LoginPage />} />
-              
+
               {/* Routes with Layout */}
               <Route path="/" element={<Layout><HomePage /></Layout>} />
               <Route path="/buscar" element={<Layout><BookSearchPage /></Layout>} />
               <Route path="/livro/:id" element={<Layout><BookDetailPage /></Layout>} />
-              
-              {/* Protected Routes - Aluno, Funcionario, Admin */}
-              <Route 
-                path="/meu-perfil" 
+
+              {/* Protected Routes - Aluno, Funcionario, Admin (e Professor) */}
+              <Route
+                path="/meu-perfil"
                 element={
                   <Layout>
-                    <ProtectedRoute allowedRoles={['ROLE_ALUNO', 'ROLE_FUNCIONARIO', 'ROLE_ADMIN']}>
+                    <ProtectedRoute allowedRoles={['ROLE_ALUNO', 'ROLE_PROFESSOR', 'ROLE_FUNCIONARIO', 'ROLE_ADMIN']}>
                       <ProfilePage />
                     </ProtectedRoute>
                   </Layout>
-                } 
+                }
               />
-              
+
+              {/* ✅ Trocar senha — apenas ALUNO (mesma regra do backend) */}
+              <Route
+                path="/trocar-senha"
+                element={
+                  <Layout>
+                    <ProtectedRoute allowedRoles={['ROLE_ALUNO']}>
+                      <TrocarSenhaPage />
+                    </ProtectedRoute>
+                  </Layout>
+                }
+              />
+
               {/* Protected Routes - Funcionario and Admin only */}
-              <Route 
-                path="/emprestimos" 
+              <Route
+                path="/emprestimos"
                 element={
                   <Layout>
                     <ProtectedRoute allowedRoles={['ROLE_FUNCIONARIO', 'ROLE_ADMIN']}>
                       <LoansPage />
                     </ProtectedRoute>
                   </Layout>
-                } 
+                }
               />
-              
-              <Route 
-                path="/relatorios" 
+
+              <Route
+                path="/relatorios"
                 element={
                   <Layout>
                     <ProtectedRoute allowedRoles={['ROLE_FUNCIONARIO', 'ROLE_ADMIN']}>
                       <ReportsPage />
                     </ProtectedRoute>
                   </Layout>
-                } 
+                }
               />
-              
+
               {/* Protected Routes - Admin only */}
-              <Route 
-                path="/admin" 
+              <Route
+                path="/admin"
                 element={
                   <Layout>
                     <ProtectedRoute allowedRoles={['ROLE_ADMIN']}>
                       <AdminPage />
                     </ProtectedRoute>
                   </Layout>
-                } 
+                }
               />
-              
-              <Route 
-                path="/admin/livros/novo" 
+
+              <Route
+                path="/admin/livros/novo"
                 element={
                   <Layout>
                     <ProtectedRoute allowedRoles={['ROLE_ADMIN']}>
                       <BookFormPage />
                     </ProtectedRoute>
                   </Layout>
-                } 
+                }
               />
-              
-              <Route 
-                path="/admin/livros/editar/:id" 
+
+              <Route
+                path="/admin/livros/editar/:id"
                 element={
                   <Layout>
                     <ProtectedRoute allowedRoles={['ROLE_ADMIN']}>
                       <BookFormPage />
                     </ProtectedRoute>
                   </Layout>
-                } 
+                }
               />
-              
-              <Route 
-                path="/admin/usuarios/novo" 
+
+              <Route
+                path="/admin/usuarios/novo"
                 element={
                   <Layout>
                     <ProtectedRoute allowedRoles={['ROLE_ADMIN']}>
                       <UserFormPage />
                     </ProtectedRoute>
                   </Layout>
-                } 
+                }
               />
-              
+
+              {/* ✅ Cadastrar professor — apenas ADMIN */}
+              <Route
+                path="/admin/usuarios/cadastrar-professor"
+                element={
+                  <Layout>
+                    <ProtectedRoute allowedRoles={['ROLE_ADMIN']}>
+                      <CadastrarProfessorPage />
+                    </ProtectedRoute>
+                  </Layout>
+                }
+              />
+
               {/* Fallback */}
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
