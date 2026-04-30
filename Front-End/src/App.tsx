@@ -18,7 +18,6 @@ import BookFormPage from './pages/BookFormPage';
 import UserFormPage from './pages/UserFormPage';
 import ProfilePage from './pages/ProfilePage';
 import TrocarSenhaPage from './pages/Trocarsenhapage';
-import CadastrarProfessorPage from './pages/Cadastrarprofessorpage';
 
 import './App.scss';
 
@@ -124,18 +123,6 @@ function App() {
                   <Layout>
                     <ProtectedRoute allowedRoles={['ROLE_ADMIN']}>
                       <UserFormPage />
-                    </ProtectedRoute>
-                  </Layout>
-                }
-              />
-
-              {/* ✅ Cadastrar professor — apenas ADMIN */}
-              <Route
-                path="/admin/usuarios/cadastrar-professor"
-                element={
-                  <Layout>
-                    <ProtectedRoute allowedRoles={['ROLE_ADMIN']}>
-                      <CadastrarProfessorPage />
                     </ProtectedRoute>
                   </Layout>
                 }
