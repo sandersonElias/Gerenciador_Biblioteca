@@ -1,10 +1,10 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Exemplar, Livro, ReservaResponse } from '../types';
 import { exemplarApi, livroApi, reservaApi } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { useLoading } from '../context/LoadingContext';
 import Button from '../components/common/Button';
 import Modal from '../components/common/Modal';
 import './BookDetailPage.scss';
@@ -12,59 +12,73 @@ import './BookDetailPage.scss';
 const BookDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
-  const [book, setBook] = useState<Livro | null>(null);
-  const [reservations, setReservations] = useState<ReservaResponse[]>([]);
-  const [exemplares, setExemplares] = useState<Exemplar[]>([]);
   const [showReserveModal, setShowReserveModal] = useState(false);
 
   const { user, isAuthenticated, hasAnyRole } = useAuth();
   const { showToast } = useToast();
-  const { withLoading } = useLoading();
 
-  const loadBook = useCallback(async (bookId: number) => {
-    try {
-      const bookData = await withLoading(livroApi.getById(bookId));
-      setBook(bookData);
+  const bookId = Number(id);
+  const isValidId = !isNaN(bookId);
 
-      if (hasAnyRole(['ROLE_FUNCIONARIO', 'ROLE_ADMIN'])) {
-        const [reservas, exs] = await Promise.all([
-          reservaApi.getByLivro(bookId),
-          exemplarApi.listarPorLivro(bookId),
-        ]);
-        setReservations(reservas);
-        setExemplares(exs);
-      }
-    } catch (error) {
-      showToast('Erro ao carregar detalhes do livro', 'error');
-    }
-  }, [withLoading, hasAnyRole, showToast]);
+  // ✅ Query 1: Detalhes do livro (cacheado por 5 min)
+  const { data: book } = useQuery<Livro | undefined>({
+    queryKey: ['livro', bookId],
+    queryFn: () => livroApi.getById(bookId),
+    enabled: isValidId,
+  });
 
-  useEffect(() => {
-    if (!id) return;
-    const bookId = Number(id);
-    if (isNaN(bookId)) {
-      showToast('ID do livro inválido', 'error');
-      return;
-    }
-    loadBook(bookId);
-  }, [id, loadBook, showToast]);
+  // ✅ Query 2: Reservas do livro (só para admin/funcionário)
+  const { data: reservations = [] } = useQuery<ReservaResponse[]>({
+    queryKey: ['reservas', 'livro', bookId],
+    queryFn: () => reservaApi.getByLivro(bookId),
+    enabled: isValidId && hasAnyRole(['ROLE_FUNCIONARIO', 'ROLE_ADMIN']),
+  });
 
-  const handleReserve = async () => {
-    if (!book || !isAuthenticated || !user) return;
+  // ✅ Query 3: Exemplares do livro (só para admin/funcionário)
+  const { data: exemplares = [] } = useQuery<Exemplar[]>({
+    queryKey: ['exemplares', 'livro', bookId],
+    queryFn: () => exemplarApi.listarPorLivro(bookId),
+    enabled: isValidId && hasAnyRole(['ROLE_FUNCIONARIO', 'ROLE_ADMIN']),
+  });
 
-    try {
-      await reservaApi.create({ livroId: book.id, userId: user.id });
+  // ✅ Mutation: Criar reserva
+  const reservarMutation = useMutation({
+    mutationFn: () => {
+      if (!book || !user) throw new Error('Dados inválidos');
+      return reservaApi.create({ livroId: book.id, userId: user.id });
+    },
+    onSuccess: () => {
       showToast('Livro reservado com sucesso!', 'success');
       setShowReserveModal(false);
-      loadBook(book.id);
-    } catch (error: any) {
+      // Invalida queries relacionadas
+      queryClient.invalidateQueries({ queryKey: ['livro', bookId] });
+      queryClient.invalidateQueries({ queryKey: ['reservas', 'livro', bookId] });
+      queryClient.invalidateQueries({ queryKey: ['reservas', 'minhas'] });
+    },
+    onError: (error: any) => {
       showToast(
         error.response?.data?.message || 'Erro ao reservar livro',
         'error'
       );
-    }
+    },
+  });
+
+  const handleReserve = async () => {
+    if (!book || !isAuthenticated || !user) return;
+    reservarMutation.mutate();
   };
+
+  if (!isValidId) {
+    return (
+      <div className="book-detail-page">
+        <div className="container">
+          <div className="error">ID do livro inválido</div>
+        </div>
+      </div>
+    );
+  }
 
   if (!book) {
     return (
@@ -77,7 +91,7 @@ const BookDetailPage: React.FC = () => {
   }
 
   const isAvailable = book.quantidadeDisponivel > 0;
-  const canReserve = isAuthenticated && hasAnyRole(['ROLE_ALUNO', 'ROLE_FUNCIONARIO', 'ROLE_ADMIN']);
+  const canReserve = isAuthenticated && hasAnyRole(['ROLE_ALUNO', 'ROLE_PROFESSOR', 'ROLE_FUNCIONARIO', 'ROLE_ADMIN']);
   const canEdit = isAuthenticated && hasAnyRole(['ROLE_ADMIN']);
   const availabilityPercentage =
     book.totalExemplares > 0
@@ -295,7 +309,11 @@ const BookDetailPage: React.FC = () => {
             <Button variant="ghost" onClick={() => setShowReserveModal(false)}>
               Cancelar
             </Button>
-            <Button variant="primary" onClick={handleReserve}>
+            <Button 
+              variant="primary" 
+              onClick={handleReserve}
+              isLoading={reservarMutation.isPending}
+            >
               Confirmar
             </Button>
           </>

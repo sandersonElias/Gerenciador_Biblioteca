@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { Livro } from '../types';
 import { livroApi } from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import { useToast } from '../context/ToastContext';
-import { useLoading } from '../context/LoadingContext';
+// import { useToast } from '../context/ToastContext';
 import SearchBar from '../components/books/SearchBar';
 import Button from '../components/common/Button';
 import './HomePage.scss';
@@ -13,29 +13,21 @@ import ImgUm from '../components/assets/home-img.png';
 const ANIMATED_WORDS = ['Leitura', 'Conhecimento', 'Aprendizado', 'Descoberta', 'Cultura'];
 
 const HomePage: React.FC = () => {
-  const [popularBooks, setPopularBooks] = useState<Livro[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isAnimating, setIsAnimating]   = useState(false);
-  const [direction, setDirection]       = useState<'next' | 'prev'>('next');
-  const [wordIndex, setWordIndex]       = useState(0);
-  const [wordVisible, setWordVisible]   = useState(true);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [direction, setDirection] = useState<'next' | 'prev'>('next');
+  const [wordIndex, setWordIndex] = useState(0);
+  const [wordVisible, setWordVisible] = useState(true);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const { isAuthenticated, hasAnyRole } = useAuth();
-  const { showToast } = useToast();
-  const { withLoading } = useLoading();
+  // const { showToast } = useToast();
 
-  const loadPopularBooks = useCallback(async () => {
-    try {
-      const books = await withLoading(livroApi.getPopulares(6));
-      setPopularBooks(Array.isArray(books) ? books : []);
-    } catch {
-      showToast('Erro ao carregar livros populares', 'error');
-      setPopularBooks([]);
-    }
-  }, [withLoading, showToast]);
-
-  useEffect(() => { loadPopularBooks(); }, [loadPopularBooks]);
+  // ✅ React Query: livros populares (cacheados por 5 min)
+  const { data: popularBooks = [] } = useQuery<Livro[]>({
+    queryKey: ['livros', 'populares'],
+    queryFn: () => livroApi.getPopulares(6),
+  });
 
   // Troca de palavras animadas
   useEffect(() => {

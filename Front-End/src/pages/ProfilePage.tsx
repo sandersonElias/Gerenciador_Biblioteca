@@ -1,5 +1,6 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ReservaResponse } from '../types';
 import {
   MeusEmprestimosResponse,
@@ -10,7 +11,6 @@ import {
 import { reservaApi } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { useLoading } from '../context/LoadingContext';
 import Button from '../components/common/Button';
 import Modal from '../components/common/Modal';
 import './ProfilePage.scss';
@@ -21,6 +21,7 @@ const roleLabel = (role: string) => {
     case 'ROLE_ADMIN':       return 'Administrador';
     case 'ROLE_FUNCIONARIO': return 'Funcionário';
     case 'ROLE_ALUNO':       return 'Aluno';
+    case 'ROLE_PROFESSOR':   return 'Professor';
     default:                 return role;
   }
 };
@@ -48,69 +49,61 @@ const statusReservaClass = (s: string) => {
 const ProfilePage: React.FC = () => {
   const { user, hasAnyRole } = useAuth();
   const { showToast } = useToast();
-  const { withLoading } = useLoading();
+  const queryClient = useQueryClient();
 
-  const [emprestimos, setEmprestimos]         = useState<MeusEmprestimosResponse | null>(null);
-  const [reservas, setReservas]               = useState<ReservaResponse[]>([]);
-  const [solicitando, setSolicitando]         = useState(false);
-  const [cancelTarget, setCancelTarget]       = useState<ReservaResponse | null>(null);
+  const [cancelTarget, setCancelTarget] = useState<ReservaResponse | null>(null);
   const [showCancelModal, setShowCancelModal] = useState(false);
 
   const isAluno = hasAnyRole(['ROLE_ALUNO']);
 
-  // ── carrega empréstimos — passa o email na URL ─────────────────────────────
-  const loadEmprestimos = useCallback(async () => {
-    if (!user?.email) return;
-    try {
-      const data = await withLoading(meusEmprestimosApi.getMeusEmprestimos(user.email));
-      setEmprestimos(data);
-    } catch {
-      showToast('Erro ao carregar empréstimos', 'error');
-    }
-  }, [user?.email, withLoading, showToast]);
+  // ✅ Query 1: Empréstimos do usuário (cacheados por 5 min)
+  const { data: emprestimos = null } = useQuery<MeusEmprestimosResponse | null>({
+    queryKey: ['emprestimos', 'meus', user?.email],
+    queryFn: () => user?.email ? meusEmprestimosApi.getMeusEmprestimos(user.email) : Promise.resolve(null),
+    enabled: !!user?.email,
+  });
 
-  // ── carrega reservas — passa o email na URL (padrão já existente) ──────────
-  const loadReservas = useCallback(async () => {
-    if (!user?.email) return;
-    try {
-      const data = await reservaApi.getReservaEmail(user.email);
-      setReservas(data);
-    } catch {
-      showToast('Erro ao carregar reservas', 'error');
-    }
-  }, [user?.email, showToast]);
+  // ✅ Query 2: Reservas do usuário (cacheadas por 5 min)
+  const { data: reservas = [] } = useQuery<ReservaResponse[]>({
+    queryKey: ['reservas', 'minhas', user?.email],
+    queryFn: () => user?.email ? reservaApi.getReservaEmail(user.email) : Promise.resolve([]),
+    enabled: !!user?.email,
+  });
 
-  useEffect(() => {
-    loadEmprestimos();
-    loadReservas();
-  }, [loadEmprestimos, loadReservas]);
-
-  // ── solicitar renovação — passa o email na URL ─────────────────────────────
-  const handleSolicitarRenovacao = async (ativo: EmprestimosAtivoDto) => {
-    if (!user?.email) return;
-    setSolicitando(true);
-    try {
-      await solicitacaoRenovacaoApi.solicitar(ativo.id, user.email);
+  // ✅ Mutation: Solicitar renovação
+  const solicitarRenovacaoMutation = useMutation({
+    mutationFn: ({ emprestimoId, email }: { emprestimoId: number; email: string }) =>
+      solicitacaoRenovacaoApi.solicitar(emprestimoId, email),
+    onSuccess: () => {
       showToast('Solicitação de renovação enviada! Aguarde a aprovação.', 'success');
-      loadEmprestimos();
-    } catch (err: any) {
+      queryClient.invalidateQueries({ queryKey: ['emprestimos', 'meus'] });
+    },
+    onError: (err: any) => {
       showToast(err.response?.data?.message || 'Erro ao solicitar renovação', 'error');
-    } finally {
-      setSolicitando(false);
-    }
-  };
+    },
+  });
 
-  // ── cancelar reserva ───────────────────────────────────────────────────────
-  const handleCancelarReserva = async () => {
-    if (!cancelTarget) return;
-    try {
-      await reservaApi.cancelar(cancelTarget.id);
+  // ✅ Mutation: Cancelar reserva
+  const cancelarReservaMutation = useMutation({
+    mutationFn: (reservaId: number) => reservaApi.cancelar(reservaId),
+    onSuccess: () => {
       showToast('Reserva cancelada com sucesso!', 'success');
       setShowCancelModal(false);
-      loadReservas();
-    } catch (err: any) {
+      queryClient.invalidateQueries({ queryKey: ['reservas', 'minhas'] });
+    },
+    onError: (err: any) => {
       showToast(err.response?.data?.message || 'Erro ao cancelar reserva', 'error');
-    }
+    },
+  });
+
+  const handleSolicitarRenovacao = async (ativo: EmprestimosAtivoDto) => {
+    if (!user?.email) return;
+    solicitarRenovacaoMutation.mutate({ emprestimoId: ativo.id, email: user.email });
+  };
+
+  const handleCancelarReserva = async () => {
+    if (!cancelTarget) return;
+    cancelarReservaMutation.mutate(cancelTarget.id);
   };
 
   const userInitial = user?.name?.charAt(0).toUpperCase() ?? '?';
@@ -214,7 +207,7 @@ const ProfilePage: React.FC = () => {
                       <Button
                         variant="primary"
                         size="sm"
-                        isLoading={solicitando}
+                        isLoading={solicitarRenovacaoMutation.isPending}
                         onClick={() => handleSolicitarRenovacao(a)}
                       >
                         Solicitar Renovação

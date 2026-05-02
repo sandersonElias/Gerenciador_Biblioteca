@@ -1,9 +1,9 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { Livro, BookFilterType } from '../types';
 import { livroApi } from '../services/api';
 import { useToast } from '../context/ToastContext';
-import { useLoading } from '../context/LoadingContext';
 import BookCard from '../components/books/BookCard';
 import SearchBar from '../components/books/SearchBar';
 import Img from '../components/assets/bookSearch-img-um.png';
@@ -11,56 +11,53 @@ import './BookSearchPage.scss';
 
 const BookSearchPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [books, setBooks] = useState<Livro[]>([]);
-  const [filteredBooks, setFilteredBooks] = useState<Livro[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const { showToast } = useToast();
-  const { withLoading } = useLoading();
 
   const initialFilter = (searchParams.get('filter') as BookFilterType) || 'titulo';
   const initialTerm = searchParams.get('term') || '';
 
-  const handleSearch = useCallback(async (filter: BookFilterType, term: string) => {
-    if (!term.trim()) {
-      setFilteredBooks(books);
-      return;
-    }
+  const [currentFilter, setCurrentFilter] = useState<BookFilterType>(initialFilter);
+  const [currentTerm, setCurrentTerm] = useState(initialTerm);
 
-    setIsLoading(true);
-    setSearchParams({ filter, term });
+  // ✅ Query 1: Busca todos os livros (cacheado por 5 min)
+  const { data: allBooks = [] } = useQuery<Livro[]>({
+    queryKey: ['livros', 'todos'],
+    queryFn: livroApi.getAll,
+  });
 
-    try {
-      const results = await livroApi.searchByFilter(filter, term);
-      setFilteredBooks(results);
-      if (results.length === 0) {
-        showToast('Nenhum livro encontrado', 'info');
-      }
-    } catch (error) {
-      showToast('Erro na busca', 'error');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [books, setSearchParams, showToast]);
+  // ✅ Query 2: Busca filtrada (só executa se houver termo de busca)
+  const {
+    data: searchResults = [],
+    isLoading: isSearching,
+  } = useQuery<Livro[]>({
+    queryKey: ['livros', currentFilter, currentTerm],
+    queryFn: () => livroApi.searchByFilter(currentFilter, currentTerm),
+    enabled: !!currentTerm.trim(), // Só executa se houver termo
+  });
 
-  const loadBooks = useCallback(async () => {
-    try {
-      const allBooks = await withLoading(livroApi.getAll());
-      setBooks(allBooks);
-      setFilteredBooks(allBooks);
-    } catch (error) {
-      showToast('Erro ao carregar livros', 'error');
-    }
-  }, [withLoading, showToast]);
-
+  // Side effect: toast quando busca retorna vazio
   useEffect(() => {
-    loadBooks();
-  }, [loadBooks]);
+    if (currentTerm.trim() && searchResults.length === 0 && !isSearching) {
+      showToast('Nenhum livro encontrado', 'info');
+    }
+  }, [searchResults, currentTerm, isSearching, showToast]);
 
+  // Decide quais livros mostrar: resultado da busca OU todos
+  const displayedBooks = currentTerm.trim() ? searchResults : allBooks;
+
+  const handleSearch = (filter: BookFilterType, term: string) => {
+    setCurrentFilter(filter);
+    setCurrentTerm(term);
+    setSearchParams({ filter, term });
+  };
+
+  // Sincroniza com URL params na primeira carga
   useEffect(() => {
     if (initialTerm) {
-      handleSearch(initialFilter, initialTerm);
+      setCurrentFilter(initialFilter);
+      setCurrentTerm(initialTerm);
     }
-  }, [initialTerm, initialFilter, handleSearch]);
+  }, [initialTerm, initialFilter]);
 
   return (
     <div className="book-search-page">
@@ -71,24 +68,24 @@ const BookSearchPage: React.FC = () => {
         </div>
 
         <div className="search-section">
-          <SearchBar onSearch={handleSearch} loading={isLoading} />
+          <SearchBar onSearch={handleSearch} loading={isSearching} />
         </div>
 
         <div className="results-section">
           <div className="results-header">
             <h2>
-              {initialTerm 
-                ? `Resultados para "${initialTerm}"` 
+              {currentTerm 
+                ? `Resultados para "${currentTerm}"` 
                 : 'Todos os livros'}
             </h2>
             <span className="results-count">
-              {filteredBooks.length} {filteredBooks.length === 1 ? 'livro' : 'livros'}
+              {displayedBooks.length} {displayedBooks.length === 1 ? 'livro' : 'livros'}
             </span>
           </div>
 
-          {filteredBooks.length > 0 ? (
+          {displayedBooks.length > 0 ? (
             <div className="books-grid">
-              {filteredBooks.map(book => (
+              {displayedBooks.map((book: Livro) => (
                 <BookCard key={book.id} book={book} />
               ))}
             </div>
