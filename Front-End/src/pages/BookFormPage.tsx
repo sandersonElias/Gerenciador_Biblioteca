@@ -1,12 +1,12 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { debounce } from '../utils/debounce';
-import { Livro, LivroRequest, AutorResponse, GeneroResponse, CatalogacaoResponse } from '../types';
-import { livroApi, autorApi, generoApi, catalogacaoApi } from '../services/api';
 import { useToast } from '../context/ToastContext';
 import { useLoading } from '../context/LoadingContext';
 import Button from '../components/common/Button';
 import './BookFormPage.scss';
+import { AutorResponse, CatalogacaoResponse, GeneroResponse, Livro, LivroRequest } from '@/services/livro/types';
+import { AutorService, CatalogacaoService, GeneroService, LivroService } from '@/services/livro/LivroService';
 
 const BookFormPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -38,7 +38,7 @@ const BookFormPage: React.FC = () => {
 
   const loadBook = async (bookId: number) => {
     try {
-      const book: Livro = await withLoading(livroApi.getById(bookId));
+      const book: Livro = await withLoading(LivroService.getById(bookId));
       setFormData({
         titulo: book.titulo, editora: book.editora || '',
         totalExemplares: book.totalExemplares, quantidadeDisponivel: book.quantidadeDisponivel,
@@ -83,15 +83,15 @@ const BookFormPage: React.FC = () => {
     try {
       // ✅ todas as funções retornam array agora
       if (type === 'autor') {
-        const r = await autorApi.getByAutor(q);
+        const r = await AutorService.getByAutor(q);
         setAutorSuggestions(Array.isArray(r) ? r : []);
       }
       if (type === 'genero') {
-        const r = await generoApi.getByGenero(q);
+        const r = await GeneroService.getByGenero(q);
         setGeneroSuggestions(Array.isArray(r) ? r : []);
       }
       if (type === 'catalogacao') {
-        const r = await catalogacaoApi.getByCatalogacao(q);
+        const r = await CatalogacaoService.getByCatalogacao(q);
         setCatalogacaoSuggestions(Array.isArray(r) ? r : []);
       }
     } catch {
@@ -129,26 +129,26 @@ const BookFormPage: React.FC = () => {
     const t = name.trim();
     try {
       if (type === 'autor') {
-        const list = await autorApi.getByAutor(t);
+        const list = await AutorService.getByAutor(t);
         const found = list.find(a => a.autor.toLowerCase() === t.toLowerCase());
         if (found?.id) return found.id;
       }
       if (type === 'genero') {
-        const list = await generoApi.getByGenero(t);
+        const list = await GeneroService.getByGenero(t);
         const found = list.find(g => g.genero.toLowerCase() === t.toLowerCase());
         if (found?.id) return found.id;
       }
       if (type === 'catalogacao') {
-        const list = await catalogacaoApi.getByCatalogacao(t);
+        const list = await CatalogacaoService.getByCatalogacao(t);
         const found = list.find(c => c.catalogacao.toLowerCase() === t.toLowerCase());
         if (found?.id) return found.id;
       }
     } catch {}
 
     // Não encontrou — cria novo
-    if (type === 'autor')       return (await autorApi.create({ autor: t })).id;
-    if (type === 'genero')      return (await generoApi.create({ genero: t })).id;
-    return (await catalogacaoApi.create({ catalogacao: t })).id;
+    if (type === 'autor')       return (await AutorService.create({ autor: t })).id;
+    if (type === 'genero')      return (await GeneroService.create({ genero: t })).id;
+    return (await CatalogacaoService.create({ catalogacao: t })).id;
   };
 
   // ── Submit ─────────────────────────────────────────────────────────────────
@@ -171,10 +171,10 @@ const BookFormPage: React.FC = () => {
       };
 
       if (isEditing && id) {
-        await livroApi.update(parseInt(id, 10), payload);
+        await LivroService.update(parseInt(id, 10), payload);
         showToast('Livro atualizado com sucesso!', 'success');
       } else {
-        await livroApi.create(payload);
+        await LivroService.create(payload);
         showToast('Livro cadastrado com sucesso!', 'success');
       }
       navigate('/admin');

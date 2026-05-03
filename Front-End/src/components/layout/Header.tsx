@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
-import type { Role } from '../../types';
 import LogoImg from '../assets/logo_monsa.png';
+import { Role } from '@/services/user/types';
+import { useAuth } from '@/context/AuthContext';
 import './Header.scss';
 
 const Header: React.FC = () => {

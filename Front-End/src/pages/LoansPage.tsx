@@ -1,19 +1,17 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { EmprestimoResponse, Exemplar, Livro, StatusEmprestimo, UserResponse } from '../types';
-import {
-  emprestimoApi,
-  exemplarApi,
-  solicitacaoRenovacaoApi,
-  userApi,
-  livroApi,
-  SolicitacaoPendenteDto,
-} from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useLoading } from '../context/LoadingContext';
 import Button from '../components/common/Button';
 import Modal from '../components/common/Modal';
 import './LoansPage.scss';
+import { EmprestimoService } from '@/services/emprestimo/EmprestimoService';
+import { SolicitacaoService } from '@/services/solicitacao/SolicitacaoService';
+import { UserService } from '@/services/user/UserService';
+import { LivroService } from '@/services/livro/LivroService';
+import { ExemplarService } from '@/services/exemplar/ExemplarService';
+import { EmprestimoResponse, StatusEmprestimo } from '@/services/emprestimo/types';
+import { Exemplar, Livro, SolicitacaoPendenteDto, UserResponse } from '@/services';
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 const fmt = (d?: string) =>
@@ -69,7 +67,7 @@ const LoansPage: React.FC = () => {
   // ── loaders ───────────────────────────────────────────────────────────────
   const loadLoans = useCallback(async () => {
     try {
-      const data = await withLoading(emprestimoApi.getAll());
+      const data = await withLoading(EmprestimoService.getAll());
       setLoans(data);
     } catch {
       showToast('Erro ao carregar empréstimos', 'error');
@@ -78,7 +76,7 @@ const LoansPage: React.FC = () => {
 
   const loadPendentes = useCallback(async () => {
     try {
-      const data = await solicitacaoRenovacaoApi.getPendentes();
+      const data = await SolicitacaoService.getPendentes();
       setPendentes(data);
     } catch { /* silencioso */ }
   }, []);
@@ -106,7 +104,7 @@ const LoansPage: React.FC = () => {
     const delay = setTimeout(async () => {
       try {
         if (userSearch.trim().length >= 3) {
-          setUserSuggestions(await userApi.getUserName(userSearch) ?? []);
+          setUserSuggestions(await UserService.getUserName(userSearch) ?? []);
         } else {
           setUserSuggestions([]);
         }
@@ -124,7 +122,7 @@ const LoansPage: React.FC = () => {
     const delay = setTimeout(async () => {
       try {
         if (bookSearch.trim().length >= 3) {
-          setBookSuggestions(await livroApi.searchByFilter('titulo', bookSearch) ?? []);
+          setBookSuggestions(await LivroService.searchByFilter('titulo', bookSearch) ?? []);
         } else {
           setBookSuggestions([]);
         }
@@ -143,7 +141,7 @@ const LoansPage: React.FC = () => {
       return;
     }
     setLoadingExemplares(true);
-    exemplarApi.listarDisponiveisPorLivro(Number(newLoan.livroId))
+    ExemplarService.listarDisponiveisPorLivro(Number(newLoan.livroId))
       .then(setExemplaresDisponiveis)
       .catch(() => setExemplaresDisponiveis([]))
       .finally(() => setLoadingExemplares(false));
@@ -153,7 +151,7 @@ const LoansPage: React.FC = () => {
   const handleRenew = async () => {
     if (!selectedLoan) return;
     try {
-      await emprestimoApi.renovar(selectedLoan.id);
+      await EmprestimoService.renovar(selectedLoan.id);
       showToast('Empréstimo renovado!', 'success');
       setShowRenewModal(false);
       loadLoans();
@@ -165,7 +163,7 @@ const LoansPage: React.FC = () => {
   const handleReturn = async () => {
     if (!selectedLoan) return;
     try {
-      await emprestimoApi.devolver(selectedLoan.id);
+      await EmprestimoService.devolver(selectedLoan.id);
       showToast('Devolução registrada!', 'success');
       setShowReturnModal(false);
       loadLoans();
@@ -180,7 +178,7 @@ const LoansPage: React.FC = () => {
       return;
     }
     try {
-      await emprestimoApi.create({
+      await EmprestimoService.create({
         userId: Number(newLoan.userId),
         livroId: Number(newLoan.livroId),
         dataDevolucao: newLoan.dataDevolucao || undefined,
@@ -201,7 +199,7 @@ const LoansPage: React.FC = () => {
   const handleAprovar = async () => {
     if (!selectedSolic || !authUser) return;
     try {
-      await solicitacaoRenovacaoApi.aprovar(selectedSolic.id, authUser.email);
+      await SolicitacaoService.aprovar(selectedSolic.id, authUser.email);
       showToast('Solicitação aprovada!', 'success');
       setShowAprovarModal(false);
       loadPendentes(); loadLoans();
@@ -213,7 +211,7 @@ const LoansPage: React.FC = () => {
   const handleRejeitar = async () => {
     if (!selectedSolic || !authUser) return;
     try {
-      await solicitacaoRenovacaoApi.rejeitar(selectedSolic.id, authUser.email, observacao || undefined);
+      await SolicitacaoService.rejeitar(selectedSolic.id, authUser.email, observacao || undefined);
       showToast('Solicitação rejeitada.', 'success');
       setShowRejeitarModal(false);
       setObservacao('');

@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Livro, BookFilterType } from '../types';
-import { livroApi } from '../services/api';
 import { useToast } from '../context/ToastContext';
 import BookCard from '../components/books/BookCard';
 import SearchBar from '../components/books/SearchBar';
 import Img from '../components/assets/bookSearch-img-um.png';
 import './BookSearchPage.scss';
+import { Livro } from '@/services/livro/types';
+import { BookFilterType } from '@/types/filters';
+import { LivroService } from '@/services/livro/LivroService';
 
 const BookSearchPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -22,7 +23,7 @@ const BookSearchPage: React.FC = () => {
   // ✅ Query 1: Busca todos os livros (cacheado por 5 min)
   const { data: allBooks = [] } = useQuery<Livro[]>({
     queryKey: ['livros', 'todos'],
-    queryFn: livroApi.getAll,
+    queryFn: LivroService.getAll,
   });
 
   // ✅ Query 2: Busca filtrada (só executa se houver termo de busca)
@@ -31,7 +32,7 @@ const BookSearchPage: React.FC = () => {
     isLoading: isSearching,
   } = useQuery<Livro[]>({
     queryKey: ['livros', currentFilter, currentTerm],
-    queryFn: () => livroApi.searchByFilter(currentFilter, currentTerm),
+    queryFn: () => LivroService.searchByFilter(currentFilter, currentTerm),
     enabled: !!currentTerm.trim(), // Só executa se houver termo
   });
 

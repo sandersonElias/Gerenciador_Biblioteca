@@ -9,7 +9,6 @@
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "@types/jest": "^27.5.2",
-    "@types/node": "^16.18.68",
     "@types/react": "^18.2.45",
     "@types/react-dom": "^18.2.18",
     "axios": "^1.6.2",
@@ -24,9 +23,9 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
+    "start": "craco start",
+    "build": "craco build",
+    "test": "craco test",
     "eject": "react-scripts eject",
     "lint": "eslint src --ext .ts,.tsx",
     "storybook": "storybook dev -p 6006",
@@ -51,10 +50,14 @@
     ]
   },
   "devDependencies": {
+    "@craco/craco": "^7.1.0",
     "@storybook/addon-essentials": "^7.6.6",
     "@storybook/react": "^7.6.6",
     "@storybook/react-webpack5": "^7.6.6",
-    "storybook": "^7.6.6"
+    "@types/node": "^25.6.0",
+    "@vitejs/plugin-react": "^6.0.1",
+    "storybook": "^7.6.6",
+    "vite": "^8.0.10"
   },
   "proxy": "http://localhost:8080"
 }

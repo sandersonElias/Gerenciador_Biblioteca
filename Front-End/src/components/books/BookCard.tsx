@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Livro } from '../../types';
+import { Livro } from '@/services/livro/types';
 import './BookCard.scss';
 
 interface BookCardProps {

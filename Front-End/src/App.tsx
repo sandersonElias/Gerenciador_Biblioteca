@@ -8,13 +8,13 @@ import Layout from './components/layout/Layout';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 
 // Pages
-import HomePage from './pages/HomePage';
+import HomePage from './pages/home/HomePage';
 import BookSearchPage from './pages/BookSearchPage';
-import BookDetailPage from './pages/BookDetailPage';
-import LoginPage from './pages/LoginPage';
+import BookDetailPage from './pages/bookDetail/BookDetailPage';
+import LoginPage from './pages/login/LoginPage';
 import LoansPage from './pages/LoansPage';
 import ReportsPage from './pages/ReportsPage';
-import AdminPage from './pages/AdminPage';
+import AdminPage from './pages/admin/AdminPage';
 import BookFormPage from './pages/BookFormPage';
 import UserFormPage from './pages/UserFormPage';
 import ProfilePage from './pages/ProfilePage';
@@ -25,10 +25,10 @@ import './App.scss';
 function App() {
   return (
     <QueryProvider>
-      <AuthProvider>
+      <Router>  {/* ✅ Router ANTES do AuthProvider */}
         <ToastProvider>
           <LoadingProvider>
-            <Router>
+            <AuthProvider>  {/* ✅ AuthProvider DEPOIS do Router */}
               <Routes>
                 {/* Public Routes */}
                 <Route path="/login" element={<LoginPage />} />
@@ -133,10 +133,10 @@ function App() {
                 {/* Fallback */}
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
-            </Router>
+            </AuthProvider>
           </LoadingProvider>
         </ToastProvider>
-      </AuthProvider>
+      </Router>
     </QueryProvider>
   );
 }

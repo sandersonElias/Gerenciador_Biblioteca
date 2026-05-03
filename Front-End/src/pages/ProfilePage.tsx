@@ -1,19 +1,17 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ReservaResponse } from '../types';
-import {
-  MeusEmprestimosResponse,
-  EmprestimosAtivoDto,
-  meusEmprestimosApi,
-  solicitacaoRenovacaoApi,
-} from '../services/api';
-import { reservaApi } from '../services/api';
+
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import Button from '../components/common/Button';
 import Modal from '../components/common/Modal';
 import './ProfilePage.scss';
+import { EmprestimoService } from '@/services/emprestimo/EmprestimoService';
+import { ReservaService } from '@/services/reserva/ReservaService';
+import { SolicitacaoService } from '@/services/solicitacao/SolicitacaoService';
+import { EmprestimosAtivoDto, MeusEmprestimosResponse } from '@/services/emprestimo/types';
+import { ReservaResponse } from '@/services/reserva/types';
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 const roleLabel = (role: string) => {
@@ -59,21 +57,21 @@ const ProfilePage: React.FC = () => {
   // ✅ Query 1: Empréstimos do usuário (cacheados por 5 min)
   const { data: emprestimos = null } = useQuery<MeusEmprestimosResponse | null>({
     queryKey: ['emprestimos', 'meus', user?.email],
-    queryFn: () => user?.email ? meusEmprestimosApi.getMeusEmprestimos(user.email) : Promise.resolve(null),
+    queryFn: () => user?.email ? EmprestimoService.getMeusEmprestimos(user.email) : Promise.resolve(null),
     enabled: !!user?.email,
   });
 
   // ✅ Query 2: Reservas do usuário (cacheadas por 5 min)
   const { data: reservas = [] } = useQuery<ReservaResponse[]>({
     queryKey: ['reservas', 'minhas', user?.email],
-    queryFn: () => user?.email ? reservaApi.getReservaEmail(user.email) : Promise.resolve([]),
+    queryFn: () => user?.email ? ReservaService.getReservaEmail(user.email) : Promise.resolve([]),
     enabled: !!user?.email,
   });
 
   // ✅ Mutation: Solicitar renovação
   const solicitarRenovacaoMutation = useMutation({
     mutationFn: ({ emprestimoId, email }: { emprestimoId: number; email: string }) =>
-      solicitacaoRenovacaoApi.solicitar(emprestimoId, email),
+      SolicitacaoService.solicitar(emprestimoId, email),
     onSuccess: () => {
       showToast('Solicitação de renovação enviada! Aguarde a aprovação.', 'success');
       queryClient.invalidateQueries({ queryKey: ['emprestimos', 'meus'] });
@@ -85,7 +83,7 @@ const ProfilePage: React.FC = () => {
 
   // ✅ Mutation: Cancelar reserva
   const cancelarReservaMutation = useMutation({
-    mutationFn: (reservaId: number) => reservaApi.cancelar(reservaId),
+    mutationFn: (reservaId: number) => ReservaService.cancelar(reservaId),
     onSuccess: () => {
       showToast('Reserva cancelada com sucesso!', 'success');
       setShowCancelModal(false);

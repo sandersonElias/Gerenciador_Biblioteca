@@ -1,170 +1,96 @@
-import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
-import { User, Role } from '../types';
-import { authApi } from '../services/api';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { AuthService } from '@/services/auth/AuthService';
+import { User, Role } from '@/services/user/types';
+import { LoginResponse } from '@/services/auth/types';
 
 interface AuthContextType {
   user: User | null;
+  login: (email: string, password: string) => Promise<LoginResponse>;
+  logout: () => void;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<{ senhaAlterada: boolean }>;
-  logout: () => void;
-  hasRole: (roles: Role[]) => boolean;
-  hasAnyRole: (roles: Role[]) => boolean;
-  /** Marca a senha como alterada — chamado pela página de troca de senha após sucesso. */
+  hasAnyRole: (roles: Role[]) => boolean
   marcarSenhaAlterada: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-interface AuthProviderProps {
-  children: ReactNode;
-}
-
-/**
- * Decodifica o payload de um JWT (sem validar a assinatura).
- * Usado apenas para extrair claims já confiáveis (o servidor valida o token a cada request).
- */
-function decodeJwtPayload(token: string): Record<string, any> | null {
-  try {
-    // Aceita token com ou sem prefixo "Bearer"
-    const cleanToken = token.replace(/^Bearer\s+/i, '').trim();
-    const parts = cleanToken.split('.');
-    if (parts.length !== 3) return null;
-
-    const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
-    const json = decodeURIComponent(
-      atob(base64)
-        .split('')
-        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-        .join('')
-    );
-    return JSON.parse(json);
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Remove o prefixo "Bearer " do token, caso exista.
- * O backend retorna o token JÁ com "Bearer " na frente; armazenamos sem o prefixo
- * e o axios interceptor adiciona ao montar o header.
- */
-function stripBearer(token: string): string {
-  return token.replace(/^Bearer\s+/i, '').trim();
-}
-
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
 
-  // Inicializa o estado de autenticação a partir do localStorage
   useEffect(() => {
-    const initAuth = () => {
-      const storedUser = localStorage.getItem('user');
-      const token = localStorage.getItem('auth_token');
-
-      if (storedUser && token) {
-        try {
-          setUser(JSON.parse(storedUser));
-        } catch {
-          localStorage.removeItem('user');
-          localStorage.removeItem('auth_token');
-        }
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (error) {
+        console.error('Erro ao carregar usuário:', error);
+        localStorage.removeItem('user');
       }
-      setIsLoading(false);
-    };
-
-    initAuth();
+    }
+    setIsLoading(false);
   }, []);
 
-  const login = useCallback(async (email: string, password: string) => {
-    // ✅ Backend agora retorna { token, senhaAlterada }
-    const { token, senhaAlterada } = await authApi.login({ email, password });
+  const login = async (email: string, password: string): Promise<LoginResponse> => {
+    const response = await AuthService.login({ email, password });
 
-    // Salva o token PURO (sem "Bearer ") — o interceptor adiciona o prefixo
-    const cleanToken = stripBearer(token);
-    localStorage.setItem('auth_token', cleanToken);
+    if (response.token) {
+      const userData: User = {
+        id: 0,
+        name: email.split('@')[0],
+        email,
+        role: (response.role as Role) ?? 'ROLE_ALUNO',
+        senhaAlterada: response.senhaAlterada,
+      };
 
-    // Decodifica o token para extrair claims emitidos pelo backend (email, id, roles)
-    const payload = decodeJwtPayload(cleanToken) ?? {};
-    const roles: string[] = Array.isArray(payload.roles) ? payload.roles : [];
-    const tokenEmail: string = typeof payload.email === 'string' ? payload.email : email;
-    const tokenId: number = payload.jti ? parseInt(payload.jti, 10) : 0;
+      localStorage.setItem('user', JSON.stringify(userData));
+      setUser(userData);
+    }
 
-    const userData: User = {
-      id: Number.isFinite(tokenId) ? tokenId : 0,
-      // Note: o JWT atual não carrega o nome — usamos o email como fallback de display.
-      // Quando houver endpoint /user/me retornando o nome real, atualizar aqui.
-      name: tokenEmail,
-      email: tokenEmail,
-      role: (roles[0] as Role) || 'ROLE_ALUNO',
-      senhaAlterada,
-    };
+    return response;
+  };
 
-    setUser(userData);
-    localStorage.setItem('user', JSON.stringify(userData));
-
-    return { senhaAlterada };
-  }, []);
-
-  const logout = useCallback(() => {
+  const logout = () => {
+    AuthService.logout();
     setUser(null);
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('user');
-  }, []);
+    navigate('/login');
+  };
 
-  const marcarSenhaAlterada = useCallback(() => {
-    setUser((prev) => {
-      if (!prev) return prev;
-      const atualizado = { ...prev, senhaAlterada: true };
-      localStorage.setItem('user', JSON.stringify(atualizado));
-      return atualizado;
-    });
-  }, []);
-
-  const hasRole = useCallback((roles: Role[]): boolean => {
+  const hasAnyRole = (roles: Role[]): boolean => {
     if (!user) return false;
     return roles.includes(user.role);
-  }, [user]);
+  };
 
-  const hasAnyRole = useCallback((roles: Role[]): boolean => {
-    if (!user) return false;
-    return roles.some((role) => user.role === role);
-  }, [user]);
-
-  const value: AuthContextType = {
-    user,
-    isAuthenticated: !!user,
-    isLoading,
-    login,
-    logout,
-    hasRole,
-    hasAnyRole,
-    marcarSenhaAlterada,
+  const marcarSenhaAlterada = () => {
+    if (!user) return;
+    
+    const updatedUser = { ...user, senhaAlterada: true };
+    localStorage.setItem('user', JSON.stringify(updatedUser));
+    setUser(updatedUser);
   };
 
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider 
+      value={{ 
+        user, 
+        login, 
+        logout, 
+        isAuthenticated: !!user,
+        isLoading,
+        hasAnyRole,
+        marcarSenhaAlterada,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 };
 
-export const useAuth = (): AuthContextType => {
+export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (!context) throw new Error('useAuth must be used within AuthProvider');
   return context;
-};
-
-// Role-based route guard hook
-export const useRoleGuard = (allowedRoles: Role[]) => {
-  const { hasAnyRole, isAuthenticated, isLoading } = useAuth();
-
-  return {
-    canAccess: isAuthenticated && hasAnyRole(allowedRoles),
-    isLoading,
-    isAuthenticated,
-  };
 };

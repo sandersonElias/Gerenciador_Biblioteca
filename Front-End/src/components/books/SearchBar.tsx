@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { BookFilterType } from '../../types';
+import { BookFilterType } from '@/types/filters';
 import './SearchBar.scss';
 
 interface SearchBarProps {

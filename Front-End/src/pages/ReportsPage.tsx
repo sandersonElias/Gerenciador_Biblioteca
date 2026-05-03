@@ -9,12 +9,16 @@ import {
   Legend,
   ArcElement,
 } from 'chart.js';
-import { Bar, Doughnut } from 'react-chartjs-2';
-import { EmprestimoResponse, Livro, ReservaResponse } from '../types';
-import { emprestimoApi, livroApi, reservaApi } from '../services/api';
 import { useToast } from '../context/ToastContext';
 import { useLoading } from '../context/LoadingContext';
 import './ReportsPage.scss';
+import { Livro } from '@/services/livro/types';
+import { EmprestimoResponse } from '@/services/emprestimo/types';
+import { ReservaResponse } from '@/services/reserva/types';
+import { EmprestimoService } from '@/services/emprestimo/EmprestimoService';
+import { ReservaService } from '@/services/reserva/ReservaService';
+import { LivroService } from '@/services/livro/LivroService';
+import { Bar, Doughnut } from 'react-chartjs-2';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement);
 
@@ -57,10 +61,11 @@ const ReportsPage: React.FC = () => {
 
   const loadData = useCallback(async () => {
     try {
+      // ✅ Usa as classes Service em vez das APIs antigas
       const [loansData, reservationsData, popularData] = await Promise.all([
-        withLoading(emprestimoApi.getAll()),
-        withLoading(reservaApi.getAll()),
-        withLoading(livroApi.getPopulares(8)),
+        withLoading(EmprestimoService.getAll()),
+        withLoading(ReservaService.getAll()),
+        withLoading(LivroService.getPopulares(8)),
       ]);
       setLoans(loansData);
       setReservations(reservationsData);
