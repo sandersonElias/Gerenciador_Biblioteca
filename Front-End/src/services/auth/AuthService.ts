@@ -1,5 +1,4 @@
-// src/services/auth/AuthService.ts
-import { LoginResponse, } from "./types";
+import { LoginResponse } from "./types";
 import { UserLoginDto, UserRequest, UserResponse } from "../user/types";
 import apiClient from "../api/api";
 
@@ -8,7 +7,8 @@ export class AuthService {
     const response = await apiClient.post<LoginResponse>('/auth', credentials);
     
     if (response.data.token) {
-      localStorage.setItem('auth_token', response.data.token);
+      const tokenLimpo = response.data.token.replace(/^Bearer\s+/i, '');
+      localStorage.setItem('auth_token', tokenLimpo);
     }
     
     return response.data;

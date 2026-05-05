@@ -1,4 +1,3 @@
-// src/services/emprestimo/EmprestimoService.ts
 import { EmprestimoRequest, EmprestimoResponse, MeusEmprestimosResponse, StatusEmprestimo } from "./types";
 import apiClient from "../api/api";
 

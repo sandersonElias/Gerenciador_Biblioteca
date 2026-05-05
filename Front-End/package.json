@@ -1,6 +1,6 @@
 {
   "name": "biblioteca-monsa-frontend",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "dependencies": {
     "@tanstack/react-query": "^5.100.6",
@@ -13,6 +13,7 @@
     "@types/react-dom": "^18.2.18",
     "axios": "^1.6.2",
     "chart.js": "^4.4.1",
+    "jwt-decode": "^4.0.0",
     "react": "^18.2.0",
     "react-chartjs-2": "^5.2.0",
     "react-dom": "^18.2.0",

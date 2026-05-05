@@ -1,5 +1,3 @@
-// src/services/index.ts
-
 // API Client
 export { default as apiClient } from './api/api';
 

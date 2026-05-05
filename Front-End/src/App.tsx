@@ -1,4 +1,3 @@
-import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryProvider } from './context/QueryProvider';
 import { AuthProvider } from './context/AuthContext';
@@ -12,23 +11,23 @@ import HomePage from './pages/home/HomePage';
 import BookSearchPage from './pages/BookSearchPage';
 import BookDetailPage from './pages/bookDetail/BookDetailPage';
 import LoginPage from './pages/login/LoginPage';
-import LoansPage from './pages/LoansPage';
+import LoansPage from './pages/loans/LoansPage';
 import ReportsPage from './pages/ReportsPage';
 import AdminPage from './pages/admin/AdminPage';
 import BookFormPage from './pages/BookFormPage';
 import UserFormPage from './pages/UserFormPage';
-import ProfilePage from './pages/ProfilePage';
 import TrocarSenhaPage from './pages/Trocarsenhapage';
+import { ProfilePage } from './pages/ProfilePage';
 
 import './App.scss';
 
 function App() {
   return (
     <QueryProvider>
-      <Router>  {/* ✅ Router ANTES do AuthProvider */}
+      <Router>  
         <ToastProvider>
           <LoadingProvider>
-            <AuthProvider>  {/* ✅ AuthProvider DEPOIS do Router */}
+            <AuthProvider>
               <Routes>
                 {/* Public Routes */}
                 <Route path="/login" element={<LoginPage />} />

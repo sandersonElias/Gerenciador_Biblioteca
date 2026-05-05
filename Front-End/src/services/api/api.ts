@@ -14,7 +14,8 @@ apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = localStorage.getItem('auth_token');
     if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`;
+      const tokenLimpo = token.replace(/^Bearer\s+/i, '');
+      config.headers.Authorization = `Bearer ${tokenLimpo}`;
     }
     return config;
   },

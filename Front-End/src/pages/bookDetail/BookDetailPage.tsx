@@ -1,5 +1,3 @@
-// src/pages/BookDetailPage.tsx
-
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import './BookDetailPage.scss';
@@ -11,11 +9,6 @@ import { ReservationsTable } from '@/features/bookDetail/components/Reservations
 import { ExemplaresTable } from '@/features/bookDetail/components/ExemplaresTable';
 import { ReserveModal } from '@/features/bookDetail/components/ReserveModal';
 
-/**
- * BookDetailPage (Orquestrador)
- * Apenas conecta ViewModel às Views
- * De 330 linhas → 70 linhas!
- */
 const BookDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const bookId = Number(id);

@@ -1,6 +1,5 @@
-// src/services/reserva/ReservaService.ts
-import { ReservaRequest, ReservaResponse } from "./types";
-import apiClient from "../api/api";
+import { ReservaRequest, ReservaResponse } from './types';
+import apiClient from '../api/api';
 
 export class ReservaService {
   static async getAll(): Promise<ReservaResponse[]> {
@@ -13,7 +12,11 @@ export class ReservaService {
     return response.data;
   }
 
-  static async create(reserva: ReservaRequest): Promise<ReservaResponse> {
+  static async create(reserva: ReservaRequest): Promise<ReservaResponse> {    
+    if (!reserva.livroId || !reserva.userId) {
+      throw new Error('livroId e userId são obrigatórios');
+    }
+    
     const response = await apiClient.post('/reserva', reserva);
     return response.data;
   }

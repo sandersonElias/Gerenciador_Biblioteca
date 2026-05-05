@@ -66,8 +66,33 @@ export const useBookDetailViewModel = ({ bookId }: UseBookDetailViewModelParams)
   
   const reservarMutation = useMutation({
     mutationFn: () => {
-      if (!book || !user) throw new Error('Dados inválidos');
-      return ReservaService.create({ livroId: book.id, userId: user.id });
+      // ✅ VALIDAÇÕES MAIS ROBUSTAS
+      if (!book) {
+        throw new Error('Livro não encontrado');
+      }
+      
+      if (!user || !user.id) {
+        throw new Error('Usuário não autenticado corretamente');
+      }
+
+      // ✅ LOG PARA DEBUG
+      console.log('📤 Criando reserva:', {
+        livroId: book.id,
+        userId: user.id,
+        userName: user.name,
+        userEmail: user.email,
+      });
+
+      // ✅ VALIDAÇÃO EXTRA: userId deve ser > 0
+      if (user.id === 0) {
+        console.error('❌ ERRO CRÍTICO: user.id é 0!', user);
+        throw new Error('ID do usuário inválido. Faça logout e login novamente.');
+      }
+
+      return ReservaService.create({ 
+        livroId: book.id, 
+        userId: user.id 
+      });
     },
     onSuccess: () => {
       showToast('Livro reservado com sucesso!', 'success');
@@ -77,8 +102,9 @@ export const useBookDetailViewModel = ({ bookId }: UseBookDetailViewModelParams)
       queryClient.invalidateQueries({ queryKey: ['reservas', 'minhas'] });
     },
     onError: (error: any) => {
+      console.error('❌ Erro ao reservar:', error);
       showToast(
-        error.response?.data?.message || 'Erro ao reservar livro',
+        error.response?.data?.message || error.message || 'Erro ao reservar livro',
         'error'
       );
     },
@@ -90,8 +116,8 @@ export const useBookDetailViewModel = ({ bookId }: UseBookDetailViewModelParams)
 
   const permissions: BookDetailPermissions = {
     canReserve: isAuthenticated && hasAnyRole(['ROLE_ALUNO', 'ROLE_PROFESSOR', 'ROLE_FUNCIONARIO', 'ROLE_ADMIN']),
-    canEdit: isAuthenticated && hasAnyRole(['ROLE_ADMIN']),
     canViewReservations: hasAnyRole(['ROLE_FUNCIONARIO', 'ROLE_ADMIN']),
+    canEdit: isAuthenticated && hasAnyRole(['ROLE_ADMIN']),
   };
 
   const availability = book
@@ -103,17 +129,21 @@ export const useBookDetailViewModel = ({ bookId }: UseBookDetailViewModelParams)
   // ─────────────────────────────────────────────────────────
 
   const handleOpenReserveModal = useCallback(() => {
+    // ✅ VALIDAÇÃO ANTES DE ABRIR O MODAL
+    if (!user || !user.id || user.id === 0) {
+      showToast('Erro de autenticação. Faça logout e login novamente.', 'error');
+      return;
+    }
     setShowReserveModal(true);
-  }, []);
+  }, [user, showToast]);
 
   const handleCloseReserveModal = useCallback(() => {
     setShowReserveModal(false);
   }, []);
 
   const handleConfirmReserve = useCallback(() => {
-    if (!book || !isAuthenticated || !user) return;
     reservarMutation.mutate();
-  }, [book, isAuthenticated, user, reservarMutation]);
+  }, [reservarMutation]);
 
   const handleEdit = useCallback(() => {
     if (!book) return;

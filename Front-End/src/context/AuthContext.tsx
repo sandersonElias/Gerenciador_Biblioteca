@@ -1,8 +1,18 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { jwtDecode } from 'jwt-decode';
 import { AuthService } from '@/services/auth/AuthService';
 import { User, Role } from '@/services/user/types';
 import { LoginResponse } from '@/services/auth/types';
+
+interface JwtPayload {
+  iss?: string;
+  email?: string;
+  jti?: string;
+  roles?: string[];
+  iat?: number;
+  exp: number;
+}
 
 interface AuthContextType {
   user: User | null;
@@ -10,7 +20,7 @@ interface AuthContextType {
   logout: () => void;
   isAuthenticated: boolean;
   isLoading: boolean;
-  hasAnyRole: (roles: Role[]) => boolean
+  hasAnyRole: (roles: Role[]) => boolean;
   marcarSenhaAlterada: () => void;
 }
 
@@ -38,16 +48,32 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const response = await AuthService.login({ email, password });
 
     if (response.token) {
-      const userData: User = {
-        id: 0,
-        name: email.split('@')[0],
-        email,
-        role: (response.role as Role) ?? 'ROLE_ALUNO',
-        senhaAlterada: response.senhaAlterada,
-      };
+      try {
+        const tokenLimpo = response.token.replace(/^Bearer\s+/i, '');
+        const decoded = jwtDecode<JwtPayload>(tokenLimpo);
+        
+        const userId = decoded.jti ? Number(decoded.jti) : null;
+        
+        if (!userId || isNaN(userId)) {
+          console.error('❌ ID não encontrado no token JWT (campo jti):', decoded);
+          throw new Error('Token JWT não contém ID do usuário');
+        }
 
-      localStorage.setItem('user', JSON.stringify(userData));
-      setUser(userData);
+        const userRole = (decoded.roles?.[0] as Role) ?? 'ROLE_ALUNO';
+        
+        const userData: User = {
+          id: userId,
+          name: email.split('@')[0],
+          email: decoded.email || email,
+          role: userRole,
+          senhaAlterada: response.senhaAlterada,
+        };
+        
+        localStorage.setItem('user', JSON.stringify(userData));
+        setUser(userData);
+      } catch (error) {
+        throw new Error('Erro ao processar autenticação');
+      }
     }
 
     return response;
@@ -66,7 +92,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const marcarSenhaAlterada = () => {
     if (!user) return;
-    
     const updatedUser = { ...user, senhaAlterada: true };
     localStorage.setItem('user', JSON.stringify(updatedUser));
     setUser(updatedUser);

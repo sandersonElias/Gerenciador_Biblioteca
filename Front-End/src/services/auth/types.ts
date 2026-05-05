@@ -1,7 +1,6 @@
 export interface LoginResponse {
   token: string;
   senhaAlterada: boolean;
-  role: string;
 }
 
 export interface TrocarSenhaRequest {
