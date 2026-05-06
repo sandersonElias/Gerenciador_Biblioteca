@@ -14,8 +14,8 @@ import LoginPage from './pages/login/LoginPage';
 import LoansPage from './pages/loans/LoansPage';
 import ReportsPage from './pages/ReportsPage';
 import AdminPage from './pages/admin/AdminPage';
-import BookFormPage from './pages/BookFormPage';
-import UserFormPage from './pages/UserFormPage';
+import BookFormPage from './pages/bookForm/BookFormPage';
+import UserFormPage from './pages/userForm/UserFormPage';
 import TrocarSenhaPage from './pages/Trocarsenhapage';
 import { ProfilePage } from './pages/ProfilePage';
 

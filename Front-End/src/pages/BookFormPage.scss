@@ -1,9 +1,0 @@
-// BookFormPage usa as mesmas classes do UserFormPage.scss
-// Basta importar os estilos compartilhados
-@import './UserFormPage';
-
-// Estilos específicos do BookFormPage (se necessário no futuro)
-.book-form-page {
-  // alias para .form-page — mantido para compatibilidade de rota
-  @extend .form-page;
-}
