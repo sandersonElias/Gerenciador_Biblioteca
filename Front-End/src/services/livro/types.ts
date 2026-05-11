@@ -35,14 +35,17 @@ export interface LivroRequest {
 }
 
 export interface AutorDto {
+  id: number;
   autor: string;
 }
 
 export interface GeneroDto {
+  id: number;
   genero: string;
 }
 
 export interface CatalogacaoDto {
+  id: number;
   catalogacao: string;
 }
 

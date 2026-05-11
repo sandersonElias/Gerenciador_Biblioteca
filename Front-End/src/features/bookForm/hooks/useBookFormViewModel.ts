@@ -36,55 +36,105 @@ export const useBookFormViewModel = ({ bookId }: UseBookFormViewModelParams) => 
   const [form, setForm] = useState<BookFormData>(INITIAL_BOOK_FORM);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
+  // ─────────────────────────────────────────────────────────
+  // Query: buscar livro existente (modo edit)
+  // ─────────────────────────────────────────────────────────
   const { data: existingBook, isLoading: isLoadingBook } = useQuery({
     queryKey: ['livro', bookId],
     queryFn: () => LivroService.getById(bookId!),
     enabled: isEdit && !!bookId,
   });
 
-  useEffect(() => {
-    if (existingBook) {
-      setForm(BookFormHelpers.fromLivro(existingBook));
-    }
-  }, [existingBook]);
-
+  // ─────────────────────────────────────────────────────────
+  // Funções de busca memoizadas — ANTES dos autocompletes
+  // ─────────────────────────────────────────────────────────
   const searchAutorFn = useCallback(
-    (query: string) => AutorService.getByAutor(query),
-    []
+    (query: string) => AutorService.getByAutor(query), []
   );
   const searchGeneroFn = useCallback(
-    (query: string) => GeneroService.getByGenero(query),
-    []
+    (query: string) => GeneroService.getByGenero(query), []
   );
   const searchCatalogacaoFn = useCallback(
-    (query: string) => CatalogacaoService.getByCatalogacao(query),
-    []
+    (query: string) => CatalogacaoService.getByCatalogacao(query), []
   );
 
+  // ─────────────────────────────────────────────────────────
+  // Autocompletes — ANTES do useEffect que os usa
+  // ─────────────────────────────────────────────────────────
   const autorAutocomplete = useGenericAutocomplete<AutorResponse>({
     searchFn: searchAutorFn,
     isSelected: !!form.autorId,
+    initialTerm: existingBook?.autor?.autor ?? '',
   });
 
   const generoAutocomplete = useGenericAutocomplete<GeneroResponse>({
     searchFn: searchGeneroFn,
     isSelected: !!form.generoId,
+    initialTerm: existingBook?.genero?.genero ?? '',
   });
 
   const catalogacaoAutocomplete = useGenericAutocomplete<CatalogacaoResponse>({
     searchFn: searchCatalogacaoFn,
     isSelected: !!form.catalogacaoId,
+    initialTerm: existingBook?.catalogacao?.catalogacao ?? '',
   });
 
+  // ─────────────────────────────────────────────────────────
+  // useEffect: popula form quando livro carrega (modo edit)
+  // DEVE vir DEPOIS dos autocompletes!
+  // ─────────────────────────────────────────────────────────
   useEffect(() => {
     if (existingBook) {
-      autorAutocomplete.setSearchTerm(existingBook.autor?.autor ?? '');
-      generoAutocomplete.setSearchTerm(existingBook.genero?.genero ?? '');
-      catalogacaoAutocomplete.setSearchTerm(existingBook.catalogacao?.catalogacao ?? '');
+      // ✅ Popula o form com os IDs corretos
+      setForm(BookFormHelpers.fromLivro(existingBook));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [existingBook]);
 
+  // ✅ WORKAROUND: Busca os IDs pelos nomes (porque o backend não retorna)
+useEffect(() => {
+  if (!existingBook) return;
+
+  const buscarIds = async () => {
+    try {
+      // Buscar ID do autor pelo nome
+      if (existingBook.autor?.autor && !form.autorId) {
+        const autores = await AutorService.getByAutor(existingBook.autor.autor);
+        const autorMatch = autores.find(a => a.autor === existingBook.autor.autor);
+        if (autorMatch) {
+          setForm(prev => ({ ...prev, autorId: String(autorMatch.id) }));
+        }
+      }
+
+      // Buscar ID do gênero pelo nome
+      if (existingBook.genero?.genero && !form.generoId) {
+        const generos = await GeneroService.getByGenero(existingBook.genero.genero);
+        const generoMatch = generos.find(g => g.genero === existingBook.genero.genero);
+        if (generoMatch) {
+          setForm(prev => ({ ...prev, generoId: String(generoMatch.id) }));
+        }
+      }
+
+      // Buscar ID da catalogação pelo nome
+      if (existingBook.catalogacao?.catalogacao && !form.catalogacaoId) {
+        const cats = await CatalogacaoService.getByCatalogacao(existingBook.catalogacao.catalogacao);
+        const catMatch = cats.find(c => c.catalogacao === existingBook.catalogacao.catalogacao);
+        if (catMatch) {
+          setForm(prev => ({ ...prev, catalogacaoId: String(catMatch.id) }));
+        }
+      }
+    } catch (err) {
+      console.error('Erro ao buscar IDs:', err);
+    }
+  };
+
+  buscarIds();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [existingBook]);
+
+  // ─────────────────────────────────────────────────────────
+  // Mutations
+  // ─────────────────────────────────────────────────────────
   const createMutation = useMutation({
     mutationFn: () => LivroService.create(BookFormHelpers.toRequest(form)),
     onSuccess: () => {
@@ -133,18 +183,20 @@ export const useBookFormViewModel = ({ bookId }: UseBookFormViewModelParams) => 
     },
   });
 
+  // ─────────────────────────────────────────────────────────
+  // Handlers
+  // ─────────────────────────────────────────────────────────
   const handleFormChange = useCallback((updates: Partial<BookFormData>) => {
     setForm(prev => ({ ...prev, ...updates }));
   }, []);
 
   const handleSubmit = useCallback(() => {
+
     const errors = BookFormHelpers.validate(form);
-    
     if (errors.length > 0) {
       showToast(errors[0], 'error');
       return;
     }
-
     if (isEdit) {
       updateMutation.mutate();
     } else {
@@ -203,39 +255,26 @@ export const useBookFormViewModel = ({ bookId }: UseBookFormViewModelParams) => 
   }, [deleteMutation]);
 
   return {
-    // Modo
     mode,
     isEdit,
-
-    // Estado
     form,
     showDeleteModal,
     isLoadingBook,
     existingBook,
-
-    // Loading states
     isSaving: createMutation.isPending || updateMutation.isPending,
     isDeleting: deleteMutation.isPending,
-
-    // Handlers do form
     handleFormChange,
     handleSubmit,
     handleCancel,
-
-    // Autocompletes
     autorAutocomplete,
     generoAutocomplete,
     catalogacaoAutocomplete,
-
-    // Handlers de autocomplete
     handleSelectAutor,
     handleClearAutor,
     handleSelectGenero,
     handleClearGenero,
     handleSelectCatalogacao,
     handleClearCatalogacao,
-
-    // Deleção
     handleOpenDeleteModal,
     handleCloseDeleteModal,
     handleConfirmDelete,

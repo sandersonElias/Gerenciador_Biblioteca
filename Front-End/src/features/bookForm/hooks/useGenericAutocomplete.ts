@@ -1,10 +1,12 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 interface UseGenericAutocompleteOptions<T> {
   searchFn: (query: string) => Promise<T[]>;
   minChars?: number;
   debounceMs?: number;
   isSelected: boolean;
+  // ✅ NOVO: Termo inicial (para modo edit)
+  initialTerm?: string;
 }
 
 export const useGenericAutocomplete = <T>({
@@ -12,12 +14,26 @@ export const useGenericAutocomplete = <T>({
   minChars = 2,
   debounceMs = 400,
   isSelected,
+  initialTerm = '',
 }: UseGenericAutocompleteOptions<T>) => {
-  const [searchTerm, setSearchTerm] = useState('');
+  // ✅ Inicia com o initialTerm se fornecido
+  const [searchTerm, setSearchTermState] = useState(initialTerm);
   const [suggestions, setSuggestions] = useState<T[]>([]);
   const [loading, setLoading] = useState(false);
+  const userTyped = useRef(false);
+
+  // ✅ Quando initialTerm muda (livro carregado), atualiza sem disparar busca
+  useEffect(() => {
+    if (initialTerm) {
+      userTyped.current = false;
+      setSearchTermState(initialTerm);
+      setSuggestions([]);
+    }
+  }, [initialTerm]);
 
   useEffect(() => {
+    if (!userTyped.current) return;
+
     if (isSelected) {
       setSuggestions([]);
       return;
@@ -46,9 +62,21 @@ export const useGenericAutocomplete = <T>({
     setSuggestions([]);
   }, []);
 
+  const handleUserInput = useCallback((value: string) => {
+    userTyped.current = true;
+    setSearchTermState(value);
+  }, []);
+
+  const setSearchTerm = useCallback((value: string) => {
+    userTyped.current = false;
+    setSearchTermState(value);
+    setSuggestions([]);
+  }, []);
+
   return {
     searchTerm,
     setSearchTerm,
+    handleUserInput,
     suggestions,
     clearSuggestions,
     loading,

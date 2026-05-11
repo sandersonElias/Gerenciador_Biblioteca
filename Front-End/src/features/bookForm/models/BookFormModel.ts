@@ -1,4 +1,4 @@
-import { LivroRequest } from '@/services/livro/types';
+import { Livro, LivroRequest } from '@/services/livro/types';
 
 export interface BookFormData {
   titulo: string;
@@ -31,7 +31,7 @@ export const INITIAL_BOOK_FORM: BookFormData = {
 export type BookFormMode = 'create' | 'edit';
 
 export class BookFormHelpers {
- 
+
   static toRequest(form: BookFormData): LivroRequest {
     return {
       titulo: form.titulo.trim(),
@@ -48,21 +48,21 @@ export class BookFormHelpers {
     };
   }
 
-  static fromLivro(livro: any): BookFormData {
-    return {
-      titulo: livro.titulo ?? '',
-      editora: livro.editora ?? '',
-      totalExemplares: String(livro.totalExemplares ?? 1),
-      quantidadeDisponivel: String(livro.quantidadeDisponivel ?? 1),
-      cdd: livro.cdd ?? '',
-      localizacao: livro.localizacao ?? '',
-      descricao: livro.descricao ?? '',
-      urlImg: livro.urlImg ?? '',
-      autorId: livro.autor?.id ? String(livro.autor.id) : '',
-      generoId: livro.genero?.id ? String(livro.genero.id) : '',
-      catalogacaoId: livro.catalogacao?.id ? String(livro.catalogacao.id) : '',
-    };
-  }
+  static fromLivro(livro: Livro): BookFormData {
+  return {
+    titulo: livro.titulo ?? '',
+    editora: livro.editora ?? '',
+    totalExemplares: String(livro.totalExemplares ?? 1),
+    quantidadeDisponivel: String(livro.quantidadeDisponivel ?? 1),
+    cdd: livro.cdd ?? '',
+    localizacao: livro.localizacao ?? '',
+    descricao: livro.descricao ?? '',
+    urlImg: livro.urlImg ?? '',
+    autorId: livro.autor?.id ? String(livro.autor.id) : '',
+    generoId: livro.genero?.id ? String(livro.genero.id) : '',
+    catalogacaoId: livro.catalogacao?.id ? String(livro.catalogacao.id) : '',
+  };
+}
 
   static validate(form: BookFormData): string[] {
     const errors: string[] = [];
@@ -70,15 +70,12 @@ export class BookFormHelpers {
     if (!form.titulo.trim()) {
       errors.push('Título é obrigatório');
     }
-    
     if (!form.autorId) {
       errors.push('Selecione um autor');
     }
-    
     if (!form.generoId) {
       errors.push('Selecione um gênero');
     }
-    
     if (!form.catalogacaoId) {
       errors.push('Selecione uma catalogação');
     }
@@ -89,11 +86,9 @@ export class BookFormHelpers {
     if (isNaN(total) || total < 0) {
       errors.push('Total de exemplares deve ser um número válido');
     }
-    
     if (isNaN(disp) || disp < 0) {
       errors.push('Quantidade disponível deve ser um número válido');
     }
-    
     if (disp > total) {
       errors.push('Quantidade disponível não pode ser maior que o total');
     }
@@ -102,12 +97,11 @@ export class BookFormHelpers {
   }
 
   static isValidImageUrl(url: string): boolean {
-    if (!url) return false;
-    try {
-      new URL(url);
-      return true;
-    } catch {
-      return false;
-    }
+    if (!url || url.trim() === '') return false;
+    return (
+      url.startsWith('http://') ||
+      url.startsWith('https://') ||
+      url.startsWith('//')
+    );
   }
 }
