@@ -56,4 +56,13 @@ public interface ReservaRepository extends JpaRepository<Reserva, Long> {
        ORDER BY r.dataReserva ASC
        """)
     List<Reserva> buscarReservasPorLivro(@Param("livroId") Long livroId);
+
+    @Query("SELECT COUNT(r) FROM Reserva r WHERE r.livro.id = :livroId AND r.status IN :status")
+    long countByLivroIdAndStatusIn(
+            @Param("livroId") Long livroId,
+            @Param("status") List<String> status
+    );
+
+    @Query("SELECT COUNT(r) FROM Reserva r WHERE r.livro.id = :livroId")
+    long countByLivroId(@Param("livroId") Long livroId);
 }

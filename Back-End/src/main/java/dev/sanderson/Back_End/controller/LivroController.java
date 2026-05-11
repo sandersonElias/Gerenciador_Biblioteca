@@ -2,6 +2,7 @@ package dev.sanderson.Back_End.controller;
 
 import dev.sanderson.Back_End.dto.LivroDtos.LivroRequest;
 import dev.sanderson.Back_End.dto.LivroDtos.LivroResponse;
+import dev.sanderson.Back_End.exception.BusinessRuleException;
 import dev.sanderson.Back_End.service.LivroService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -20,7 +21,8 @@ public class LivroController {
 
     // Criar novo livro
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<LivroResponse> criarLivro(@RequestBody LivroRequest livroDto){
+    public ResponseEntity<LivroResponse> criarLivro(@RequestBody LivroRequest livroDto)
+            throws BusinessRuleException {
         LivroResponse criado = livroService.insertLivro(livroDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(criado);
     }
@@ -52,11 +54,20 @@ public class LivroController {
         return ResponseEntity.ok(livroDto);
     }
 
-    //Atualizar Livro
+    // Atualizar Livro
     @PutMapping("/{id}")
-    public ResponseEntity<LivroResponse> update(@PathVariable Long id, @RequestBody LivroRequest dto) {
+    public ResponseEntity<LivroResponse> update(@PathVariable Long id, @RequestBody LivroRequest dto)
+            throws BusinessRuleException {
         LivroResponse updated = livroService.updateLivro(id, dto);
         return ResponseEntity.ok(updated);
+    }
+
+    // Deletar Livro
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletarLivro(@PathVariable Long id)
+            throws BusinessRuleException {
+        livroService.deleteLivro(id);
+        return ResponseEntity.noContent().build();
     }
 
     // Lista todos os livros

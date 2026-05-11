@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface LivroRepository extends JpaRepository<Livro, Long> {
@@ -28,4 +29,10 @@ public interface LivroRepository extends JpaRepository<Livro, Long> {
 
     @Query("SELECT l FROM Livro l ORDER BY l.contadorEmprestimos DESC")
     List<Livro> listarMaisPopulares(Pageable pageable);
+
+    @Query("SELECT l FROM Livro l WHERE LOWER(l.titulo) = LOWER(:titulo) AND l.autor.id = :autorId")
+    Optional<Livro> findByTituloAndAutorId(
+            @Param("titulo") String titulo,
+            @Param("autorId") Long autorId
+    );
 }

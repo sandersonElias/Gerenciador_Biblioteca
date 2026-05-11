@@ -73,7 +73,7 @@ public class ExemplarService {
             ex.setCodigo(gerarProximoCodigo(livroId));
             ex.setStatus(StatusExemplar.DISPONIVEL);
             ex.setLivro(livro);
-            novos.add(exemplarRepository.save(ex)); // salva um a um para o código ser gerado corretamente
+            novos.add(exemplarRepository.save(ex));
         }
         return novos.stream().map(this::toResponse).toList();
     }
@@ -87,6 +87,11 @@ public class ExemplarService {
         if (diferenca > 0) {
             adicionarExemplares(livro.getId(), diferenca);
         }
+    }
+
+    @Transactional
+    public void deletarTodosExemplaresDoLivro(Long livroId) {
+        exemplarRepository.deleteAllByLivroId(livroId);
     }
 
     // ── Listagens ─────────────────────────────────────────────────────────────

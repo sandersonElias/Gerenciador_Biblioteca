@@ -79,6 +79,15 @@ public interface EmprestimoRepository extends JpaRepository<Emprestimo, Long> {
             @Param("status") StatusEmprestimo status
     );
 
+    @Query("SELECT COUNT(e) FROM Emprestimo e WHERE e.livro.id = :livroId AND e.status IN :status")
+    long countByLivroIdAndStatusIn(
+            @Param("livroId") Long livroId,
+            @Param("status") List<String> status
+    );
+
+    @Query("SELECT COUNT(e) FROM Emprestimo e WHERE e.livro.id = :livroId")
+    long countByLivroId(@Param("livroId") Long livroId);
+
     // ✅ NOVO: Conta empréstimos em curso de um usuário (para validar limite)
     long countByUserIdAndStatusIn(Long userId, Collection<StatusEmprestimo> statuses);
 }

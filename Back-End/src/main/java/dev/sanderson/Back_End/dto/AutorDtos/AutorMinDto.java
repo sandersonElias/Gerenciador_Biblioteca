@@ -4,5 +4,6 @@ import lombok.Getter;
 
 @Getter
 public class AutorMinDto {
+    private Long id;
     private String autor;
 }

@@ -4,5 +4,6 @@ import lombok.Getter;
 
 @Getter
 public class GeneroMinDto {
+    private Long id;
     private String genero;
 }
