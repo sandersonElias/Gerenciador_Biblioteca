@@ -1,7 +1,7 @@
-import React from 'react';
-import { Livro } from '@/services/livro/types';
-import { CarouselDirection } from '../models/HomeModel';
-import { CarouselCard } from './CarouselCard';
+import React from "react";
+import { Livro } from "../../../services/livro/types";
+import { CarouselDirection } from "../models/HomeModel";
+import { CarouselCard } from "./CarouselCard";
 
 interface BookCarouselProps {
   books: Livro[];
@@ -50,7 +50,7 @@ export const BookCarousel: React.FC<BookCarouselProps> = ({
   };
 
   const handleDotClick = (index: number) => {
-    const dir: CarouselDirection = index > currentIndex ? 'next' : 'prev';
+    const dir: CarouselDirection = index > currentIndex ? "next" : "prev";
     onGoToIndex(index, dir);
     onResetAutoPlay();
   };
@@ -58,17 +58,17 @@ export const BookCarousel: React.FC<BookCarouselProps> = ({
   return (
     <div className="carousel">
       {/* Seta anterior */}
-      <button 
-        className="carousel-arrow carousel-arrow--prev" 
+      <button
+        className="carousel-arrow carousel-arrow--prev"
         onClick={handlePrev}
         aria-label="Livro anterior"
       >
-        <svg 
-          width="24" 
-          height="24" 
-          viewBox="0 0 24 24" 
-          fill="none" 
-          stroke="currentColor" 
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
           strokeWidth="2.5"
         >
           <polyline points="15 18 9 12 15 6" />
@@ -76,28 +76,28 @@ export const BookCarousel: React.FC<BookCarouselProps> = ({
       </button>
 
       {/* Track com animação */}
-      <div 
+      <div
         className={`carousel-track ${
-          isAnimating 
-            ? `carousel-track--exit-${direction}` 
-            : 'carousel-track--enter'
+          isAnimating
+            ? `carousel-track--exit-${direction}`
+            : "carousel-track--enter"
         }`}
       >
         {currentBook && <CarouselCard book={currentBook} />}
       </div>
 
       {/* Seta próxima */}
-      <button 
-        className="carousel-arrow carousel-arrow--next" 
+      <button
+        className="carousel-arrow carousel-arrow--next"
         onClick={handleNext}
         aria-label="Próximo livro"
       >
-        <svg 
-          width="24" 
-          height="24" 
-          viewBox="0 0 24 24" 
-          fill="none" 
-          stroke="currentColor" 
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
           strokeWidth="2.5"
         >
           <polyline points="9 18 15 12 9 6" />
@@ -110,7 +110,7 @@ export const BookCarousel: React.FC<BookCarouselProps> = ({
           <button
             key={index}
             className={`carousel-dot ${
-              index === currentIndex ? 'carousel-dot--active' : ''
+              index === currentIndex ? "carousel-dot--active" : ""
             }`}
             onClick={() => handleDotClick(index)}
             aria-label={`Ir para livro ${index + 1}`}

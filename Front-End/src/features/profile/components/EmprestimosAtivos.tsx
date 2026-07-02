@@ -1,8 +1,8 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { EmprestimosAtivoDto, EmprestimoHistoricoDto } from '@/services';
-import { fmt } from '../models/ProfileModel';
-import Button from '@/components/common/Button';
+import React from "react";
+import { Link } from "react-router-dom";
+import { EmprestimosAtivoDto, EmprestimoHistoricoDto } from "../../../services";
+import { fmt } from "../models/ProfileModel";
+import Button from "../../../components/common/Button";
 
 interface EmprestimosAtivosProps {
   emprestimos?: {
@@ -17,7 +17,7 @@ interface EmprestimosAtivosProps {
 export const EmprestimosAtivos: React.FC<EmprestimosAtivosProps> = ({
   emprestimos,
   isAluno,
-  isSolicitandoRenovacao,  
+  isSolicitandoRenovacao,
   handleSolicitarRenovacao,
 }) => {
   return (
@@ -47,7 +47,7 @@ export const EmprestimosAtivos: React.FC<EmprestimosAtivosProps> = ({
           return (
             <div
               className={`active-loan-card ${
-                atrasado ? 'active-loan-card--late' : ''
+                atrasado ? "active-loan-card--late" : ""
               }`}
             >
               {/* Capa do livro */}
@@ -73,10 +73,7 @@ export const EmprestimosAtivos: React.FC<EmprestimosAtivosProps> = ({
 
               {/* Informações do empréstimo */}
               <div className="active-loan-info">
-                <Link
-                  to={`/livro/${a.livro.id}`}
-                  className="active-loan-title"
-                >
+                <Link to={`/livro/${a.livro.id}`} className="active-loan-title">
                   {a.livro.titulo}
                 </Link>
 
@@ -95,9 +92,7 @@ export const EmprestimosAtivos: React.FC<EmprestimosAtivosProps> = ({
                   </div>
                   <div className="meta-chip">
                     <span className="meta-chip__label">Renovações</span>
-                    <span className="meta-chip__value">
-                      {a.renovacoes}/3
-                    </span>
+                    <span className="meta-chip__value">{a.renovacoes}/3</span>
                   </div>
                 </div>
 
@@ -105,25 +100,28 @@ export const EmprestimosAtivos: React.FC<EmprestimosAtivosProps> = ({
                 <div className="deadline-bar">
                   <div
                     className={`deadline-bar__fill ${
-                      atrasado ? 'deadline-bar__fill--late' : ''
+                      atrasado ? "deadline-bar__fill--late" : ""
                     }`}
                     style={{
                       width: atrasado
-                        ? '100%'
-                        : `${Math.min(100, ((7 - a.diasRestantes) / 7) * 100)}%`,
+                        ? "100%"
+                        : `${Math.min(
+                            100,
+                            ((7 - a.diasRestantes) / 7) * 100,
+                          )}%`,
                     }}
                   />
                 </div>
                 <p
                   className={`deadline-label ${
-                    atrasado ? 'deadline-label--late' : ''
+                    atrasado ? "deadline-label--late" : ""
                   }`}
                 >
                   {atrasado
-                    ? '⚠️ Prazo encerrado — devolva o livro'
+                    ? "⚠️ Prazo encerrado — devolva o livro"
                     : `${a.diasRestantes} dia${
-                        a.diasRestantes !== 1 ? 's' : ''
-                      } restante${a.diasRestantes !== 1 ? 's' : ''}`}
+                        a.diasRestantes !== 1 ? "s" : ""
+                      } restante${a.diasRestantes !== 1 ? "s" : ""}`}
                 </p>
               </div>
 
@@ -142,10 +140,10 @@ export const EmprestimosAtivos: React.FC<EmprestimosAtivosProps> = ({
                   ) : (
                     <span className="renew-blocked">
                       {a.renovacoes >= 3
-                        ? 'Limite atingido (3/3)'
+                        ? "Limite atingido (3/3)"
                         : atrasado
-                        ? 'Livro atrasado'
-                        : 'Renovação indisponível'}
+                        ? "Livro atrasado"
+                        : "Renovação indisponível"}
                     </span>
                   )}
                 </div>

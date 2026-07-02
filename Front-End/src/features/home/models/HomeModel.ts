@@ -1,14 +1,14 @@
-import { Livro } from '@/services/livro/types';
+import { Livro } from "../../../services/livro/types";
 
 /**
  * Constantes da HomePage
  */
 export const ANIMATED_WORDS = [
-  'Leitura',
-  'Conhecimento',
-  'Aprendizado',
-  'Descoberta',
-  'Cultura'
+  "Leitura",
+  "Conhecimento",
+  "Aprendizado",
+  "Descoberta",
+  "Cultura",
 ] as const;
 
 export const CAROUSEL_AUTO_PLAY_DELAY = 5000; // 5 segundos
@@ -18,7 +18,7 @@ export const WORD_CHANGE_INTERVAL = 3000; // 3 segundos
 /**
  * Tipos relacionados ao carrossel
  */
-export type CarouselDirection = 'next' | 'prev';
+export type CarouselDirection = "next" | "prev";
 
 export interface CarouselState {
   currentIndex: number;
@@ -51,7 +51,9 @@ export class HomeHelpers {
    * Formata URL de busca
    */
   static buildSearchUrl(params: SearchParams): string {
-    return `/buscar?filter=${params.filter}&term=${encodeURIComponent(params.term)}`;
+    return `/buscar?filter=${params.filter}&term=${encodeURIComponent(
+      params.term,
+    )}`;
   }
 
   /**

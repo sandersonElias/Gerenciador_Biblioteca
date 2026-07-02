@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { ExemplarService } from '@/services/exemplar/ExemplarService';
-import { Exemplar } from '@/services/exemplar/types';
+import { useState, useEffect } from "react";
+import { ExemplarService } from "../../../services/exemplar/ExemplarService";
+import { Exemplar } from "../../../services/exemplar/types";
 
 export const useExemplarLoader = (livroId: string) => {
   const [exemplares, setExemplares] = useState<Exemplar[]>([]);

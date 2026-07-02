@@ -1,14 +1,14 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { MeusEmprestimosResponse } from '@/services';
-import { fmt } from '../models/ProfileModel';
+import React from "react";
+import { Link } from "react-router-dom";
+import { MeusEmprestimosResponse } from "../../../services";
+import { fmt } from "../models/ProfileModel";
 
 interface HistorioLeituraProps {
-  meusEmprestimos: MeusEmprestimosResponse | null; 
+  meusEmprestimos: MeusEmprestimosResponse | null;
 }
 
-export const HistorioLeitura: React.FC<HistorioLeituraProps> = ({ 
-  meusEmprestimos 
+export const HistorioLeitura: React.FC<HistorioLeituraProps> = ({
+  meusEmprestimos,
 }) => {
   if (!meusEmprestimos?.historico || meusEmprestimos.historico.length === 0) {
     return null;
@@ -17,14 +17,14 @@ export const HistorioLeitura: React.FC<HistorioLeituraProps> = ({
   return (
     <section className="profile-section">
       <h2 className="section-title">
-        <svg 
-          width="18" 
-          height="18" 
-          viewBox="0 0 24 24" 
-          fill="none" 
-          stroke="currentColor" 
-          strokeWidth="2" 
-          strokeLinecap="round" 
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
           strokeLinejoin="round"
         >
           <polyline points="12 8 12 12 14 14" />
@@ -42,12 +42,12 @@ export const HistorioLeitura: React.FC<HistorioLeituraProps> = ({
                 <img src={h.livro.urlImg} alt={h.livro.titulo} />
               ) : (
                 <div className="cover-placeholder cover-placeholder--sm">
-                  <svg 
-                    width="20" 
-                    height="20" 
-                    viewBox="0 0 24 24" 
-                    fill="none" 
-                    stroke="currentColor" 
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
                     strokeWidth="1.5"
                   >
                     <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
@@ -59,10 +59,7 @@ export const HistorioLeitura: React.FC<HistorioLeituraProps> = ({
 
             {/* Informações do empréstimo */}
             <div className="history-info">
-              <Link 
-                to={`/livro/${h.livro.id}`} 
-                className="history-title"
-              >
+              <Link to={`/livro/${h.livro.id}`} className="history-title">
                 {h.livro.titulo}
               </Link>
               <div className="history-dates">
@@ -71,7 +68,7 @@ export const HistorioLeitura: React.FC<HistorioLeituraProps> = ({
                 </span>
                 {h.renovacoes > 0 && (
                   <span className="history-renewals">
-                    {h.renovacoes} renovação{h.renovacoes > 1 ? 'ões' : ''}
+                    {h.renovacoes} renovação{h.renovacoes > 1 ? "ões" : ""}
                   </span>
                 )}
               </div>

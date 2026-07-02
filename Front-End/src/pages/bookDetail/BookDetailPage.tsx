@@ -1,13 +1,13 @@
-import React from 'react';
-import { useParams } from 'react-router-dom';
-import './BookDetailPage.scss';
-import { useBookDetailViewModel } from '@/features/bookDetail/hooks/useBookDetailViewModel';
-import { BookCover } from '@/features/bookDetail/components/BookCover';
-import { BookActions } from '@/features/bookDetail/components/BookActions';
-import { BookInfo } from '@/features/bookDetail/components/BookInfo';
-import { ReservationsTable } from '@/features/bookDetail/components/ReservationsTable';
-import { ExemplaresTable } from '@/features/bookDetail/components/ExemplaresTable';
-import { ReserveModal } from '@/features/bookDetail/components/ReserveModal';
+import React from "react";
+import { useParams } from "react-router-dom";
+import "./BookDetailPage.scss";
+import { useBookDetailViewModel } from "../../features/bookDetail/hooks/useBookDetailViewModel";
+import { BookCover } from "../../features/bookDetail/components/BookCover";
+import { BookActions } from "../../features/bookDetail/components/BookActions";
+import { BookInfo } from "../../features/bookDetail/components/BookInfo";
+import { ReservationsTable } from "../../features/bookDetail/components/ReservationsTable";
+import { ExemplaresTable } from "../../features/bookDetail/components/ExemplaresTable";
+import { ReserveModal } from "../../features/bookDetail/components/ReserveModal";
 
 const BookDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -43,9 +43,9 @@ const BookDetailPage: React.FC = () => {
         <div className="book-detail">
           {/* Capa do livro */}
           <div className="book-cover-section">
-            <BookCover 
-              imageUrl={viewModel.book.urlImg} 
-              title={viewModel.book.titulo} 
+            <BookCover
+              imageUrl={viewModel.book.urlImg}
+              title={viewModel.book.titulo}
             />
 
             {/* Ações mobile */}

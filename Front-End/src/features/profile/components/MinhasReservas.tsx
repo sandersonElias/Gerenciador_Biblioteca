@@ -1,28 +1,32 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { ReservaResponse } from '@/services';  // ← Use o tipo do Services!
-import { fmt, statusReservaClass, statusReservaLabel } from '../models/ProfileModel';
+import React from "react";
+import { Link } from "react-router-dom";
+import { ReservaResponse } from "../../../services";
+import {
+  fmt,
+  statusReservaClass,
+  statusReservaLabel,
+} from "../models/ProfileModel";
 
 interface MinhasReservasProps {
-  reservas: ReservaResponse[];  // ← Tipo correto do Services!
-  onCancelarReserva: (reserva: ReservaResponse) => void;  // ← Nome melhor
+  reservas: ReservaResponse[]; // ← Tipo correto do Services!
+  onCancelarReserva: (reserva: ReservaResponse) => void; // ← Nome melhor
 }
 
-export const MinhasReservas: React.FC<MinhasReservasProps> = ({ 
-  reservas, 
-  onCancelarReserva 
+export const MinhasReservas: React.FC<MinhasReservasProps> = ({
+  reservas,
+  onCancelarReserva,
 }) => {
   return (
     <section className="profile-section">
       <h2 className="section-title">
-        <svg 
-          width="18" 
-          height="18" 
-          viewBox="0 0 24 24" 
-          fill="none" 
-          stroke="currentColor" 
-          strokeWidth="2" 
-          strokeLinecap="round" 
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
           strokeLinejoin="round"
         >
           <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
@@ -40,12 +44,12 @@ export const MinhasReservas: React.FC<MinhasReservasProps> = ({
                   <img src={r.livro.urlImg} alt={r.livro.titulo} />
                 ) : (
                   <div className="cover-placeholder cover-placeholder--sm">
-                    <svg 
-                      width="20" 
-                      height="20" 
-                      viewBox="0 0 24 24" 
-                      fill="none" 
-                      stroke="currentColor" 
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
                       strokeWidth="1.5"
                     >
                       <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
@@ -57,10 +61,7 @@ export const MinhasReservas: React.FC<MinhasReservasProps> = ({
 
               {/* Informações da reserva */}
               <div className="reservation-info">
-                <Link 
-                  to={`/livro/${r.livro.id}`} 
-                  className="reservation-title"
-                >
+                <Link to={`/livro/${r.livro.id}`} className="reservation-title">
                   {r.livro.titulo}
                 </Link>
                 <p className="reservation-author">{r.livro.autor?.autor}</p>
@@ -77,7 +78,7 @@ export const MinhasReservas: React.FC<MinhasReservasProps> = ({
                 <span className={`badge ${statusReservaClass(r.status)}`}>
                   {statusReservaLabel(r.status)}
                 </span>
-                {['ATIVA', 'DISPONIVEL'].includes(r.status) && (
+                {["ATIVA", "DISPONIVEL"].includes(r.status) && (
                   <button
                     className="btn-cancel-reservation"
                     onClick={() => onCancelarReserva(r)}

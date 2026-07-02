@@ -1,7 +1,7 @@
-import React from 'react';
-import Modal from '@/components/common/Modal';
-import Button from '@/components/common/Button';
-import { SolicitacaoPendenteDto } from '@/services/solicitacao/types';
+import React from "react";
+import Modal from "../../../../components/common/Modal";
+import Button from "../../../../components/common/Button";
+import { SolicitacaoPendenteDto } from "@/services/solicitacao/types";
 
 interface RejectRequestModalProps {
   isOpen: boolean;
@@ -41,9 +41,11 @@ export const RejectRequestModal: React.FC<RejectRequestModalProps> = ({
       <p>Rejeitar a solicitação de renovação de:</p>
       <strong>{solicitacao.livroTitulo}</strong>
       <p>Aluno: {solicitacao.solicitanteNome}</p>
-      
-      <div className="loan-form__field" style={{ marginTop: '1rem' }}>
-        <label className="loan-form__label">Motivo da rejeição (opcional)</label>
+
+      <div className="loan-form__field" style={{ marginTop: "1rem" }}>
+        <label className="loan-form__label">
+          Motivo da rejeição (opcional)
+        </label>
         <textarea
           className="lp-textarea"
           rows={3}

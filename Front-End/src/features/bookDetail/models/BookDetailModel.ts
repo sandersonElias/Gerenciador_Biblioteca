@@ -1,4 +1,4 @@
-import { Livro } from '@/services/livro/types';
+import { Livro } from "../../../services/livro/types";
 
 /**
  * Estado das permissões do usuário
@@ -29,7 +29,7 @@ export class BookDetailHelpers {
    */
   static calculateAvailabilityPercentage(
     available: number,
-    total: number
+    total: number,
   ): number {
     return total > 0 ? (available / total) * 100 : 0;
   }
@@ -49,7 +49,7 @@ export class BookDetailHelpers {
       isAvailable: this.isBookAvailable(book),
       percentage: this.calculateAvailabilityPercentage(
         book.quantidadeDisponivel,
-        book.totalExemplares
+        book.totalExemplares,
       ),
       availableCount: book.quantidadeDisponivel,
       totalCount: book.totalExemplares,
@@ -61,10 +61,10 @@ export class BookDetailHelpers {
    */
   static getStatusLabel(status: string): string {
     const labels: Record<string, string> = {
-      PENDENTE: 'Pendente',
-      ATIVA: 'Ativa',
-      CANCELADA: 'Cancelada',
-      RETIRADA: 'Retirada',
+      PENDENTE: "Pendente",
+      ATIVA: "Ativa",
+      CANCELADA: "Cancelada",
+      RETIRADA: "Retirada",
     };
     return labels[status] || status;
   }
@@ -74,9 +74,9 @@ export class BookDetailHelpers {
    */
   static getExemplarStatusLabel(status: string): string {
     const labels: Record<string, string> = {
-      DISPONIVEL: 'Disponível',
-      EMPRESTADO: 'Emprestado',
-      RESERVADO: 'Reservado',
+      DISPONIVEL: "Disponível",
+      EMPRESTADO: "Emprestado",
+      RESERVADO: "Reservado",
     };
     return labels[status] || status;
   }

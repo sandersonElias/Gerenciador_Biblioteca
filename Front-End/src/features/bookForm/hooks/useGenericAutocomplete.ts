@@ -1,11 +1,10 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef } from "react";
 
 interface UseGenericAutocompleteOptions<T> {
   searchFn: (query: string) => Promise<T[]>;
   minChars?: number;
   debounceMs?: number;
   isSelected: boolean;
-  // ✅ NOVO: Termo inicial (para modo edit)
   initialTerm?: string;
 }
 
@@ -14,7 +13,7 @@ export const useGenericAutocomplete = <T>({
   minChars = 2,
   debounceMs = 400,
   isSelected,
-  initialTerm = '',
+  initialTerm = "",
 }: UseGenericAutocompleteOptions<T>) => {
   // ✅ Inicia com o initialTerm se fornecido
   const [searchTerm, setSearchTermState] = useState(initialTerm);

@@ -1,6 +1,6 @@
-import React from 'react';
-import { Exemplar } from '@/services/exemplar/types';
-import { BookDetailHelpers } from '../models/BookDetailModel';
+import React from "react";
+import { Exemplar } from "../../../services/exemplar/types";
+import { BookDetailHelpers } from "../models/BookDetailModel";
 
 interface ExemplaresTableProps {
   exemplares: Exemplar[];
@@ -9,8 +9,8 @@ interface ExemplaresTableProps {
 /**
  * Componente puro da tabela de exemplares
  */
-export const ExemplaresTable: React.FC<ExemplaresTableProps> = ({ 
-  exemplares 
+export const ExemplaresTable: React.FC<ExemplaresTableProps> = ({
+  exemplares,
 }) => {
   if (exemplares.length === 0) {
     return null;
@@ -33,7 +33,7 @@ export const ExemplaresTable: React.FC<ExemplaresTableProps> = ({
                 <strong>{ex.codigo}</strong>
               </td>
               <td>
-                <span 
+                <span
                   className={`exemplar-badge exemplar-badge--${ex.status.toLowerCase()}`}
                 >
                   {BookDetailHelpers.getExemplarStatusLabel(ex.status)}

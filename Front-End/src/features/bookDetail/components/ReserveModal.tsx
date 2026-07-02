@@ -1,6 +1,6 @@
-import React from 'react';
-import Modal from '@/components/common/Modal';
-import Button from '@/components/common/Button';
+import React from "react";
+import Modal from "../../../components/common/Modal";
+import Button from "../../../components/common/Button";
 
 interface ReserveModalProps {
   isOpen: boolean;
@@ -30,11 +30,7 @@ export const ReserveModal: React.FC<ReserveModalProps> = ({
           <Button variant="ghost" onClick={onClose}>
             Cancelar
           </Button>
-          <Button 
-            variant="primary" 
-            onClick={onConfirm}
-            isLoading={isReserving}
-          >
+          <Button variant="primary" onClick={onConfirm} isLoading={isReserving}>
             Confirmar
           </Button>
         </>
@@ -43,9 +39,7 @@ export const ReserveModal: React.FC<ReserveModalProps> = ({
       <div className="reserve-confirm">
         <p>Deseja reservar:</p>
         <strong>{bookTitle}</strong>
-        <p className="reserve-note">
-          Você terá prioridade para retirada.
-        </p>
+        <p className="reserve-note">Você terá prioridade para retirada.</p>
       </div>
     </Modal>
   );

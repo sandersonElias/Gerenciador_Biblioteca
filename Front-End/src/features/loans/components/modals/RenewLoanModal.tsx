@@ -1,7 +1,7 @@
-import React from 'react';
-import Modal from '@/components/common/Modal';
-import Button from '@/components/common/Button';
-import { EmprestimoResponse } from '@/services/emprestimo/types';
+import React from "react";
+import Modal from "../../../../components/common/Modal";
+import Button from "../../../../components/common/Button";
+import { EmprestimoResponse } from "../../../../services/emprestimo/types";
 
 interface RenewLoanModalProps {
   isOpen: boolean;

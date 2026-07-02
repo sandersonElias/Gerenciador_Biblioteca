@@ -1,37 +1,39 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useToast } from '@/context/ToastContext';
-import { 
-  LivroService, 
-  AutorService, 
-  GeneroService, 
-  CatalogacaoService 
-} from '@/services/livro/LivroService';
-import { 
-  AutorResponse, 
-  GeneroResponse, 
-  CatalogacaoResponse 
-} from '@/services/livro/types';
-import { 
-  BookFormData, 
-  BookFormMode, 
-  BookFormHelpers, 
-  INITIAL_BOOK_FORM 
-} from '../models/BookFormModel';
-import { useGenericAutocomplete } from './useGenericAutocomplete';
+import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useToast } from "../../../context/ToastContext";
+import {
+  LivroService,
+  AutorService,
+  GeneroService,
+  CatalogacaoService,
+} from "../../../services/livro/LivroService";
+import {
+  AutorResponse,
+  GeneroResponse,
+  CatalogacaoResponse,
+} from "../../../services/livro/types";
+import {
+  BookFormData,
+  BookFormMode,
+  BookFormHelpers,
+  INITIAL_BOOK_FORM,
+} from "../models/BookFormModel";
+import { useGenericAutocomplete } from "./useGenericAutocomplete";
 
 interface UseBookFormViewModelParams {
-  bookId?: number; 
+  bookId?: number;
 }
 
-export const useBookFormViewModel = ({ bookId }: UseBookFormViewModelParams) => {
+export const useBookFormViewModel = ({
+  bookId,
+}: UseBookFormViewModelParams) => {
   const navigate = useNavigate();
   const { showToast } = useToast();
   const queryClient = useQueryClient();
 
-  const mode: BookFormMode = bookId ? 'edit' : 'create';
-  const isEdit = mode === 'edit';
+  const mode: BookFormMode = bookId ? "edit" : "create";
+  const isEdit = mode === "edit";
 
   const [form, setForm] = useState<BookFormData>(INITIAL_BOOK_FORM);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -40,7 +42,7 @@ export const useBookFormViewModel = ({ bookId }: UseBookFormViewModelParams) => 
   // Query: buscar livro existente (modo edit)
   // ─────────────────────────────────────────────────────────
   const { data: existingBook, isLoading: isLoadingBook } = useQuery({
-    queryKey: ['livro', bookId],
+    queryKey: ["livro", bookId],
     queryFn: () => LivroService.getById(bookId!),
     enabled: isEdit && !!bookId,
   });
@@ -49,13 +51,16 @@ export const useBookFormViewModel = ({ bookId }: UseBookFormViewModelParams) => 
   // Funções de busca memoizadas — ANTES dos autocompletes
   // ─────────────────────────────────────────────────────────
   const searchAutorFn = useCallback(
-    (query: string) => AutorService.getByAutor(query), []
+    (query: string) => AutorService.getByAutor(query),
+    [],
   );
   const searchGeneroFn = useCallback(
-    (query: string) => GeneroService.getByGenero(query), []
+    (query: string) => GeneroService.getByGenero(query),
+    [],
   );
   const searchCatalogacaoFn = useCallback(
-    (query: string) => CatalogacaoService.getByCatalogacao(query), []
+    (query: string) => CatalogacaoService.getByCatalogacao(query),
+    [],
   );
 
   // ─────────────────────────────────────────────────────────
@@ -64,19 +69,19 @@ export const useBookFormViewModel = ({ bookId }: UseBookFormViewModelParams) => 
   const autorAutocomplete = useGenericAutocomplete<AutorResponse>({
     searchFn: searchAutorFn,
     isSelected: !!form.autorId,
-    initialTerm: existingBook?.autor?.autor ?? '',
+    initialTerm: existingBook?.autor?.autor ?? "",
   });
 
   const generoAutocomplete = useGenericAutocomplete<GeneroResponse>({
     searchFn: searchGeneroFn,
     isSelected: !!form.generoId,
-    initialTerm: existingBook?.genero?.genero ?? '',
+    initialTerm: existingBook?.genero?.genero ?? "",
   });
 
   const catalogacaoAutocomplete = useGenericAutocomplete<CatalogacaoResponse>({
     searchFn: searchCatalogacaoFn,
     isSelected: !!form.catalogacaoId,
-    initialTerm: existingBook?.catalogacao?.catalogacao ?? '',
+    initialTerm: existingBook?.catalogacao?.catalogacao ?? "",
   });
 
   // ─────────────────────────────────────────────────────────
@@ -92,45 +97,60 @@ export const useBookFormViewModel = ({ bookId }: UseBookFormViewModelParams) => 
   }, [existingBook]);
 
   // ✅ WORKAROUND: Busca os IDs pelos nomes (porque o backend não retorna)
-useEffect(() => {
-  if (!existingBook) return;
+  useEffect(() => {
+    if (!existingBook) return;
 
-  const buscarIds = async () => {
-    try {
-      // Buscar ID do autor pelo nome
-      if (existingBook.autor?.autor && !form.autorId) {
-        const autores = await AutorService.getByAutor(existingBook.autor.autor);
-        const autorMatch = autores.find(a => a.autor === existingBook.autor.autor);
-        if (autorMatch) {
-          setForm(prev => ({ ...prev, autorId: String(autorMatch.id) }));
+    const buscarIds = async () => {
+      try {
+        // Buscar ID do autor pelo nome
+        if (existingBook.autor?.autor && !form.autorId) {
+          const autores = await AutorService.getByAutor(
+            existingBook.autor.autor,
+          );
+          const autorMatch = autores.find(
+            (a) => a.autor === existingBook.autor.autor,
+          );
+          if (autorMatch) {
+            setForm((prev) => ({ ...prev, autorId: String(autorMatch.id) }));
+          }
         }
-      }
 
-      // Buscar ID do gênero pelo nome
-      if (existingBook.genero?.genero && !form.generoId) {
-        const generos = await GeneroService.getByGenero(existingBook.genero.genero);
-        const generoMatch = generos.find(g => g.genero === existingBook.genero.genero);
-        if (generoMatch) {
-          setForm(prev => ({ ...prev, generoId: String(generoMatch.id) }));
+        // Buscar ID do gênero pelo nome
+        if (existingBook.genero?.genero && !form.generoId) {
+          const generos = await GeneroService.getByGenero(
+            existingBook.genero.genero,
+          );
+          const generoMatch = generos.find(
+            (g) => g.genero === existingBook.genero.genero,
+          );
+          if (generoMatch) {
+            setForm((prev) => ({ ...prev, generoId: String(generoMatch.id) }));
+          }
         }
-      }
 
-      // Buscar ID da catalogação pelo nome
-      if (existingBook.catalogacao?.catalogacao && !form.catalogacaoId) {
-        const cats = await CatalogacaoService.getByCatalogacao(existingBook.catalogacao.catalogacao);
-        const catMatch = cats.find(c => c.catalogacao === existingBook.catalogacao.catalogacao);
-        if (catMatch) {
-          setForm(prev => ({ ...prev, catalogacaoId: String(catMatch.id) }));
+        // Buscar ID da catalogação pelo nome
+        if (existingBook.catalogacao?.catalogacao && !form.catalogacaoId) {
+          const cats = await CatalogacaoService.getByCatalogacao(
+            existingBook.catalogacao.catalogacao,
+          );
+          const catMatch = cats.find(
+            (c) => c.catalogacao === existingBook.catalogacao.catalogacao,
+          );
+          if (catMatch) {
+            setForm((prev) => ({
+              ...prev,
+              catalogacaoId: String(catMatch.id),
+            }));
+          }
         }
+      } catch (err) {
+        console.error("Erro ao buscar IDs:", err);
       }
-    } catch (err) {
-      console.error('Erro ao buscar IDs:', err);
-    }
-  };
+    };
 
-  buscarIds();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [existingBook]);
+    buscarIds();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [existingBook]);
 
   // ─────────────────────────────────────────────────────────
   // Mutations
@@ -138,47 +158,51 @@ useEffect(() => {
   const createMutation = useMutation({
     mutationFn: () => LivroService.create(BookFormHelpers.toRequest(form)),
     onSuccess: () => {
-      showToast('Livro cadastrado com sucesso!', 'success');
-      queryClient.invalidateQueries({ queryKey: ['livros'] });
-      navigate('/admin/livros');
+      showToast("Livro cadastrado com sucesso!", "success");
+      queryClient.invalidateQueries({ queryKey: ["livros"] });
+      navigate("/admin/livros");
     },
     onError: (error: any) => {
-      const message = error.response?.data?.message 
-        || error.response?.data?.erro 
-        || 'Erro ao cadastrar livro';
-      showToast(message, 'error');
+      const message =
+        error.response?.data?.message ||
+        error.response?.data?.erro ||
+        "Erro ao cadastrar livro";
+      showToast(message, "error");
     },
   });
 
   const updateMutation = useMutation({
-    mutationFn: () => LivroService.update(bookId!, BookFormHelpers.toRequest(form)),
+    mutationFn: () =>
+      LivroService.update(bookId!, BookFormHelpers.toRequest(form)),
     onSuccess: () => {
-      showToast('Livro atualizado com sucesso!', 'success');
-      queryClient.invalidateQueries({ queryKey: ['livro', bookId] });
-      queryClient.invalidateQueries({ queryKey: ['livros'] });
+      showToast("Livro atualizado com sucesso!", "success");
+      queryClient.invalidateQueries({ queryKey: ["livro", bookId] });
+      queryClient.invalidateQueries({ queryKey: ["livros"] });
       navigate(`/livro/${bookId}`);
     },
     onError: (error: any) => {
-      const message = error.response?.data?.message 
-        || error.response?.data?.erro 
-        || 'Erro ao atualizar livro';
-      showToast(message, 'error');
+      const message =
+        error.response?.data?.message ||
+        error.response?.data?.erro ||
+        "Erro ao atualizar livro";
+      showToast(message, "error");
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: () => LivroService.delete(bookId!),
     onSuccess: () => {
-      showToast('Livro excluído com sucesso!', 'success');
-      queryClient.invalidateQueries({ queryKey: ['livros'] });
-      queryClient.removeQueries({ queryKey: ['livro', bookId] });
-      navigate('/admin/livros');
+      showToast("Livro excluído com sucesso!", "success");
+      queryClient.invalidateQueries({ queryKey: ["livros"] });
+      queryClient.removeQueries({ queryKey: ["livro", bookId] });
+      navigate("/admin/livros");
     },
     onError: (error: any) => {
-      const message = error.response?.data?.message 
-        || error.response?.data?.erro 
-        || 'Erro ao excluir livro';
-      showToast(message, 'error');
+      const message =
+        error.response?.data?.message ||
+        error.response?.data?.erro ||
+        "Erro ao excluir livro";
+      showToast(message, "error");
       setShowDeleteModal(false);
     },
   });
@@ -187,14 +211,13 @@ useEffect(() => {
   // Handlers
   // ─────────────────────────────────────────────────────────
   const handleFormChange = useCallback((updates: Partial<BookFormData>) => {
-    setForm(prev => ({ ...prev, ...updates }));
+    setForm((prev) => ({ ...prev, ...updates }));
   }, []);
 
   const handleSubmit = useCallback(() => {
-
     const errors = BookFormHelpers.validate(form);
     if (errors.length > 0) {
-      showToast(errors[0], 'error');
+      showToast(errors[0], "error");
       return;
     }
     if (isEdit) {
@@ -208,38 +231,47 @@ useEffect(() => {
     if (isEdit && bookId) {
       navigate(`/livro/${bookId}`);
     } else {
-      navigate('/admin/livros');
+      navigate("/admin/livros");
     }
   }, [isEdit, bookId, navigate]);
 
-  const handleSelectAutor = useCallback((autor: AutorResponse) => {
-    autorAutocomplete.setSearchTerm(autor.autor);
-    setForm(prev => ({ ...prev, autorId: String(autor.id) }));
-    autorAutocomplete.clearSuggestions();
-  }, [autorAutocomplete]);
+  const handleSelectAutor = useCallback(
+    (autor: AutorResponse) => {
+      autorAutocomplete.setSearchTerm(autor.autor);
+      setForm((prev) => ({ ...prev, autorId: String(autor.id) }));
+      autorAutocomplete.clearSuggestions();
+    },
+    [autorAutocomplete],
+  );
 
   const handleClearAutor = useCallback(() => {
-    setForm(prev => ({ ...prev, autorId: '' }));
+    setForm((prev) => ({ ...prev, autorId: "" }));
   }, []);
 
-  const handleSelectGenero = useCallback((genero: GeneroResponse) => {
-    generoAutocomplete.setSearchTerm(genero.genero);
-    setForm(prev => ({ ...prev, generoId: String(genero.id) }));
-    generoAutocomplete.clearSuggestions();
-  }, [generoAutocomplete]);
+  const handleSelectGenero = useCallback(
+    (genero: GeneroResponse) => {
+      generoAutocomplete.setSearchTerm(genero.genero);
+      setForm((prev) => ({ ...prev, generoId: String(genero.id) }));
+      generoAutocomplete.clearSuggestions();
+    },
+    [generoAutocomplete],
+  );
 
   const handleClearGenero = useCallback(() => {
-    setForm(prev => ({ ...prev, generoId: '' }));
+    setForm((prev) => ({ ...prev, generoId: "" }));
   }, []);
 
-  const handleSelectCatalogacao = useCallback((cat: CatalogacaoResponse) => {
-    catalogacaoAutocomplete.setSearchTerm(cat.catalogacao);
-    setForm(prev => ({ ...prev, catalogacaoId: String(cat.id) }));
-    catalogacaoAutocomplete.clearSuggestions();
-  }, [catalogacaoAutocomplete]);
+  const handleSelectCatalogacao = useCallback(
+    (cat: CatalogacaoResponse) => {
+      catalogacaoAutocomplete.setSearchTerm(cat.catalogacao);
+      setForm((prev) => ({ ...prev, catalogacaoId: String(cat.id) }));
+      catalogacaoAutocomplete.clearSuggestions();
+    },
+    [catalogacaoAutocomplete],
+  );
 
   const handleClearCatalogacao = useCallback(() => {
-    setForm(prev => ({ ...prev, catalogacaoId: '' }));
+    setForm((prev) => ({ ...prev, catalogacaoId: "" }));
   }, []);
 
   const handleOpenDeleteModal = useCallback(() => {

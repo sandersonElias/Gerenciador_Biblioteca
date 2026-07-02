@@ -1,20 +1,18 @@
-import React from 'react';
-import { useProfileViewModel } from '@/features/profile/hooks/useProfileViewModel';
-import { CardProfile } from '@/features/profile/components/CardProfile';
-import { EmprestimosAtivos } from '@/features/profile/components/EmprestimosAtivos';
-import { HistorioLeitura } from '@/features/profile/components/HistorioLeitura';
-import { MinhasReservas } from '@/features/profile/components/MinhasReservas';
-import { ModalReserva } from '@/features/profile/components/ModalReserva';
-import './ProfilePage.scss';
+import React from "react";
+import { useProfileViewModel } from "../features/profile/hooks/useProfileViewModel";
+import { CardProfile } from "../features/profile/components/CardProfile";
+import { EmprestimosAtivos } from "../features/profile/components/EmprestimosAtivos";
+import { HistorioLeitura } from "../features/profile/components/HistorioLeitura";
+import { MinhasReservas } from "../features/profile/components/MinhasReservas";
+import { ModalReserva } from "../features/profile/components/ModalReserva";
+import "./ProfilePage.scss";
 
 export const ProfilePage: React.FC = () => {
-  
   const vm = useProfileViewModel();
 
   return (
     <div className="profile-page">
       <div className="container">
-
         {/* ── Card de perfil ── */}
         <CardProfile
           userInitial={vm.userInitial}
@@ -35,12 +33,10 @@ export const ProfilePage: React.FC = () => {
         />
 
         {/* ── Histórico de empréstimos ── */}
-        <HistorioLeitura 
-          meusEmprestimos={vm.meusEmprestimos}
-        />
+        <HistorioLeitura meusEmprestimos={vm.meusEmprestimos} />
 
         {/* ── Minhas Reservas ── */}
-        <MinhasReservas 
+        <MinhasReservas
           reservas={vm.reservas}
           onCancelarReserva={vm.handleShowCancelModal}
         />
@@ -54,7 +50,6 @@ export const ProfilePage: React.FC = () => {
         cancelTarget={vm.cancelTarget}
         isCancelandoReserva={vm.isCancelandoReserva}
       />
-
     </div>
   );
 };

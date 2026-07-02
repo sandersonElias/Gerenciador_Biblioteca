@@ -1,9 +1,9 @@
-import { useQuery } from '@tanstack/react-query';
-import { useAuth } from '@/context/AuthContext';
-import { LivroService } from '@/services/livro/LivroService';
-import { useAnimatedWords } from './useAnimatedWords';
-import { useCarousel } from './useCarousel';
-import { HomeHelpers, SearchParams } from '../models/HomeModel';
+import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "../../../context/AuthContext";
+import { LivroService } from "../../../services/livro/LivroService";
+import { useAnimatedWords } from "./useAnimatedWords";
+import { useCarousel } from "./useCarousel";
+import { HomeHelpers, SearchParams } from "../models/HomeModel";
 
 /**
  * ViewModel principal da HomePage
@@ -19,7 +19,7 @@ export const useHomeViewModel = () => {
   // Dados remotos (React Query)
   // ─────────────────────────────────────────────────────────
   const { data: popularBooks = [], isLoading: isLoadingBooks } = useQuery({
-    queryKey: ['livros', 'populares'],
+    queryKey: ["livros", "populares"],
     queryFn: () => LivroService.getPopulares(6),
   });
 
@@ -48,7 +48,8 @@ export const useHomeViewModel = () => {
   /**
    * Verifica se usuário pode gerenciar empréstimos
    */
-  const canManageLoans = isAuthenticated && hasAnyRole(['ROLE_FUNCIONARIO', 'ROLE_ADMIN']);
+  const canManageLoans =
+    isAuthenticated && hasAnyRole(["ROLE_FUNCIONARIO", "ROLE_ADMIN"]);
 
   /**
    * Livro atual do carrossel

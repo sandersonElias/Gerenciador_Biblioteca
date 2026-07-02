@@ -1,9 +1,7 @@
-// src/features/home/components/CarouselCard.tsx
-
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { Livro } from '@/services/livro/types';
-import { HomeHelpers } from '../models/HomeModel';
+import React from "react";
+import { Link } from "react-router-dom";
+import { Livro } from "../../../services/livro/types";
+import { HomeHelpers } from "../models/HomeModel";
 
 interface CarouselCardProps {
   book: Livro;
@@ -23,12 +21,12 @@ export const CarouselCard: React.FC<CarouselCardProps> = ({ book }) => {
           <img src={book.urlImg} alt={`Capa de ${book.titulo}`} />
         ) : (
           <div className="carousel-cover-placeholder">
-            <svg 
-              width="48" 
-              height="48" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              stroke="currentColor" 
+            <svg
+              width="48"
+              height="48"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
               strokeWidth="1.5"
             >
               <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
@@ -42,7 +40,7 @@ export const CarouselCard: React.FC<CarouselCardProps> = ({ book }) => {
       <div className="carousel-info">
         <h3 className="carousel-title">{book.titulo}</h3>
         <p className="carousel-author">
-          {book.autor?.autor || 'Autor desconhecido'}
+          {book.autor?.autor || "Autor desconhecido"}
         </p>
 
         {book.genero?.genero && (
@@ -54,12 +52,12 @@ export const CarouselCard: React.FC<CarouselCardProps> = ({ book }) => {
         )}
 
         <p className="carousel-loans">
-          <svg 
-            width="14" 
-            height="14" 
-            viewBox="0 0 24 24" 
-            fill="none" 
-            stroke="currentColor" 
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
             strokeWidth="2"
           >
             <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
@@ -68,14 +66,14 @@ export const CarouselCard: React.FC<CarouselCardProps> = ({ book }) => {
           {book.contadorEmprestimos} empréstimos
         </p>
 
-        <span 
+        <span
           className={`carousel-badge ${
-            isAvailable 
-              ? 'carousel-badge--available' 
-              : 'carousel-badge--unavailable'
+            isAvailable
+              ? "carousel-badge--available"
+              : "carousel-badge--unavailable"
           }`}
         >
-          {isAvailable ? 'Disponível' : 'Indisponível'}
+          {isAvailable ? "Disponível" : "Indisponível"}
         </span>
       </div>
     </Link>

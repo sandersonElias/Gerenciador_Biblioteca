@@ -1,12 +1,12 @@
-import { useState, useCallback } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '@/context/AuthContext';
-import { useToast } from '@/context/ToastContext';
-import { 
-  LoginFormData, 
-  LoginFormErrors, 
-  LoginValidator 
-} from '../models/LoginModel';
+import { useState, useCallback } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../../../context/AuthContext";
+import { useToast } from "../../../context/ToastContext";
+import {
+  LoginFormData,
+  LoginFormErrors,
+  LoginValidator,
+} from "../models/LoginModel";
 
 /**
  * ViewModel da tela de Login
@@ -17,8 +17,8 @@ export const useLoginViewModel = () => {
   // Estado local
   // ─────────────────────────────────────────────────────────
   const [formData, setFormData] = useState<LoginFormData>({
-    email: '',
-    password: '',
+    email: "",
+    password: "",
   });
   const [errors, setErrors] = useState<LoginFormErrors>({});
   const [showPassword, setShowPassword] = useState(false);
@@ -39,20 +39,23 @@ export const useLoginViewModel = () => {
   /**
    * Atualiza um campo do formulário
    */
-  const updateField = useCallback((field: keyof LoginFormData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    
-    // Limpa o erro do campo quando o usuário começa a digitar
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: undefined }));
-    }
-  }, [errors]);
+  const updateField = useCallback(
+    (field: keyof LoginFormData, value: string) => {
+      setFormData((prev) => ({ ...prev, [field]: value }));
+
+      // Limpa o erro do campo quando o usuário começa a digitar
+      if (errors[field]) {
+        setErrors((prev) => ({ ...prev, [field]: undefined }));
+      }
+    },
+    [errors],
+  );
 
   /**
    * Alterna visibilidade da senha
    */
   const togglePasswordVisibility = useCallback(() => {
-    setShowPassword(prev => !prev);
+    setShowPassword((prev) => !prev);
   }, []);
 
   /**
@@ -68,39 +71,46 @@ export const useLoginViewModel = () => {
   /**
    * Submete o formulário de login
    */
-  const handleSubmit = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Valida antes de enviar
-    if (!validateForm()) {
-      return;
-    }
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
 
-    setIsLoading(true);
-    
-    try {
-      // Faz login
-      const { senhaAlterada } = await login(formData.email, formData.password);
-
-      // Lógica de redirecionamento
-      if (!senhaAlterada) {
-        // Senha padrão (matrícula): força troca
-        showToast('Bem-vindo! Por favor, defina uma nova senha.', 'info');
-        navigate('/trocar-senha', { replace: true });
-      } else {
-        // Login normal: redireciona para onde veio ou home
-        showToast('Login realizado com sucesso!', 'success');
-        const from = (location.state as any)?.from?.pathname || '/';
-        navigate(from, { replace: true });
+      // Valida antes de enviar
+      if (!validateForm()) {
+        return;
       }
-    } catch (error: any) {
-      // Tratamento de erro
-      const message = error.response?.data?.message || 'Credenciais inválidas';
-      showToast(message, 'error');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [formData, validateForm, login, showToast, navigate, location]);
+
+      setIsLoading(true);
+
+      try {
+        // Faz login
+        const { senhaAlterada } = await login(
+          formData.email,
+          formData.password,
+        );
+
+        // Lógica de redirecionamento
+        if (!senhaAlterada) {
+          // Senha padrão (matrícula): força troca
+          showToast("Bem-vindo! Por favor, defina uma nova senha.", "info");
+          navigate("/trocar-senha", { replace: true });
+        } else {
+          // Login normal: redireciona para onde veio ou home
+          showToast("Login realizado com sucesso!", "success");
+          const from = (location.state as any)?.from?.pathname || "/";
+          navigate(from, { replace: true });
+        }
+      } catch (error: any) {
+        // Tratamento de erro
+        const message =
+          error.response?.data?.message || "Credenciais inválidas";
+        showToast(message, "error");
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [formData, validateForm, login, showToast, navigate, location],
+  );
 
   // ─────────────────────────────────────────────────────────
   // Interface pública do ViewModel
@@ -111,7 +121,7 @@ export const useLoginViewModel = () => {
     errors,
     showPassword,
     isLoading,
-    
+
     // Ações (métodos que a View pode chamar)
     updateField,
     togglePasswordVisibility,

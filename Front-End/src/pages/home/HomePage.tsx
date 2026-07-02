@@ -1,18 +1,11 @@
-// src/pages/HomePage.tsx
+import React from "react";
+import { Link } from "react-router-dom";
+import { useHomeViewModel } from "../../features/home/hooks/useHomeViewModel";
+import { HeroSection } from "../../features/home/components/HeroSection";
+import { BookCarousel } from "../../features/home/components/BookCarousel";
+import { FeaturesSection } from "../../features/home/components/FeaturesSection";
+import "./HomePage.scss";
 
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { useHomeViewModel } from '../../features/home/hooks/useHomeViewModel';
-import { HeroSection } from '../../features/home/components/HeroSection';
-import { BookCarousel } from '../../features/home/components/BookCarousel';
-import { FeaturesSection } from '../../features/home/components/FeaturesSection';
-import './HomePage.scss';
-
-/**
- * HomePage (Orquestrador)
- * Conecta o ViewModel às Views
- * Apenas ~50 linhas de código!
- */
 const HomePage: React.FC = () => {
   // Pega toda a lógica do ViewModel
   const viewModel = useHomeViewModel();

@@ -1,10 +1,10 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import SearchBar from '@/components/books/SearchBar';
-import Button from '@/components/common/Button';
-import ImgUm from '@/components/assets/home-img.png';
-import { AnimatedTitle } from './AnimatedTitle';
-import { HeroStats } from './HeroStats';
+import React from "react";
+import { Link } from "react-router-dom";
+import SearchBar from "../../../components/books/SearchBar";
+import Button from "../../../components/common/Button";
+import ImgUm from "../../../components/assets/home-img.png";
+import { AnimatedTitle } from "./AnimatedTitle";
+import { HeroStats } from "./HeroStats";
 
 interface HeroSectionProps {
   currentWord: string;
@@ -36,13 +36,11 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           Biblioteca Digital
         </div>
 
-        <AnimatedTitle 
-          currentWord={currentWord} 
-          isVisible={isWordVisible} 
-        />
+        <AnimatedTitle currentWord={currentWord} isVisible={isWordVisible} />
 
         <p className="hero-subtitle">
-          Acesse o acervo completo, faça reservas e acompanhe seus empréstimos de qualquer lugar.
+          Acesse o acervo completo, faça reservas e acompanhe seus empréstimos
+          de qualquer lugar.
         </p>
 
         <div className="hero-search">
@@ -74,11 +72,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
       {/* Visual direito (imagem + stats) */}
       <div className="hero-visual">
         <div className="hero-image">
-          <img 
-            src={ImgUm} 
-            className="img-um" 
-            alt="Ilustração da biblioteca" 
-          />
+          <img src={ImgUm} className="img-um" alt="Ilustração da biblioteca" />
         </div>
         <HeroStats />
       </div>

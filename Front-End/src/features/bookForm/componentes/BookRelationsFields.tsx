@@ -1,5 +1,9 @@
-import React from 'react';
-import { AutorResponse, GeneroResponse, CatalogacaoResponse } from '@/services/livro/types';
+import React from "react";
+import {
+  AutorResponse,
+  GeneroResponse,
+  CatalogacaoResponse,
+} from "../../../services/livro/types";
 
 interface BookRelationsFieldsProps {
   autorSearchTerm: string;
@@ -25,20 +29,41 @@ interface BookRelationsFieldsProps {
 }
 
 export const BookRelationsFields: React.FC<BookRelationsFieldsProps> = ({
-  autorSearchTerm, autorSuggestions, isAutorSelected,
-  onAutorSearchChange, onAutorSelect, onAutorClear,
-  generoSearchTerm, generoSuggestions, isGeneroSelected,
-  onGeneroSearchChange, onGeneroSelect, onGeneroClear,
-  catalogacaoSearchTerm, catalogacaoSuggestions, isCatalogacaoSelected,
-  onCatalogacaoSearchChange, onCatalogacaoSelect, onCatalogacaoClear,
+  autorSearchTerm,
+  autorSuggestions,
+  isAutorSelected,
+  onAutorSearchChange,
+  onAutorSelect,
+  onAutorClear,
+  generoSearchTerm,
+  generoSuggestions,
+  isGeneroSelected,
+  onGeneroSearchChange,
+  onGeneroSelect,
+  onGeneroClear,
+  catalogacaoSearchTerm,
+  catalogacaoSuggestions,
+  isCatalogacaoSelected,
+  onCatalogacaoSearchChange,
+  onCatalogacaoSelect,
+  onCatalogacaoClear,
 }) => {
   return (
     <div className="form-section">
       <div className="form-section__title">
         <div className="form-section__icon form-section__icon--amber">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="11" cy="11" r="8"/>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
           </svg>
         </div>
         Classificação
@@ -48,9 +73,13 @@ export const BookRelationsFields: React.FC<BookRelationsFieldsProps> = ({
         {/* Autor */}
         <div className={`field field--autocomplete`}>
           <label className="field__label">
-            Autor <span style={{ color: '#ef4444' }}>*</span>
+            Autor <span style={{ color: "#ef4444" }}>*</span>
           </label>
-          <div className={`field__input-wrap ${isAutorSelected ? 'field__input-wrap--selected' : ''}`}>
+          <div
+            className={`field__input-wrap ${
+              isAutorSelected ? "field__input-wrap--selected" : ""
+            }`}
+          >
             <input
               type="text"
               className="field__input"
@@ -77,9 +106,13 @@ export const BookRelationsFields: React.FC<BookRelationsFieldsProps> = ({
         {/* Gênero */}
         <div className="field field--autocomplete">
           <label className="field__label">
-            Gênero <span style={{ color: '#ef4444' }}>*</span>
+            Gênero <span style={{ color: "#ef4444" }}>*</span>
           </label>
-          <div className={`field__input-wrap ${isGeneroSelected ? 'field__input-wrap--selected' : ''}`}>
+          <div
+            className={`field__input-wrap ${
+              isGeneroSelected ? "field__input-wrap--selected" : ""
+            }`}
+          >
             <input
               type="text"
               className="field__input"
@@ -104,11 +137,18 @@ export const BookRelationsFields: React.FC<BookRelationsFieldsProps> = ({
         </div>
 
         {/* Catalogação — linha inteira */}
-        <div className="field field--autocomplete" style={{ gridColumn: '1 / -1' }}>
+        <div
+          className="field field--autocomplete"
+          style={{ gridColumn: "1 / -1" }}
+        >
           <label className="field__label">
-            Catalogação <span style={{ color: '#ef4444' }}>*</span>
+            Catalogação <span style={{ color: "#ef4444" }}>*</span>
           </label>
-          <div className={`field__input-wrap ${isCatalogacaoSelected ? 'field__input-wrap--selected' : ''}`}>
+          <div
+            className={`field__input-wrap ${
+              isCatalogacaoSelected ? "field__input-wrap--selected" : ""
+            }`}
+          >
             <input
               type="text"
               className="field__input"

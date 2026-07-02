@@ -1,44 +1,30 @@
-// src/features/admin/models/AdminModel.tsx
+import React from "react";
 
-import React from 'react';
+export type AdminTab = "books" | "users";
 
-/**
- * Tipos de abas disponíveis
- */
-export type AdminTab = 'books' | 'users';
-
-/**
- * Configuração de uma aba
- */
 export interface TabConfig {
   id: AdminTab;
   label: string;
   icon: React.ReactNode;
 }
 
-/**
- * Configuração de um card de ação
- */
 export interface AdminCardConfig {
   id: string;
   title: string;
   description: string;
   icon: React.ReactNode;
   route: string;
-  variant: 'blue' | 'teal' | 'amber';
+  variant: "blue" | "teal" | "amber";
 }
 
-/**
- * Ícones como funções que retornam JSX
- */
 export class AdminIcons {
   static BookIcon = () => (
-    <svg 
-      width="16" 
-      height="16" 
-      viewBox="0 0 24 24" 
-      fill="none" 
-      stroke="currentColor" 
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
       strokeWidth="2"
     >
       <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
@@ -47,12 +33,12 @@ export class AdminIcons {
   );
 
   static UserIcon = () => (
-    <svg 
-      width="16" 
-      height="16" 
-      viewBox="0 0 24 24" 
-      fill="none" 
-      stroke="currentColor" 
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
       strokeWidth="2"
     >
       <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
@@ -63,12 +49,12 @@ export class AdminIcons {
   );
 
   static PlusIcon = () => (
-    <svg 
-      width="16" 
-      height="16" 
-      viewBox="0 0 24 24" 
-      fill="none" 
-      stroke="currentColor" 
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
       strokeWidth="2.5"
     >
       <line x1="12" y1="5" x2="12" y2="19" />
@@ -77,12 +63,12 @@ export class AdminIcons {
   );
 
   static EditIcon = () => (
-    <svg 
-      width="26" 
-      height="26" 
-      viewBox="0 0 24 24" 
-      fill="none" 
-      stroke="currentColor" 
+    <svg
+      width="26"
+      height="26"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
       strokeWidth="1.8"
     >
       <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
@@ -91,12 +77,12 @@ export class AdminIcons {
   );
 
   static ChartIcon = () => (
-    <svg 
-      width="26" 
-      height="26" 
-      viewBox="0 0 24 24" 
-      fill="none" 
-      stroke="currentColor" 
+    <svg
+      width="26"
+      height="26"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
       strokeWidth="1.8"
     >
       <line x1="18" y1="20" x2="18" y2="10" />
@@ -107,12 +93,12 @@ export class AdminIcons {
   );
 
   static UserPlusIcon = () => (
-    <svg 
-      width="26" 
-      height="26" 
-      viewBox="0 0 24 24" 
-      fill="none" 
-      stroke="currentColor" 
+    <svg
+      width="26"
+      height="26"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
       strokeWidth="1.8"
     >
       <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
@@ -123,12 +109,12 @@ export class AdminIcons {
   );
 
   static DocumentIcon = () => (
-    <svg 
-      width="26" 
-      height="26" 
-      viewBox="0 0 24 24" 
-      fill="none" 
-      stroke="currentColor" 
+    <svg
+      width="26"
+      height="26"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
       strokeWidth="1.8"
     >
       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -140,13 +126,13 @@ export class AdminIcons {
   );
 
   static ArrowRightIcon = () => (
-    <svg 
-      className="admin-card__arrow" 
-      width="18" 
-      height="18" 
-      viewBox="0 0 24 24" 
-      fill="none" 
-      stroke="currentColor" 
+    <svg
+      className="admin-card__arrow"
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
       strokeWidth="2"
     >
       <polyline points="9 18 15 12 9 6" />
@@ -159,13 +145,13 @@ export class AdminIcons {
  */
 export const ADMIN_TABS: TabConfig[] = [
   {
-    id: 'books',
-    label: 'Livros',
+    id: "books",
+    label: "Livros",
     icon: <AdminIcons.BookIcon />,
   },
   {
-    id: 'users',
-    label: 'Usuários',
+    id: "users",
+    label: "Usuários",
     icon: <AdminIcons.UserIcon />,
   },
 ];
@@ -175,28 +161,28 @@ export const ADMIN_TABS: TabConfig[] = [
  */
 export const BOOKS_CARDS: AdminCardConfig[] = [
   {
-    id: 'create-book',
-    title: 'Cadastrar Livro',
-    description: 'Adicione novos livros ao catálogo da biblioteca',
+    id: "create-book",
+    title: "Cadastrar Livro",
+    description: "Adicione novos livros ao catálogo da biblioteca",
     icon: <AdminIcons.PlusIcon />,
-    route: '/admin/livros/novo',
-    variant: 'blue',
+    route: "/admin/livros/novo",
+    variant: "blue",
   },
   {
-    id: 'edit-books',
-    title: 'Editar Livros',
-    description: 'Atualize informações de livros existentes no acervo',
+    id: "edit-books",
+    title: "Editar Livros",
+    description: "Atualize informações de livros existentes no acervo",
     icon: <AdminIcons.EditIcon />,
-    route: '/buscar',
-    variant: 'teal',
+    route: "/buscar",
+    variant: "teal",
   },
   {
-    id: 'reports',
-    title: 'Relatórios',
-    description: 'Visualize estatísticas e relatórios de uso do sistema',
+    id: "reports",
+    title: "Relatórios",
+    description: "Visualize estatísticas e relatórios de uso do sistema",
     icon: <AdminIcons.ChartIcon />,
-    route: '/relatorios',
-    variant: 'amber',
+    route: "/relatorios",
+    variant: "amber",
   },
 ];
 
@@ -205,19 +191,19 @@ export const BOOKS_CARDS: AdminCardConfig[] = [
  */
 export const USERS_CARDS: AdminCardConfig[] = [
   {
-    id: 'create-user',
-    title: 'Cadastrar Usuário',
-    description: 'Crie novas contas de alunos, funcionários ou administradores',
+    id: "create-user",
+    title: "Cadastrar Usuário",
+    description: "Crie novas contas de alunos, funcionários ou administradores",
     icon: <AdminIcons.UserPlusIcon />,
-    route: '/admin/usuarios/novo',
-    variant: 'blue',
+    route: "/admin/usuarios/novo",
+    variant: "blue",
   },
   {
-    id: 'manage-loans',
-    title: 'Gerenciar Empréstimos',
-    description: 'Visualize e gerencie todos os empréstimos ativos do sistema',
+    id: "manage-loans",
+    title: "Gerenciar Empréstimos",
+    description: "Visualize e gerencie todos os empréstimos ativos do sistema",
     icon: <AdminIcons.DocumentIcon />,
-    route: '/emprestimos',
-    variant: 'teal',
+    route: "/emprestimos",
+    variant: "teal",
   },
 ];

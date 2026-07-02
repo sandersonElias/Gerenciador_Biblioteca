@@ -1,5 +1,5 @@
-import React from 'react';
-import { ReservaResponse } from '@/services/reserva/types';
+import React from "react";
+import { ReservaResponse } from "../../../services/reserva/types";
 
 interface ReservationsTableProps {
   reservations: ReservaResponse[];
@@ -8,8 +8,8 @@ interface ReservationsTableProps {
 /**
  * Componente puro da tabela de reservas
  */
-export const ReservationsTable: React.FC<ReservationsTableProps> = ({ 
-  reservations 
+export const ReservationsTable: React.FC<ReservationsTableProps> = ({
+  reservations,
 }) => {
   if (reservations.length === 0) {
     return null;
@@ -30,9 +30,7 @@ export const ReservationsTable: React.FC<ReservationsTableProps> = ({
           {reservations.map((res) => (
             <tr key={res.id}>
               <td>{res.user?.name}</td>
-              <td>
-                {new Date(res.dataReserva).toLocaleDateString('pt-BR')}
-              </td>
+              <td>{new Date(res.dataReserva).toLocaleDateString("pt-BR")}</td>
               <td>
                 <span className={`status-badge ${res.status.toLowerCase()}`}>
                   {res.status}

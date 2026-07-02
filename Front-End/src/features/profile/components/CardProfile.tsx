@@ -1,6 +1,10 @@
-import React from 'react';
-import { EmprestimoHistoricoDto, EmprestimosAtivoDto, ReservaResponse } from '@/services';
-import { roleLabel } from '../models/ProfileModel';
+import React from "react";
+import {
+  EmprestimoHistoricoDto,
+  EmprestimosAtivoDto,
+  ReservaResponse,
+} from "../../../services";
+import { roleLabel } from "../models/ProfileModel";
 
 interface CardProfileProps {
   cancelTarget?: number;
@@ -31,7 +35,9 @@ export const CardProfile: React.FC<CardProfileProps> = ({
       <div className="profile-info">
         <h1 className="profile-name">{user?.name}</h1>
         <p className="profile-email">{user?.email}</p>
-        <span className="profile-role-badge">{roleLabel(user?.role ?? '')}</span>
+        <span className="profile-role-badge">
+          {roleLabel(user?.role ?? "")}
+        </span>
       </div>
       <div className="profile-stats">
         <div className="profile-stat">
@@ -42,7 +48,9 @@ export const CardProfile: React.FC<CardProfileProps> = ({
         </div>
         <div className="profile-stat">
           <span className="profile-stat__value">
-            {reservas?.filter((r) => r.status === 'ATIVA' || r.status === 'DISPONIVEL').length ?? 0}
+            {reservas?.filter(
+              (r) => r.status === "ATIVA" || r.status === "DISPONIVEL",
+            ).length ?? 0}
           </span>
           <span className="profile-stat__label">Reservas ativas</span>
         </div>

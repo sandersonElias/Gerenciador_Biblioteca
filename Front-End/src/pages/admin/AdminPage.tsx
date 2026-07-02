@@ -1,16 +1,9 @@
-// src/pages/AdminPage.tsx
+import React from "react";
+import { useAdminViewModel } from "../../features/admin/hooks/useAdminViewModel";
+import { AdminTabs } from "../../features/admin/components/AdminTabs";
+import { AdminSection } from "../../features/admin/components/AdminSection";
+import "./AdminPage.scss";
 
-import React from 'react';
-import { useAdminViewModel } from '../../features/admin/hooks/useAdminViewModel';
-import { AdminTabs } from '../../features/admin/components/AdminTabs';
-import { AdminSection } from '../../features/admin/components/AdminSection';
-import './AdminPage.scss';
-
-/**
- * AdminPage (Orquestrador)
- * Conecta o ViewModel às Views
- * Apenas ~40 linhas!
- */
 const AdminPage: React.FC = () => {
   // Pega toda a lógica do ViewModel
   const viewModel = useAdminViewModel();

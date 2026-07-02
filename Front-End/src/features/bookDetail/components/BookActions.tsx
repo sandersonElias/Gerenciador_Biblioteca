@@ -1,5 +1,5 @@
-import React from 'react';
-import Button from '@/components/common/Button';
+import React from "react";
+import Button from "../../../components/common/Button";
 
 interface BookActionsProps {
   canReserve: boolean;
@@ -19,26 +19,22 @@ export const BookActions: React.FC<BookActionsProps> = ({
   isAvailable,
   onReserve,
   onEdit,
-  className = '',
+  className = "",
 }) => {
   return (
     <div className={className}>
       {canReserve && (
         <Button
-          variant={isAvailable ? 'primary' : 'outline'}
+          variant={isAvailable ? "primary" : "outline"}
           size="lg"
           onClick={onReserve}
           disabled={!isAvailable}
         >
-          {isAvailable ? 'Reservar Livro' : 'Indisponível'}
+          {isAvailable ? "Reservar Livro" : "Indisponível"}
         </Button>
       )}
       {canEdit && (
-        <Button
-          variant="secondary"
-          size="lg"
-          onClick={onEdit}
-        >
+        <Button variant="secondary" size="lg" onClick={onEdit}>
           Editar Livro
         </Button>
       )}

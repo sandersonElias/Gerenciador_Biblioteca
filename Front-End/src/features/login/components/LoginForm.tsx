@@ -1,7 +1,7 @@
-import React from 'react';
-import Button from '@/components/common/Button';
-import { PasswordInput } from './PasswordInput';
-import { LoginFormData, LoginFormErrors } from '../models/LoginModel';
+import React from "react";
+import Button from "../../../components/common/Button";
+import { PasswordInput } from "./PasswordInput";
+import { LoginFormData, LoginFormErrors } from "../models/LoginModel";
 
 interface LoginFormProps {
   formData: LoginFormData;
@@ -30,10 +30,23 @@ export const LoginForm: React.FC<LoginFormProps> = ({
     <form onSubmit={onSubmit} className="login-form" noValidate>
       {/* Campo de Email */}
       <div className="form-field">
-        <label htmlFor="email" className="form-label">E-mail</label>
-        <div className={`form-input-wrapper ${errors.email ? 'form-input-wrapper--error' : ''}`}>
+        <label htmlFor="email" className="form-label">
+          E-mail
+        </label>
+        <div
+          className={`form-input-wrapper ${
+            errors.email ? "form-input-wrapper--error" : ""
+          }`}
+        >
           <span className="form-input-icon">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
               <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
               <polyline points="22,6 12,13 2,6" />
             </svg>
@@ -42,11 +55,11 @@ export const LoginForm: React.FC<LoginFormProps> = ({
             id="email"
             type="email"
             value={formData.email}
-            onChange={(e) => onFieldChange('email', e.target.value)}
+            onChange={(e) => onFieldChange("email", e.target.value)}
             placeholder="seu@email.com"
             autoComplete="email"
             className="form-input"
-            aria-describedby={errors.email ? 'email-error' : undefined}
+            aria-describedby={errors.email ? "email-error" : undefined}
           />
         </div>
         {errors.email && (
@@ -61,7 +74,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
         id="password"
         label="Senha"
         value={formData.password}
-        onChange={(value) => onFieldChange('password', value)}
+        onChange={(value) => onFieldChange("password", value)}
         showPassword={showPassword}
         onToggleVisibility={onTogglePassword}
         error={errors.password}

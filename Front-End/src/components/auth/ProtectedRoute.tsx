@@ -1,7 +1,7 @@
-import React from 'react';
-import { Navigate } from 'react-router-dom';
-import { Role } from '@/services/user/types';
-import { useAuth } from '@/context/AuthContext';
+import React from "react";
+import { Navigate } from "react-router-dom";
+import { Role } from "../../services/user/types";
+import { useAuth } from "../../context/AuthContext";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -9,10 +9,10 @@ interface ProtectedRouteProps {
   fallback?: React.ReactNode;
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
-  children, 
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
+  children,
   allowedRoles,
-  fallback 
+  fallback,
 }) => {
   const { isAuthenticated, hasAnyRole, isLoading } = useAuth();
 
