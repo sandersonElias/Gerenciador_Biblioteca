@@ -1,4 +1,4 @@
-import { ReservaRequest, ReservaResponse } from './types';
+import { ReservaRequest, ReservaResponse, Page } from './types';
 import apiClient from '../api/api';
 
 export class ReservaService {
@@ -27,6 +27,16 @@ export class ReservaService {
 
   static async getByLivro(livroId: number): Promise<ReservaResponse[]> {
     const response = await apiClient.get(`/reserva/livro/${livroId}`);
+    return response.data;
+  }
+
+  static async getMinhasReservas(): Promise<ReservaResponse[]> {
+    const response = await apiClient.get('/reserva/minhas');
+    return response.data;
+  }
+
+  static async getPage(page: number = 0, size: number = 20): Promise<Page<ReservaResponse>> {
+    const response = await apiClient.get(`/reserva/pagina?page=${page}&size=${size}`);
     return response.data;
   }
 }
