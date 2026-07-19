@@ -5,7 +5,7 @@ import axios, {
 } from "axios";
 
 // const API_BASE_URL = process.env.REACT_APP_API_URL;
-const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:8080";
+const API_BASE_URL = "http://localhost:8080";
 
 const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
@@ -39,13 +39,19 @@ apiClient.interceptors.response.use(
 
     // Acesso negado
     if (error.response?.status === 403) {
-      const message = (error.response?.data as any)?.message || "Acesso negado. Você não tem permissão para esta ação.";
+      const message =
+        (error.response?.data as any)?.message ||
+        "Acesso negado. Você não tem permissão para esta ação.";
       console.warn("Access denied:", message);
     }
 
     // Erros do servidor
     if (error.response?.status && error.response.status >= 500) {
-      console.error("Server error:", error.response.status, error.response.data);
+      console.error(
+        "Server error:",
+        error.response.status,
+        error.response.data,
+      );
     }
 
     return Promise.reject(error);
