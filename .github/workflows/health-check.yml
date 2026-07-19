@@ -1,0 +1,33 @@
+name: Health Check
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'  # Every 6 hours
+  workflow_dispatch:
+
+jobs:
+  check-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Backend Health
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" https://gerenciadorbiblioteca-production.up.railway.app/actuator/health || echo "000")
+          if [ "$response" = "200" ]; then
+            echo "Backend is healthy"
+          else
+            echo "Backend health check failed with status: $response"
+            exit 1
+          fi
+
+  check-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Frontend Health
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" https://biblioteca-monsa.vercel.app || echo "000")
+          if [ "$response" = "200" ]; then
+            echo "Frontend is healthy"
+          else
+            echo "Frontend health check failed with status: $response"
+            exit 1
+          fi

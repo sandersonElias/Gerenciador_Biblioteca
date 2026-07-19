@@ -1,0 +1,72 @@
+name: Backend CI
+
+on:
+  push:
+    paths:
+      - 'Back-End/**'
+  pull_request:
+    paths:
+      - 'Back-End/**'
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: gerenciador_biblioteca
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build with Maven
+        working-directory: Back-End
+        run: mvn -B compile
+
+      - name: Run tests
+        working-directory: Back-End
+        run: mvn -B test
+        env:
+          DB_URL: jdbc:postgresql://localhost:5432/gerenciador_biblioteca
+          DB_USERNAME: postgres
+          DB_PASSWORD: postgres
+
+      - name: Generate JaCoCo coverage report
+        working-directory: Back-End
+        run: mvn -B jacoco:report
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: jacoco-report
+          path: Back-End/target/site/jacoco/
+
+      - name: Package
+        working-directory: Back-End
+        run: mvn -B package -DskipTests
+
+      - name: Build Docker image
+        run: docker build -t biblioteca-backend:${{ github.sha }} .
+
+      - name: Verify Docker image
+        run: docker run --rm biblioteca-backend:${{ github.sha }} java -version

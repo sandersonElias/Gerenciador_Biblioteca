@@ -1,0 +1,54 @@
+name: Frontend CI
+
+on:
+  push:
+    paths:
+      - 'Front-End/**'
+  pull_request:
+    paths:
+      - 'Front-End/**'
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: Front-End/package-lock.json
+
+      - name: Install dependencies
+        working-directory: Front-End
+        run: npm ci
+
+      - name: Run linter
+        working-directory: Front-End
+        run: npm run lint
+
+      - name: Run tests with coverage
+        working-directory: Front-End
+        run: npm run test:coverage
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: frontend-coverage
+          path: Front-End/coverage/
+
+      - name: Build
+        working-directory: Front-End
+        run: npm run build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: frontend-build
+          path: Front-End/build/
