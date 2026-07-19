@@ -6,6 +6,8 @@ import dev.sanderson.Back_End.dto.AutorDtos.AutorResponse;
 import dev.sanderson.Back_End.entity.Autor;
 import dev.sanderson.Back_End.repository.AutorRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,6 +19,7 @@ public class AutorService {
     private final AutorRepository autorRepository;
     private final ObjectMapper objectMapper;
 
+    @CacheEvict(value = "autores", allEntries = true)
     public AutorResponse insertAutor(AutorRequest dto){
         Autor autor = new Autor();
         autor.setAutor(dto.getAutor());
@@ -26,7 +29,8 @@ public class AutorService {
         return objectMapper.convertValue(salvo, AutorResponse.class);
     }
 
-    public List<AutorResponse> buscarAutor (String autor){
+    @Cacheable(value = "autores", key = "#autor")
+    public List<AutorResponse> buscarAutor(String autor){
         return autorRepository.buscarAutor(autor)
                 .stream()
                 .map(e -> objectMapper.convertValue(e, AutorResponse.class))

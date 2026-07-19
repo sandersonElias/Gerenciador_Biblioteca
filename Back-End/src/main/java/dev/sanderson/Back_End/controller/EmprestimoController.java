@@ -5,11 +5,13 @@ import dev.sanderson.Back_End.dto.EmprestimoDtos.EmprestimoResponse;
 import dev.sanderson.Back_End.dto.EmprestimoDtos.MeusEmprestimosResponse;
 import dev.sanderson.Back_End.entity.type.StatusEmprestimo;
 import dev.sanderson.Back_End.service.EmprestimoService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -22,18 +24,15 @@ public class EmprestimoController {
 
     private final EmprestimoService emprestimoService;
 
-    // ── Endpoint do usuário — busca por email passado na URL ──────────────────
-    // Padrão idêntico ao /reserva/useremail/{email}
-    @GetMapping("/minha-conta/{email}")
-    public ResponseEntity<MeusEmprestimosResponse> getMinhaConta(@PathVariable String email) {
+    @GetMapping("/minha-conta")
+    public ResponseEntity<MeusEmprestimosResponse> getMinhaConta(Authentication authentication) {
+        String email = authentication.getName();
         MeusEmprestimosResponse response = emprestimoService.obterMeusEmprestimos(email);
         return ResponseEntity.ok(response);
     }
 
-    // ── Endpoints de gerenciamento (FUNCIONARIO / ADMIN) ──────────────────────
-
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<EmprestimoResponse> novoEmprestimo(@RequestBody EmprestimoRequest emprestimo) {
+    public ResponseEntity<EmprestimoResponse> novoEmprestimo(@Valid @RequestBody EmprestimoRequest emprestimo) {
         EmprestimoResponse dto = emprestimoService.insertEmprestimo(emprestimo);
         return ResponseEntity.status(HttpStatus.CREATED).body(dto);
     }

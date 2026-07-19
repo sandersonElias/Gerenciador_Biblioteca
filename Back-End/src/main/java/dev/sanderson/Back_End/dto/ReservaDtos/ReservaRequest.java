@@ -1,12 +1,10 @@
 package dev.sanderson.Back_End.dto.ReservaDtos;
 
-import dev.sanderson.Back_End.entity.type.StatusReserva;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-import lombok.Getter;
 
 import java.time.LocalDate;
 
-@Getter
 @Data
 public class ReservaRequest {
 
@@ -14,7 +12,11 @@ public class ReservaRequest {
     private LocalDate dataReserva;
     private LocalDate dataExpiracao;
     private LocalDate dataDisponivel;
-    private StatusReserva status;
+    private String status;
+
+    @NotNull(message = "ID do livro e obrigatorio")
     private Long livroId;
+
+    @NotNull(message = "ID do usuario e obrigatorio")
     private Long userId;
 }

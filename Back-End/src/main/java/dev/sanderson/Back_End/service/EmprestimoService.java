@@ -41,12 +41,13 @@ public class EmprestimoService {
     private final ExemplarRepository exemplarRepository;
     private final ObjectMapper objectMapper;
     private final EmprestimoConfig emprestimoConfig;
+    private final NotificacaoService notificacaoService;
 
-    // Status que ocupam "vaga" no limite do usuário
+    // Status que ocupam "vaga" no limite do usuÃ¡rio
     private static final List<StatusEmprestimo> STATUS_EM_CURSO =
             List.of(StatusEmprestimo.ATIVO, StatusEmprestimo.ATRASADO);
 
-    // ── Mapper ────────────────────────────────────────────────────────────────
+    // â”€â”€ Mapper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private EmprestimoResponse toResponse(Emprestimo e) {
         EmprestimoResponse dto = new EmprestimoResponse();
@@ -81,31 +82,31 @@ public class EmprestimoService {
         return dto;
     }
 
-    // ── Criar empréstimo ──────────────────────────────────────────────────────
+    // â”€â”€ Criar emprÃ©stimo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     @Transactional
     public EmprestimoResponse insertEmprestimo(EmprestimoRequest dto) {
         Livro livro = livroRepository.findById(dto.getLivroId())
-                .orElseThrow(() -> new EntityNotFoundException("Livro não encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Livro nÃ£o encontrado"));
         User user = userRepository.findById(dto.getUserId())
-                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("UsuÃ¡rio nÃ£o encontrado"));
 
-        // ✅ NOVO: Valida limite de empréstimos simultâneos por perfil do usuário
+        // âœ… NOVO: Valida limite de emprÃ©stimos simultÃ¢neos por perfil do usuÃ¡rio
         validarLimiteEmprestimos(user);
 
         // Verifica quantidadeDisponivel
         int disponiveis = livro.getQuantidadeDisponivel() != null ? livro.getQuantidadeDisponivel() : 0;
         if (disponiveis < 1) {
-            throw new IllegalStateException("Não há exemplares disponíveis para empréstimo.");
+            throw new IllegalStateException("NÃ£o hÃ¡ exemplares disponÃ­veis para emprÃ©stimo.");
         }
 
-        // ── Selecionar exemplar ──────────────────────────────────────────────
+        // â”€â”€ Selecionar exemplar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         Exemplar exemplar = null;
         if (dto.getExemplarId() != null) {
             exemplar = exemplarRepository.findById(dto.getExemplarId())
-                    .orElseThrow(() -> new EntityNotFoundException("Exemplar não encontrado"));
+                    .orElseThrow(() -> new EntityNotFoundException("Exemplar nÃ£o encontrado"));
             if (exemplar.getStatus() != StatusExemplar.DISPONIVEL) {
-                throw new IllegalStateException("O exemplar selecionado não está disponível.");
+                throw new IllegalStateException("O exemplar selecionado nÃ£o estÃ¡ disponÃ­vel.");
             }
         } else {
             exemplar = exemplarRepository
@@ -126,7 +127,7 @@ public class EmprestimoService {
         LocalDate hoje = dto.getDataEmprestimo() != null ? dto.getDataEmprestimo() : LocalDate.now();
         emp.setDataEmprestimo(hoje);
 
-        // ✅ MUDOU: usa prazo configurável (antes era hardcoded "7")
+        // âœ… MUDOU: usa prazo configurÃ¡vel (antes era hardcoded "7")
         LocalDate devolucao = dto.getDataDevolucao() != null
                 ? dto.getDataDevolucao()
                 : hoje.plusDays(emprestimoConfig.getPrazoDias());
@@ -145,12 +146,12 @@ public class EmprestimoService {
     }
 
     /**
-     * Valida se o usuário não atingiu o limite de empréstimos simultâneos
-     * de acordo com seu perfil. Considera empréstimos ATIVOS + ATRASADOS.
+     * Valida se o usuÃ¡rio nÃ£o atingiu o limite de emprÃ©stimos simultÃ¢neos
+     * de acordo com seu perfil. Considera emprÃ©stimos ATIVOS + ATRASADOS.
      */
     private void validarLimiteEmprestimos(User user) {
         if (user.getRole() == null) {
-            throw new IllegalStateException("Usuário sem perfil definido.");
+            throw new IllegalStateException("UsuÃ¡rio sem perfil definido.");
         }
         String roleName = user.getRole().getRole();
         int limite = emprestimoConfig.limitePorRole(roleName);
@@ -159,20 +160,20 @@ public class EmprestimoService {
 
         if (emCurso >= limite) {
             throw new IllegalStateException(
-                    "Limite de empréstimos atingido (" + limite + " livros simultâneos para este perfil)."
+                    "Limite de emprÃ©stimos atingido (" + limite + " livros simultÃ¢neos para este perfil)."
             );
         }
     }
 
-    // ── Devolver empréstimo ───────────────────────────────────────────────────
+    // â”€â”€ Devolver emprÃ©stimo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     @Transactional
     public void devolverEmprestimo(Long id) {
         Emprestimo emp = emprestimoRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Empréstimo não encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("EmprÃ©stimo nÃ£o encontrado"));
 
         if (emp.getStatus() == StatusEmprestimo.DEVOLVIDO) {
-            throw new IllegalStateException("Empréstimo já foi devolvido.");
+            throw new IllegalStateException("EmprÃ©stimo jÃ¡ foi devolvido.");
         }
 
         emp.setStatus(StatusEmprestimo.DEVOLVIDO);
@@ -192,19 +193,19 @@ public class EmprestimoService {
         emprestimoRepository.save(emp);
     }
 
-    // ── Renovar empréstimo ────────────────────────────────────────────────────
+    // â”€â”€ Renovar emprÃ©stimo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     @Transactional
     public EmprestimoResponse renovarEmprestimo(Long id) {
         Emprestimo emp = emprestimoRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Empréstimo não encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("EmprÃ©stimo nÃ£o encontrado"));
 
         if (emp.getStatus() == StatusEmprestimo.DEVOLVIDO) {
-            throw new IllegalStateException("Empréstimo já devolvido; renovação não permitida.");
+            throw new IllegalStateException("EmprÃ©stimo jÃ¡ devolvido; renovaÃ§Ã£o nÃ£o permitida.");
         }
 
         emp.setRenovacoes(Objects.requireNonNullElse(emp.getRenovacoes(), 0) + 1);
-        // ✅ MUDOU: usa prazo configurável (antes era hardcoded "7")
+        // âœ… MUDOU: usa prazo configurÃ¡vel (antes era hardcoded "7")
         emp.setDataDevolucao(
                 Objects.requireNonNullElse(emp.getDataDevolucao(), LocalDate.now())
                         .plusDays(emprestimoConfig.getPrazoDias())
@@ -214,7 +215,7 @@ public class EmprestimoService {
         return toResponse(emprestimoRepository.save(emp));
     }
 
-    // ── JOB: marcar ATRASADO (roda todo dia à meia-noite) ────────────────────
+    // â”€â”€ JOB: marcar ATRASADO (roda todo dia Ã  meia-noite) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     @Scheduled(cron = "0 0 0 * * *")
     @Transactional
@@ -230,7 +231,7 @@ public class EmprestimoService {
         emprestimoRepository.saveAll(atrasados);
     }
 
-    // ── Listagens e buscas ────────────────────────────────────────────────────
+    // â”€â”€ Listagens e buscas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     public List<EmprestimoResponse> todosEmprestimos() {
         return emprestimoRepository.findAll().stream().map(this::toResponse).toList();
@@ -238,7 +239,7 @@ public class EmprestimoService {
 
     public EmprestimoResponse buscarId(Long id) {
         return toResponse(emprestimoRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Empréstimo não encontrado")));
+                .orElseThrow(() -> new EntityNotFoundException("EmprÃ©stimo nÃ£o encontrado")));
     }
 
     public List<EmprestimoResponse> buscarPorUser(String nome) {
@@ -265,7 +266,7 @@ public class EmprestimoService {
         return emprestimoRepository.buscarDevolucaoDoDia(hoje).stream().map(this::toResponse).toList();
     }
 
-    // ── Minha conta (aluno logado) ────────────────────────────────────────────
+    // â”€â”€ Minha conta (aluno logado) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     public MeusEmprestimosResponse obterMeusEmprestimos(String email) {
         MeusEmprestimosResponse response = new MeusEmprestimosResponse();
@@ -285,7 +286,7 @@ public class EmprestimoService {
         return response;
     }
 
-    // ── Conversores privados ──────────────────────────────────────────────────
+    // â”€â”€ Conversores privados â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private EmprestimosAtivoDto converterParaAtivoDto(Emprestimo e) {
         EmprestimosAtivoDto dto = new EmprestimosAtivoDto();
@@ -333,7 +334,7 @@ public class EmprestimoService {
 
     private Boolean podeRenovar(Emprestimo e) {
         if (e == null) return false;
-        // ✅ MUDOU: usa max-renovacoes configurável (antes era hardcoded "3")
+        // âœ… MUDOU: usa max-renovacoes configurÃ¡vel (antes era hardcoded "3")
         if (Objects.requireNonNullElse(e.getRenovacoes(), 0) >= emprestimoConfig.getMaxRenovacoes()) return false;
         if (e.getStatus() == StatusEmprestimo.ATRASADO) return false;
         if (e.getStatus() != StatusEmprestimo.ATIVO) return false;

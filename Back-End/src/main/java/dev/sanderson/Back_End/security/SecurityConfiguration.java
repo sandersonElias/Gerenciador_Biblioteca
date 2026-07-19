@@ -4,8 +4,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
@@ -15,8 +17,6 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.springframework.http.HttpMethod;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 
 @Configuration
 @EnableWebSecurity
@@ -34,29 +34,27 @@ public class SecurityConfiguration {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
 
-                        // ── Swagger ───────────────────────────────────────────────────
+                        // -- Swagger ---------------------------------------------------
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
 
-                        // ── Auth ──────────────────────────────────────────────────────
+                        // -- Auth ------------------------------------------------------
                         .requestMatchers(HttpMethod.POST, "/auth").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/registrar").hasRole("ADMIN")
 
-                        // ── Livro: GET público ─────────────────────────────────────────
+                        // -- Livro: GET publico ----------------------------------------
                         .requestMatchers(HttpMethod.GET, "/livro/**").permitAll()
 
-                        // ── Exemplar: GET para FUNCIONARIO/ADMIN, POST para ADMIN ──────
+                        // -- Exemplar: GET FUNCIONARIO/ADMIN, POST ADMIN --------------
                         .requestMatchers(HttpMethod.GET, "/exemplar/**")
                         .hasAnyRole("FUNCIONARIO", "ADMIN")
                         .requestMatchers(HttpMethod.POST, "/exemplar/**")
                         .hasRole("ADMIN")
 
-                        // ── Autor / Gênero / Catalogação: GET público, escrita só ADMIN ──
-                        // GET público para que o autocomplete funcione sem login
+                        // -- Autor / Genero / Catalogacao: GET publico, escrita ADMIN -
                         .requestMatchers(HttpMethod.GET, "/autor/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/genero/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/catalogacao/**").permitAll()
 
-                        // POST/PUT/DELETE dessas entidades só para ADMIN
                         .requestMatchers(HttpMethod.POST,   "/autor/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT,    "/autor/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/autor/**").hasRole("ADMIN")
@@ -69,39 +67,41 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.PUT,    "/catalogacao/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/catalogacao/**").hasRole("ADMIN")
 
-                        // ── Livro: escrita só para ADMIN ──────────────────────────────
+                        // -- Livro: escrita ADMIN --------------------------------------
                         .requestMatchers(HttpMethod.POST,   "/livro/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT,    "/livro/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/livro/**").hasRole("ADMIN")
 
-                        // ── Minha conta: qualquer role autenticada ────────────────────
-                        // DEVE vir ANTES de /emprestimo/**
-                        .requestMatchers(HttpMethod.GET, "/emprestimo/minha-conta/**")
+                        // -- Minha conta: qualquer role autenticada --------------------
+                        .requestMatchers(HttpMethod.GET, "/emprestimo/minha-conta")
                         .hasAnyRole("ALUNO", "FUNCIONARIO", "ADMIN")
 
-                        // Trocar senha :
+                        // -- Trocar senha: so ALUNO -----------------------------------
                         .requestMatchers(HttpMethod.POST, "/user/me/trocar-senha")
                         .hasRole("ALUNO")
 
-                        // ── Solicitações: POST — aluno solicita renovação ─────────────
-                        .requestMatchers(HttpMethod.POST, "/solicitacoes-renovacao/**")
+                        // -- Solicitacoes: POST (aluno solicita) -----------------------
+                        .requestMatchers(HttpMethod.POST, "/solicitacoes-renovacao")
                         .hasAnyRole("ALUNO", "FUNCIONARIO", "ADMIN")
 
-                        // ── Solicitações: GET e PUT — funcionário gerencia ────────────
+                        // -- Solicitacoes: GET/PUT (funcionario gerencia) -------------
                         .requestMatchers(HttpMethod.GET, "/solicitacoes-renovacao/**")
                         .hasAnyRole("FUNCIONARIO", "ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/solicitacoes-renovacao/**")
                         .hasAnyRole("FUNCIONARIO", "ADMIN")
 
-                        // ── Reservas: qualquer autenticado ────────────────────────────
+                        // -- Reservas: qualquer autenticado ----------------------------
                         .requestMatchers("/reserva/**")
                         .hasAnyRole("ALUNO", "FUNCIONARIO", "ADMIN")
 
-                        // ── Empréstimos e usuários: FUNCIONARIO/ADMIN ─────────────────
+                        // -- Emprestimos (gerenciamento) e usuarios: FUNCIONARIO/ADMIN -
                         .requestMatchers("/emprestimo/**", "/user/**")
                         .hasAnyRole("FUNCIONARIO", "ADMIN")
 
-                        // ── Admin ─────────────────────────────────────────────────────
+                                                // -- Relatorios (exportacao): FUNCIONARIO/ADMIN ----------------
+                        .requestMatchers("/relatorios/**")
+                        .hasAnyRole("FUNCIONARIO", "ADMIN")
+// -- Admin -----------------------------------------------------
                         .requestMatchers("/admin/**").hasRole("ADMIN")
 
                         .anyRequest().authenticated()

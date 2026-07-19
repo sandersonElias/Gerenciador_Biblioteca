@@ -29,6 +29,7 @@ public class UserService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @Deprecated
     public Optional<User> findByLoginAndPassword(String email, String password) {
         return userRepository.findByEmailAndPassword(email, password);
     }
@@ -44,14 +45,13 @@ public class UserService {
     public UserResponse registrar(UserRequest userRequest) throws BusinessRuleException {
 
         if (userRepository.findByEmail(userRequest.getEmail()).isPresent()) {
-            throw new BusinessRuleException("Email já " + userRequest.getEmail() + " está em uso");
+            throw new BusinessRuleException("Email ja " + userRequest.getEmail() + " esta em uso");
         }
 
         User newUser = new User();
         newUser.setName(userRequest.getName());
         newUser.setEmail(userRequest.getEmail());
         newUser.setPassword(passwordEncoder.encode(userRequest.getPassword()));
-        // Usuários cadastrados manualmente já consideram-se com senha definida pelo próprio usuário
         newUser.setSenhaAlterada(true);
 
         Roles role = buscarRole(userRequest.getRole());
@@ -62,10 +62,10 @@ public class UserService {
         return objectMapper.convertValue(newUser, UserResponse.class);
     }
 
-    public Roles buscarRole(String role) throws BusinessRuleException {
+    private Roles buscarRole(String role) throws BusinessRuleException {
         return roleRepository.findByRole(role)
                 .orElseThrow(() ->
-                        new BusinessRuleException("Role não existe: " + role));
+                        new BusinessRuleException("Role nao existe: " + role));
     }
 
     public List<UserResponse> buscarUserName(String name) {
@@ -75,18 +75,6 @@ public class UserService {
                 .toList();
     }
 
-    // ═══════════════════════════════════════════════════════════════
-    //  IMPORT EM LOTE DE ALUNOS
-    // ═══════════════════════════════════════════════════════════════
-
-    /**
-     * Cadastra alunos em lote. Pula matrículas/emails já existentes.
-     * Toda a operação ocorre em UMA transação: se algum cadastro falhar
-     * por violação de constraint, TUDO é desfeito.
-     *
-     * Senha padrão = matrícula (BCrypt).
-     * senhaAlterada = false (aluno será forçado a trocar no primeiro login).
-     */
     @Transactional
     public ImportAlunosResponse importarAlunos(ImportAlunosRequest request) throws BusinessRuleException {
 
@@ -95,7 +83,6 @@ public class UserService {
 
         Roles roleAluno = buscarRole(ROLE_ALUNO);
 
-        // Pré-carrega matrículas e e-mails já existentes em UMA query cada
         Set<String> matriculasEnviadas = new HashSet<>();
         Set<String> emailsEnviados = new HashSet<>();
         for (ImportAlunoItem item : alunos) {
@@ -109,6 +96,8 @@ public class UserService {
         List<String> matriculasPuladas = new ArrayList<>();
         List<String> emailsPulados = new ArrayList<>();
         int totalCadastrados = 0;
+
+        List<Aluno> alunosParaSalvar = new ArrayList<>();
 
         for (ImportAlunoItem item : alunos) {
             String emailLower = item.getEmail().toLowerCase();
@@ -126,16 +115,17 @@ public class UserService {
             aluno.setName(item.getNome());
             aluno.setEmail(emailLower);
             aluno.setMatricula(item.getMatricula());
-            // Senha padrão = matrícula, hasheada com BCrypt
             aluno.setPassword(passwordEncoder.encode(item.getMatricula()));
             aluno.setRole(roleAluno);
             aluno.setSenhaAlterada(false);
             aluno.setSala(item.getSala());
             aluno.setAno(item.getAno());
 
-            alunoRepository.save(aluno);
+            alunosParaSalvar.add(aluno);
             totalCadastrados++;
         }
+
+        alunoRepository.saveAll(alunosParaSalvar);
 
         return new ImportAlunosResponse(
                 totalEnviado,
@@ -146,29 +136,17 @@ public class UserService {
         );
     }
 
-    // ═══════════════════════════════════════════════════════════════
-    //  CADASTRO DE PROFESSOR (manual, um por vez)
-    // ═══════════════════════════════════════════════════════════════
-
-    /**
-     * Cadastra um professor manualmente (admin cria um a um).
-     * Senha padrão = matrícula. senhaAlterada = false.
-     *
-     * <p>Observação: como definido na configuração de segurança atual,
-     * professor não tem acesso ao endpoint /user/me/trocar-senha.
-     * Caso seja necessário no futuro, basta liberar a permissão.</p>
-     */
     @Transactional
     public UserResponse cadastrarProfessor(CadastrarProfessorRequest request) throws BusinessRuleException {
 
         String emailLower = request.getEmail().toLowerCase();
 
         if (userRepository.findByEmail(emailLower).isPresent()) {
-            throw new BusinessRuleException("Email " + emailLower + " já está em uso");
+            throw new BusinessRuleException("Email " + emailLower + " ja esta em uso");
         }
 
         if (userRepository.findByMatricula(request.getMatricula()).isPresent()) {
-            throw new BusinessRuleException("Matrícula " + request.getMatricula() + " já está em uso");
+            throw new BusinessRuleException("Matricula " + request.getMatricula() + " ja esta em uso");
         }
 
         Roles roleProfessor = buscarRole(ROLE_PROFESSOR);
@@ -177,7 +155,6 @@ public class UserService {
         professor.setName(request.getNome());
         professor.setEmail(emailLower);
         professor.setMatricula(request.getMatricula());
-        // Senha padrão = matrícula, hasheada com BCrypt
         professor.setPassword(passwordEncoder.encode(request.getMatricula()));
         professor.setRole(roleProfessor);
         professor.setSenhaAlterada(false);
@@ -186,24 +163,15 @@ public class UserService {
         return objectMapper.convertValue(salvo, UserResponse.class);
     }
 
-    // ═══════════════════════════════════════════════════════════════
-    //  TROCA DE SENHA
-    // ═══════════════════════════════════════════════════════════════
-
-    /**
-     * Troca a senha do usuário autenticado.
-     * Valida a senha atual via BCrypt antes de aplicar a nova.
-     * Marca senha_alterada = true após a troca.
-     */
     @Transactional
     public void trocarSenha(String email, TrocarSenhaRequest request) throws BusinessRuleException {
 
         if (!request.getNovaSenha().equals(request.getConfirmacaoNovaSenha())) {
-            throw new BusinessRuleException("A nova senha e a confirmação não conferem");
+            throw new BusinessRuleException("A nova senha e a confirmacao nao conferem");
         }
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new BusinessRuleException("Usuário não encontrado"));
+                .orElseThrow(() -> new BusinessRuleException("Usuario nao encontrado"));
 
         if (!passwordEncoder.matches(request.getSenhaAtual(), user.getPassword())) {
             throw new BusinessRuleException("Senha atual incorreta");

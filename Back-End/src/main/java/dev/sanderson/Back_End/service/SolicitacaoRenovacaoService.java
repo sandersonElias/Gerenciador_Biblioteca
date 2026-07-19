@@ -1,5 +1,6 @@
 package dev.sanderson.Back_End.service;
 
+import dev.sanderson.Back_End.config.EmprestimoConfig;
 import dev.sanderson.Back_End.dto.SolicitacaoRenovacaoDtos.SolicitacaoRenovacaoResponse;
 import dev.sanderson.Back_End.dto.SolicitacaoRenovacaoDtos.SolicitacaoPendenteDto;
 import dev.sanderson.Back_End.entity.Emprestimo;
@@ -26,14 +27,16 @@ public class SolicitacaoRenovacaoService {
     private final SolicitacaoRenovacaoRepository solicitacaoRepository;
     private final EmprestimoRepository emprestimoRepository;
     private final UserRepository userRepository;
+    private final EmprestimoConfig emprestimoConfig;
+    private final NotificacaoService notificacaoService;
 
     @Transactional
     public SolicitacaoRenovacaoResponse solicitarRenovacao(Long emprestimoId, String userEmail) {
         Emprestimo emprestimo = emprestimoRepository.findById(emprestimoId)
-                .orElseThrow(() -> new EntityNotFoundException("Empréstimo não encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Emprestimo nao encontrado"));
 
         if (!emprestimo.getUser().getEmail().equals(userEmail)) {
-            throw new IllegalStateException("Este empréstimo não pertence a você");
+            throw new IllegalStateException("Este emprestimo nao pertence a voce");
         }
 
         validarSolicitacao(emprestimo);
@@ -60,18 +63,21 @@ public class SolicitacaoRenovacaoService {
     @Transactional
     public void aprovarSolicitacao(Long solicitacaoId, String funcionarioEmail) {
         SolicitacaoRenovacao solicitacao = solicitacaoRepository.findById(solicitacaoId)
-                .orElseThrow(() -> new EntityNotFoundException("Solicitação não encontrada"));
+                .orElseThrow(() -> new EntityNotFoundException("Solicitacao nao encontrada"));
 
         if (solicitacao.getStatus() != StatusSolicitacao.PENDENTE) {
-            throw new IllegalStateException("Esta solicitação já foi processada");
+            throw new IllegalStateException("Esta solicitacao ja foi processada");
         }
 
         User funcionario = userRepository.findByEmail(funcionarioEmail)
-                .orElseThrow(() -> new EntityNotFoundException("Funcionário não encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Funcionario nao encontrado"));
 
         Emprestimo emprestimo = solicitacao.getEmprestimo();
         emprestimo.setRenovacoes(Objects.requireNonNullElse(emprestimo.getRenovacoes(), 0) + 1);
-        emprestimo.setDataDevolucao(Objects.requireNonNullElse(emprestimo.getDataDevolucao(), LocalDateTime.now().toLocalDate()).plusDays(7));
+        emprestimo.setDataDevolucao(
+                Objects.requireNonNullElse(emprestimo.getDataDevolucao(), LocalDateTime.now().toLocalDate())
+                        .plusDays(emprestimoConfig.getPrazoDias())
+        );
         emprestimo.setStatus(StatusEmprestimo.ATIVO);
 
         emprestimoRepository.save(emprestimo);
@@ -80,44 +86,46 @@ public class SolicitacaoRenovacaoService {
         solicitacao.setFuncionarioResponsavel(funcionario);
 
         solicitacaoRepository.save(solicitacao);
+        notificacaoService.enviarRenovacaoAprovada(solicitacao.getSolicitante(), emprestimo.getLivro(), emprestimo.getDataDevolucao());
     }
 
     @Transactional
     public void rejeitarSolicitacao(Long solicitacaoId, String funcionarioEmail, String observacao) {
         SolicitacaoRenovacao solicitacao = solicitacaoRepository.findById(solicitacaoId)
-                .orElseThrow(() -> new EntityNotFoundException("Solicitação não encontrada"));
+                .orElseThrow(() -> new EntityNotFoundException("Solicitacao nao encontrada"));
 
         if (solicitacao.getStatus() != StatusSolicitacao.PENDENTE) {
-            throw new IllegalStateException("Esta solicitação já foi processada");
+            throw new IllegalStateException("Esta solicitacao ja foi processada");
         }
 
         User funcionario = userRepository.findByEmail(funcionarioEmail)
-                .orElseThrow(() -> new EntityNotFoundException("Funcionário não encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Funcionario nao encontrado"));
 
         solicitacao.setStatus(StatusSolicitacao.REJEITADA);
         solicitacao.setFuncionarioResponsavel(funcionario);
         solicitacao.setObservacao(observacao);
 
         solicitacaoRepository.save(solicitacao);
+        notificacaoService.enviarRenovacaoRejeitada(solicitacao.getSolicitante(), solicitacao.getEmprestimo().getLivro(), observacao);
     }
 
     private void validarSolicitacao(Emprestimo emprestimo) {
         if (emprestimo.getStatus() != StatusEmprestimo.ATIVO) {
-            throw new IllegalStateException("Este empréstimo não está ativo");
+            throw new IllegalStateException("Este emprestimo nao esta ativo");
         }
 
         Integer renovacoes = Objects.requireNonNullElse(emprestimo.getRenovacoes(), 0);
-        if (renovacoes >= 3) {
-            throw new IllegalStateException("Limite de renovações atingido (3/3)");
+        if (renovacoes >= emprestimoConfig.getMaxRenovacoes()) {
+            throw new IllegalStateException("Limite de renovacoes atingido (" + renovacoes + "/" + emprestimoConfig.getMaxRenovacoes() + ")");
         }
 
         if (emprestimo.getDataDevolucao() != null &&
                 emprestimo.getDataDevolucao().isBefore(java.time.LocalDate.now())) {
-            throw new IllegalStateException("Não é possível renovar empréstimos atrasados");
+            throw new IllegalStateException("Nao e possivel renovar emprestimos atrasados");
         }
 
         if (solicitacaoRepository.existsByEmprestimoIdAndStatus(emprestimo.getId(), StatusSolicitacao.PENDENTE)) {
-            throw new IllegalStateException("Já existe uma solicitação pendente para este empréstimo");
+            throw new IllegalStateException("Ja existe uma solicitacao pendente para este emprestimo");
         }
     }
 

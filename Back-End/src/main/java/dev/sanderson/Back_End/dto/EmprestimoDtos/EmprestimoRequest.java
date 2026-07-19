@@ -1,6 +1,6 @@
 package dev.sanderson.Back_End.dto.EmprestimoDtos;
 
-import dev.sanderson.Back_End.entity.type.StatusEmprestimo;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,8 +18,13 @@ public class EmprestimoRequest {
     private LocalDate dataDevolucao;
     private LocalDate dataDevolvido;
     private Integer renovacoes;
-    private StatusEmprestimo status;
+    private String status;
+
+    @NotNull(message = "ID do livro e obrigatorio")
     private Long livroId;
+
+    @NotNull(message = "ID do usuario e obrigatorio")
     private Long userId;
+
     private Long exemplarId;
 }

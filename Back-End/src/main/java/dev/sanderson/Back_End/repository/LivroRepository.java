@@ -2,6 +2,7 @@ package dev.sanderson.Back_End.repository;
 
 import dev.sanderson.Back_End.entity.Livro;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.domain.Pageable;
@@ -11,7 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface LivroRepository extends JpaRepository<Livro, Long> {
+public interface LivroRepository extends JpaRepository<Livro, Long>, JpaSpecificationExecutor<Livro> {
 
     List<Livro> findAll();
 

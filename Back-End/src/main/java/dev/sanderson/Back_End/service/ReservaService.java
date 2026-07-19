@@ -1,6 +1,5 @@
 package dev.sanderson.Back_End.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.sanderson.Back_End.dto.LivroDtos.LivroMinDto;
 import dev.sanderson.Back_End.dto.ReservaDtos.ReservaRequest;
 import dev.sanderson.Back_End.dto.ReservaDtos.ReservaResponse;
@@ -19,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -28,9 +28,7 @@ public class ReservaService {
     private final LivroRepository livroRepository;
     private final UserRepository userRepository;
     private final ReservaRepository reservaRepository;
-    private final ObjectMapper objectMapper;
-
-    // ── Mapper ────────────────────────────────────────────────────────────────
+    private final NotificacaoService notificacaoService;
 
     private ReservaResponse toResponse(Reserva r) {
         ReservaResponse dto = new ReservaResponse();
@@ -58,19 +56,17 @@ public class ReservaService {
         return dto;
     }
 
-    // ── Reservar livro ────────────────────────────────────────────────────────
-
     @Transactional
     public ReservaResponse reservarLivro(ReservaRequest dto) {
         Livro livro = livroRepository.findById(dto.getLivroId())
-                .orElseThrow(() -> new EntityNotFoundException("Livro não encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Livro nao encontrado"));
         User user = userRepository.findById(dto.getUserId())
-                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Usuario nao encontrado"));
 
         boolean jaReservou = reservaRepository
                 .existsByLivroAndUserAndStatus(livro, user, StatusReserva.ATIVA);
         if (jaReservou) {
-            throw new RuntimeException("Usuário já possui reserva ativa para este livro");
+            throw new IllegalStateException("Usuario ja possui reserva ativa para este livro");
         }
 
         Reserva reserva = new Reserva();
@@ -81,30 +77,25 @@ public class ReservaService {
         int disponiveis = livro.getQuantidadeDisponivel() != null ? livro.getQuantidadeDisponivel() : 0;
 
         if (disponiveis > 0) {
-            // Livro disponível: reserva já fica DISPONIVEL para retirada imediata
             reserva.setStatus(StatusReserva.DISPONIVEL);
             reserva.setDataDisponivel(LocalDate.now());
             reserva.setDataExpiracao(LocalDate.now().plusDays(1));
 
-            // ✅ Decrementa quantidade disponível ao reservar um exemplar disponível
             livro.setQuantidadeDisponivel(disponiveis - 1);
             livroRepository.save(livro);
+            notificacaoService.enviarReservaDisponivel(user, livro);
         } else {
-            // Livro sem exemplares: entra na fila de espera
             reserva.setStatus(StatusReserva.ATIVA);
         }
 
         return toResponse(reservaRepository.save(reserva));
     }
 
-    // ── Cancelar reserva ──────────────────────────────────────────────────────
-
     @Transactional
     public void cancelarReserva(Long reservaId) {
         Reserva reserva = reservaRepository.findById(reservaId)
-                .orElseThrow(() -> new EntityNotFoundException("Reserva não encontrada"));
+                .orElseThrow(() -> new EntityNotFoundException("Reserva nao encontrada"));
 
-        // ✅ Se a reserva estava DISPONIVEL (exemplar separado), devolve ao estoque
         if (reserva.getStatus() == StatusReserva.DISPONIVEL) {
             Livro livro = reserva.getLivro();
             livro.setQuantidadeDisponivel(
@@ -115,9 +106,8 @@ public class ReservaService {
 
         reserva.setStatus(StatusReserva.CANCELADA);
         reservaRepository.save(reserva);
+        notificacaoService.enviarReservaCancelada(reserva.getUser(), reserva.getLivro());
     }
-
-    // ── JOB: expirar reservas DISPONIVEL não retiradas (roda a cada hora) ────
 
     @Scheduled(cron = "0 0 * * * *")
     @Transactional
@@ -129,22 +119,21 @@ public class ReservaService {
                         && LocalDate.now().isAfter(r.getDataExpiracao()))
                 .toList();
 
+        List<Livro> livrosParaSalvar = new ArrayList<>();
+
         expiradas.forEach(r -> {
             r.setStatus(StatusReserva.EXPIRADA);
 
-            // ✅ Devolve o exemplar ao estoque quando a reserva expira
             Livro livro = r.getLivro();
             livro.setQuantidadeDisponivel(
                     (livro.getQuantidadeDisponivel() != null ? livro.getQuantidadeDisponivel() : 0) + 1
             );
-            livroRepository.save(livro);
+            livrosParaSalvar.add(livro);
         });
 
-        // ✅ Salva as reservas expiradas (estava faltando o saveAll)
+        livroRepository.saveAll(livrosParaSalvar);
         reservaRepository.saveAll(expiradas);
     }
-
-    // ── Buscas ────────────────────────────────────────────────────────────────
 
     public List<ReservaResponse> buscarPorUser(String name) {
         return reservaRepository.buscarUser(name).stream().map(this::toResponse).toList();

@@ -15,6 +15,8 @@ import dev.sanderson.Back_End.repository.LivroRepository;
 import dev.sanderson.Back_End.repository.ReservaRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -36,16 +38,13 @@ public class LivroService {
     private final ExemplarService exemplarService;
     private final ObjectMapper objectMapper;
 
-    // ═══════════════════════════════════════════════════════════════
-    //  CRIAR NOVO LIVRO (com validação de duplicidade)
-    // ═══════════════════════════════════════════════════════════════
     @Transactional
+    @CacheEvict(value = "livros", allEntries = true)
     public LivroResponse insertLivro(LivroRequest dto) throws BusinessRuleException {
 
         Autor autor = autorRepository.findById(dto.getAutorId())
-                .orElseThrow(() -> new RuntimeException("Autor não encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Autor nao encontrado"));
 
-        // ✅ Validação de duplicidade (título + autor)
         Optional<Livro> existente = livroRepository.findByTituloAndAutorId(
                 dto.getTitulo().trim(),
                 autor.getId()
@@ -53,16 +52,16 @@ public class LivroService {
 
         if (existente.isPresent()) {
             throw new BusinessRuleException(
-                    "Livro já cadastrado: \"" + dto.getTitulo() +
+                    "Livro ja cadastrado: \"" + dto.getTitulo() +
                             "\" do autor " + autor.getAutor()
             );
         }
 
         Genero genero = generoRepository.findById(dto.getGeneroId())
-                .orElseThrow(() -> new RuntimeException("Genero não encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Genero nao encontrado"));
 
         Catalogacao catalogacao = catalogacaoRepository.findById(dto.getCatalogacaoId())
-                .orElseThrow(() -> new RuntimeException("Catalogacao não encontrada"));
+                .orElseThrow(() -> new EntityNotFoundException("Catalogacao nao encontrada"));
 
         Livro livro = new Livro();
         livro.setId(dto.getId());
@@ -90,18 +89,15 @@ public class LivroService {
         return objectMapper.convertValue(salvo, LivroResponse.class);
     }
 
-    // ═══════════════════════════════════════════════════════════════
-    //  ATUALIZAR LIVRO
-    // ═══════════════════════════════════════════════════════════════
     @Transactional
+    @CacheEvict(value = "livros", allEntries = true)
     public LivroResponse updateLivro(Long id, LivroRequest dto) throws BusinessRuleException {
         Livro livroExistente = livroRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Livro não encontrado com id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Livro nao encontrado com id: " + id));
 
         Autor autor = autorRepository.findById(dto.getAutorId())
-                .orElseThrow(() -> new RuntimeException("Autor não encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Autor nao encontrado"));
 
-        // ✅ Valida duplicidade no UPDATE também (mas ignora o próprio livro)
         Optional<Livro> existente = livroRepository.findByTituloAndAutorId(
                 dto.getTitulo().trim(),
                 autor.getId()
@@ -109,15 +105,15 @@ public class LivroService {
 
         if (existente.isPresent() && !existente.get().getId().equals(id)) {
             throw new BusinessRuleException(
-                    "Já existe outro livro cadastrado com este título e autor"
+                    "Ja existe outro livro cadastrado com este titulo e autor"
             );
         }
 
         Genero genero = generoRepository.findById(dto.getGeneroId())
-                .orElseThrow(() -> new RuntimeException("Genero não encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Genero nao encontrado"));
 
         Catalogacao catalogacao = catalogacaoRepository.findById(dto.getCatalogacaoId())
-                .orElseThrow(() -> new RuntimeException("Catalogacao não encontrada"));
+                .orElseThrow(() -> new EntityNotFoundException("Catalogacao nao encontrada"));
 
         livroExistente.setTitulo(dto.getTitulo().trim());
         livroExistente.setEditora(dto.getEditora());
@@ -149,44 +145,37 @@ public class LivroService {
         return objectMapper.convertValue(salvo, LivroResponse.class);
     }
 
-    // ═══════════════════════════════════════════════════════════════
-    //  DELETAR LIVRO (com validação)
-    // ═══════════════════════════════════════════════════════════════
     @Transactional
+    @CacheEvict(value = "livros", allEntries = true)
     public void deleteLivro(Long id) throws BusinessRuleException {
         Livro livro = livroRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Livro não encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Livro nao encontrado"));
 
-        // ✅ NOVO: Valida se há QUALQUER empréstimo (histórico inclusive)
         long totalEmprestimos = emprestimoRepository.countByLivroId(id);
 
         if (totalEmprestimos > 0) {
             throw new BusinessRuleException(
-                    "Não é possível excluir o livro \"" + livro.getTitulo() +
-                            "\" pois possui histórico de " + totalEmprestimos +
-                            " empréstimo(s). Para preservar os registros, este livro não pode ser excluído."
+                    "Nao e possivel excluir o livro \"" + livro.getTitulo() +
+                            "\" pois possui historico de " + totalEmprestimos +
+                            " emprestimo(s). Para preservar os registros, este livro nao pode ser excluido."
             );
         }
 
-        // ✅ Valida reservas (qualquer status)
         long totalReservas = reservaRepository.countByLivroId(id);
 
         if (totalReservas > 0) {
             throw new BusinessRuleException(
-                    "Não é possível excluir o livro \"" + livro.getTitulo() +
-                            "\" pois possui histórico de " + totalReservas +
-                            " reserva(s). Para preservar os registros, este livro não pode ser excluído."
+                    "Nao e possivel excluir o livro \"" + livro.getTitulo() +
+                            "\" pois possui historico de " + totalReservas +
+                            " reserva(s). Para preservar os registros, este livro nao pode ser excluido."
             );
         }
 
-        // ✅ Sem histórico → pode deletar exemplares + livro
         exemplarService.deletarTodosExemplaresDoLivro(id);
         livroRepository.delete(livro);
     }
 
-    // ═══════════════════════════════════════════════════════════════
-    //  CONSULTAS (sem alteração)
-    // ═══════════════════════════════════════════════════════════════
+    @Cacheable(value = "livros", key = "'todos'")
     public List<LivroResponse> listarTodos() {
         return livroRepository.findAll()
                 .stream()
@@ -194,12 +183,14 @@ public class LivroService {
                 .toList();
     }
 
+    @Cacheable(value = "livros", key = "#id")
     public LivroResponse buscarPorId(Long id) {
         Livro livro = livroRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Livro não encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Livro nao encontrado"));
         return objectMapper.convertValue(livro, LivroResponse.class);
     }
 
+    @Cacheable(value = "livros", key = "'titulo_' + #titulo")
     public List<LivroResponse> buscarPorTitulo(String titulo) {
         return livroRepository.buscarTitulo(titulo)
                 .stream()
@@ -207,6 +198,7 @@ public class LivroService {
                 .toList();
     }
 
+    @Cacheable(value = "livros", key = "'autor_' + #autor")
     public List<LivroResponse> buscarPorAutor(String autor) {
         return livroRepository.buscarAutor(autor)
                 .stream()
@@ -214,6 +206,7 @@ public class LivroService {
                 .toList();
     }
 
+    @Cacheable(value = "livros", key = "'genero_' + #genero")
     public List<LivroResponse> buscarPorGenero(String genero) {
         return livroRepository.buscarGenero(genero)
                 .stream()
@@ -221,6 +214,7 @@ public class LivroService {
                 .toList();
     }
 
+    @Cacheable(value = "livros", key = "'catalogacao_' + #catalogacao")
     public List<LivroResponse> buscarPorCatalogacao(String catalogacao) {
         return livroRepository.buscarCatalogacao(catalogacao)
                 .stream()
@@ -228,10 +222,22 @@ public class LivroService {
                 .toList();
     }
 
+    @Cacheable(value = "livros", key = "'populares_' + #limite")
     public List<LivroResponse> listarMaisPopulares(int limite) {
         return livroRepository.listarMaisPopulares(PageRequest.of(0, Math.max(1, limite)))
                 .stream()
                 .map(livro -> objectMapper.convertValue(livro, LivroResponse.class))
                 .toList();
+    }
+
+    @Cacheable(value = "livros", key = "'busca_' + #filtros.hashCode()")
+    public org.springframework.data.domain.Page<LivroResponse> buscarComFiltros(dev.sanderson.Back_End.dto.LivroDtos.FiltroLivroRequest filtros) {
+        dev.sanderson.Back_End.specification.LivroSpecification spec = new dev.sanderson.Back_End.specification.LivroSpecification(filtros);
+        int pagina = filtros.getPagina() != null ? filtros.getPagina() : 0;
+        int tamanhoPagina = filtros.getTamanhoPagina() != null ? filtros.getTamanhoPagina() : 20;
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(pagina, tamanhoPagina);
+
+        return livroRepository.findAll(spec, pageable)
+                .map(livro -> objectMapper.convertValue(livro, LivroResponse.class));
     }
 }

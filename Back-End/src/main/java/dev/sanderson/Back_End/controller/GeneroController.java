@@ -3,6 +3,7 @@ package dev.sanderson.Back_End.controller;
 import dev.sanderson.Back_End.dto.GeneroDtos.GeneroRequest;
 import dev.sanderson.Back_End.dto.GeneroDtos.GeneroResponse;
 import dev.sanderson.Back_End.service.GeneroService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -19,7 +20,7 @@ public class GeneroController {
     private final GeneroService generoService;
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<GeneroResponse> criarGenero(@RequestBody GeneroRequest generoDto){
+    public ResponseEntity<GeneroResponse> criarGenero(@Valid @RequestBody GeneroRequest generoDto){
         GeneroResponse genero = generoService.insertGenero(generoDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(genero);
     }

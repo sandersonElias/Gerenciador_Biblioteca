@@ -1,9 +1,12 @@
 package dev.sanderson.Back_End.controller;
 
+import dev.sanderson.Back_End.dto.LivroDtos.FiltroLivroRequest;
 import dev.sanderson.Back_End.dto.LivroDtos.LivroRequest;
 import dev.sanderson.Back_End.dto.LivroDtos.LivroResponse;
 import dev.sanderson.Back_End.exception.BusinessRuleException;
 import dev.sanderson.Back_End.service.LivroService;
+import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -19,15 +22,13 @@ public class LivroController {
 
     private final LivroService livroService;
 
-    // Criar novo livro
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<LivroResponse> criarLivro(@RequestBody LivroRequest livroDto)
+    public ResponseEntity<LivroResponse> criarLivro(@Valid @RequestBody LivroRequest livroDto)
             throws BusinessRuleException {
         LivroResponse criado = livroService.insertLivro(livroDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(criado);
     }
 
-    // Busca por filtro (titulo, genero, autor, catalogacao)
     @GetMapping("/buscar/{filtro}/{termo}")
     public ResponseEntity<List<LivroResponse>> buscarPorFiltro(
             @PathVariable String filtro,
@@ -54,15 +55,19 @@ public class LivroController {
         return ResponseEntity.ok(livroDto);
     }
 
-    // Atualizar Livro
+    @GetMapping("/buscar")
+    public ResponseEntity<Page<LivroResponse>> buscarComFiltros(FiltroLivroRequest filtros) {
+        Page<LivroResponse> resultado = livroService.buscarComFiltros(filtros);
+        return ResponseEntity.ok(resultado);
+    }
+
     @PutMapping("/{id}")
-    public ResponseEntity<LivroResponse> update(@PathVariable Long id, @RequestBody LivroRequest dto)
+    public ResponseEntity<LivroResponse> update(@PathVariable Long id, @Valid @RequestBody LivroRequest dto)
             throws BusinessRuleException {
         LivroResponse updated = livroService.updateLivro(id, dto);
         return ResponseEntity.ok(updated);
     }
 
-    // Deletar Livro
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletarLivro(@PathVariable Long id)
             throws BusinessRuleException {
@@ -70,21 +75,18 @@ public class LivroController {
         return ResponseEntity.noContent().build();
     }
 
-    // Lista todos os livros
     @GetMapping("/todos")
     public ResponseEntity<List<LivroResponse>> todosLivros(){
         List<LivroResponse> livroDto = livroService.listarTodos();
         return ResponseEntity.ok(livroDto);
     }
 
-    // Busca por Id
     @GetMapping("/id/{id}")
     public ResponseEntity<LivroResponse> buscarLivro(@PathVariable Long id){
         LivroResponse livroDto = livroService.buscarPorId(id);
         return ResponseEntity.ok(livroDto);
     }
 
-    // Lista livros mais populares limite=5
     @GetMapping("/populares")
     public ResponseEntity<List<LivroResponse>> listarPopulares(@RequestParam(required = false, defaultValue = "5") int limite){
         List<LivroResponse> livros = livroService.listarMaisPopulares(limite);

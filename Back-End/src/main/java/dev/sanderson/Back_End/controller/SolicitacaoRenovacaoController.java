@@ -7,6 +7,7 @@ import dev.sanderson.Back_End.dto.SolicitacaoRenovacaoDtos.SolicitacaoRenovacaoR
 import dev.sanderson.Back_End.service.SolicitacaoRenovacaoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,43 +19,41 @@ public class SolicitacaoRenovacaoController {
 
     private final SolicitacaoRenovacaoService solicitacaoService;
 
-    // Aluno solicita renovação — email do solicitante passado na URL
-    // Padrão idêntico ao /reserva/useremail/{email}
-    @PostMapping("/{email}")
+    @PostMapping
     public ResponseEntity<SolicitacaoRenovacaoResponse> solicitarRenovacao(
-            @PathVariable String email,
+            Authentication authentication,
             @RequestBody SolicitacaoRenovacaoRequest request) {
 
+        String email = authentication.getName();
         SolicitacaoRenovacaoResponse response = solicitacaoService
                 .solicitarRenovacao(request.getEmprestimoId(), email);
 
         return ResponseEntity.ok(response);
     }
 
-    // Funcionário lista solicitações pendentes
     @GetMapping("/pendentes")
     public ResponseEntity<List<SolicitacaoPendenteDto>> listarPendentes() {
         List<SolicitacaoPendenteDto> pendentes = solicitacaoService.listarSolicitacoesPendentes();
         return ResponseEntity.ok(pendentes);
     }
 
-    // Funcionário aprova solicitação — email do funcionário passado na URL
-    @PutMapping("/{id}/aprovar/{email}")
+    @PutMapping("/{id}/aprovar")
     public ResponseEntity<Void> aprovarSolicitacao(
             @PathVariable Long id,
-            @PathVariable String email) {
+            Authentication authentication) {
 
+        String email = authentication.getName();
         solicitacaoService.aprovarSolicitacao(id, email);
         return ResponseEntity.ok().build();
     }
 
-    // Funcionário rejeita solicitação — email do funcionário passado na URL
-    @PutMapping("/{id}/rejeitar/{email}")
+    @PutMapping("/{id}/rejeitar")
     public ResponseEntity<Void> rejeitarSolicitacao(
             @PathVariable Long id,
-            @PathVariable String email,
+            Authentication authentication,
             @RequestBody(required = false) RejeitarSolicitacaoRequest request) {
 
+        String email = authentication.getName();
         String observacao = request != null ? request.getObservacao() : null;
         solicitacaoService.rejeitarSolicitacao(id, email, observacao);
         return ResponseEntity.ok().build();
