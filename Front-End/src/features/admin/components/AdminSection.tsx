@@ -1,6 +1,7 @@
 import React from 'react';
-import { AdminCardConfig, AdminIcons } from '../models/AdminModel';
+import { AdminCardConfig } from '../models/AdminModel';
 import { AdminCard } from './AdminCard';
+import { AdminIcon } from './AdminIcon';
 
 interface AdminSectionProps {
   title: string;
@@ -34,7 +35,7 @@ export const AdminSection: React.FC<AdminSectionProps> = ({
           className="btn-primary" 
           onClick={() => onNavigate(createRoute)}
         >
-          <AdminIcons.PlusIcon />
+          <AdminIcon name="plus" />
           {createButtonLabel}
         </button>
       </div>

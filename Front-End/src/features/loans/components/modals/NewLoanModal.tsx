@@ -4,6 +4,7 @@ import Button from "../../../../components/common/Button";
 import { AutocompleteField } from "../AutocompleteField";
 import { ExemplarSelector } from "../ExemplarSelector";
 import { NewLoanFormData } from "../../models/LoansModel";
+import { PRAZO_DIAS_DEFAULT } from "../../../../constants";
 import { UserResponse } from "../../../../services/user/types";
 import { Livro } from "../../../../services/livro/types";
 import { Exemplar } from "../../../../services/exemplar/types";
@@ -169,16 +170,12 @@ export const NewLoanModal: React.FC<NewLoanModalProps> = ({
               <line x1="8" y1="2" x2="8" y2="6" />
               <line x1="3" y1="10" x2="21" y2="10" />
             </svg>
-            Data de Devolução{" "}
-            <span className="loan-form__optional">(padrão: 7 dias)</span>
+            Prazo de Devolução
           </label>
-          <input
-            className="loan-form__input"
-            type="date"
-            value={formData.dataDevolucao}
-            onChange={(e) => onFormChange({ dataDevolucao: e.target.value })}
-            min={new Date().toISOString().split("T")[0]}
-          />
+          <div className="modal-note modal-note--info">
+            O prazo padrão é de {PRAZO_DIAS_DEFAULT} dias a partir da data do
+            empréstimo.
+          </div>
         </div>
 
         {/* Info */}
@@ -186,7 +183,6 @@ export const NewLoanModal: React.FC<NewLoanModalProps> = ({
           Digite e <strong>clique na sugestão</strong> para selecionar usuário e
           livro. Após selecionar o livro, os exemplares disponíveis serão
           carregados automaticamente.
-          {!formData.dataDevolucao && " O prazo padrão é de 7 dias."}
         </div>
       </div>
     </Modal>

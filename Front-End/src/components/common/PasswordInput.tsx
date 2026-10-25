@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface PasswordInputProps {
   id: string;
@@ -9,6 +9,8 @@ interface PasswordInputProps {
   onToggleVisibility: () => void;
   error?: string;
   placeholder?: string;
+  autoComplete?: string;
+  showLockIcon?: boolean;
 }
 
 const EyeIcon = ({ open }: { open: boolean }) =>
@@ -25,10 +27,6 @@ const EyeIcon = ({ open }: { open: boolean }) =>
     </svg>
   );
 
-/**
- * Componente puro de input de senha
- * Sem lógica, só apresentação
- */
 export const PasswordInput: React.FC<PasswordInputProps> = ({
   id,
   label,
@@ -37,25 +35,35 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
   showPassword,
   onToggleVisibility,
   error,
-  placeholder = '••••••••',
+  placeholder = "••••••••",
+  autoComplete = "current-password",
+  showLockIcon = false,
 }) => {
   return (
     <div className="form-field">
-      <label htmlFor={id} className="form-label">{label}</label>
-      <div className={`form-input-wrapper ${error ? 'form-input-wrapper--error' : ''}`}>
-        <span className="form-input-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-          </svg>
-        </span>
+      <label htmlFor={id} className="form-label">
+        {label}
+      </label>
+      <div
+        className={`form-input-wrapper ${
+          error ? "form-input-wrapper--error" : ""
+        }`}
+      >
+        {showLockIcon && (
+          <span className="form-input-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
+          </span>
+        )}
         <input
           id={id}
-          type={showPassword ? 'text' : 'password'}
+          type={showPassword ? "text" : "password"}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          autoComplete="current-password"
+          autoComplete={autoComplete}
           className="form-input form-input--password"
           aria-describedby={error ? `${id}-error` : undefined}
         />
@@ -63,7 +71,7 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
           type="button"
           className="form-eye-btn"
           onClick={onToggleVisibility}
-          aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+          aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
         >
           <EyeIcon open={showPassword} />
         </button>
@@ -76,3 +84,5 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
     </div>
   );
 };
+
+export default PasswordInput;

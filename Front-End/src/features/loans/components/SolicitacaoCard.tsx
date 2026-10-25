@@ -1,5 +1,6 @@
 import React from "react";
 import { SolicitacaoPendenteDto } from "../../../services/solicitacao/types";
+import { MAX_RENOVACOES } from "../../../constants";
 import { LoansHelpers } from "../models/LoansModel";
 
 interface SolicitacaoCardProps {
@@ -50,7 +51,7 @@ export const SolicitacaoCard: React.FC<SolicitacaoCardProps> = ({
             {LoansHelpers.formatDate(solicitacao.dataDevolucaoPrevista)}
           </span>
           <span>
-            <strong>Renovações:</strong> {solicitacao.renovacoesRealizadas}/3
+            <strong>Renovações:</strong> {solicitacao.renovacoesRealizadas}/{MAX_RENOVACOES}
           </span>
           <span>
             <strong>Solicitado em:</strong>{" "}

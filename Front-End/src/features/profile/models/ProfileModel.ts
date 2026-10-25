@@ -1,4 +1,5 @@
 import { Livro, StatusReserva, UserMinDto } from "../../../services";
+import { formatDate } from "../../../utils";
 
 export const roleLabel = (role: string) => {
   switch (role) {
@@ -16,7 +17,7 @@ export const roleLabel = (role: string) => {
 };
 
 export const fmt = (date?: string | null) =>
-  date ? new Date(date).toLocaleDateString("pt-BR") : "—";
+  date ? formatDate(date) : "—";
 
 export const statusReservaLabel = (s: string) => {
   const map: Record<string, string> = {

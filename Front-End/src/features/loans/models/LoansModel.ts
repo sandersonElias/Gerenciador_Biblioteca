@@ -1,23 +1,23 @@
+import { formatDate as formatDateUtil } from "../../../utils";
+
 export type LoansTab = 'emprestimos' | 'solicitacoes';
 
 export interface NewLoanFormData {
   userId: string;
   livroId: string;
-  dataDevolucao: string;
   exemplarId: string;
 }
 
 export const INITIAL_NEW_LOAN: NewLoanFormData = {
   userId: '',
   livroId: '',
-  dataDevolucao: '',
   exemplarId: '',
 };
 
 export class LoansHelpers {
   
   static formatDate(date?: string): string {
-    return date ? new Date(date).toLocaleDateString('pt-BR') : '—';
+    return date ? formatDateUtil(date) : '—';
   }
 
   static getStatusClass(status: string): string {

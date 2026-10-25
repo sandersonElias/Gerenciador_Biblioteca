@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
 import { LivroService } from "../../../services/livro/LivroService";
 import { useAnimatedWords } from "./useAnimatedWords";
@@ -14,6 +15,7 @@ export const useHomeViewModel = () => {
   // Autenticação
   // ─────────────────────────────────────────────────────────
   const { isAuthenticated, hasAnyRole } = useAuth();
+  const navigate = useNavigate();
 
   // ─────────────────────────────────────────────────────────
   // Dados remotos (React Query)
@@ -42,7 +44,7 @@ export const useHomeViewModel = () => {
   const handleSearch = (filter: string, term: string) => {
     const params: SearchParams = { filter, term };
     const url = HomeHelpers.buildSearchUrl(params);
-    window.location.href = url;
+    navigate(url);
   };
 
   /**

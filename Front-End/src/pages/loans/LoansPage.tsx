@@ -20,7 +20,7 @@ const LoansPage: React.FC = () => {
     <div className="loans-page">
       <div className="container">
         {/* Header */}
-        <LoansHeader onNewLoan={() => vm.setShowNewLoanModal(true)} />
+        <LoansHeader onNewLoan={vm.handleOpenNewLoanModal} />
 
         {/* Abas de navegação */}
         <LoansTabs
@@ -61,7 +61,7 @@ const LoansPage: React.FC = () => {
       <RenewLoanModal
         isOpen={vm.showRenewModal}
         loan={vm.selectedLoan}
-        onClose={() => vm.setShowRenewModal(false)}
+        onClose={vm.handleCloseRenewModal}
         onConfirm={vm.handleRenewLoan}
       />
 
@@ -69,7 +69,7 @@ const LoansPage: React.FC = () => {
       <ReturnLoanModal
         isOpen={vm.showReturnModal}
         loan={vm.selectedLoan}
-        onClose={() => vm.setShowReturnModal(false)}
+        onClose={vm.handleCloseReturnModal}
         onConfirm={vm.handleReturnLoan}
       />
 
@@ -79,17 +79,17 @@ const LoansPage: React.FC = () => {
         formData={vm.newLoan}
         onClose={vm.handleCloseNewLoanModal}
         onConfirm={vm.handleCreateLoan}
-        onFormChange={(data) => vm.setNewLoan({ ...vm.newLoan, ...data })}
+        onFormChange={vm.handleNewLoanFormChange}
         
         userSearchTerm={vm.userAutocomplete.searchTerm}
         userSuggestions={vm.userAutocomplete.suggestions}
-        onUserSearchChange={vm.userAutocomplete.setSearchTerm}
+        onUserSearchChange={vm.userAutocomplete.handleUserInput}
         onUserSelect={vm.handleSelectUser}
         onUserClear={vm.handleClearUser}
         
         bookSearchTerm={vm.bookAutocomplete.searchTerm}
         bookSuggestions={vm.bookAutocomplete.suggestions}
-        onBookSearchChange={vm.bookAutocomplete.setSearchTerm}
+        onBookSearchChange={vm.bookAutocomplete.handleUserInput}
         onBookSelect={vm.handleSelectBook}
         onBookClear={vm.handleClearBook}
         
@@ -101,7 +101,7 @@ const LoansPage: React.FC = () => {
       <ApproveRequestModal
         isOpen={vm.showAprovarModal}
         solicitacao={vm.selectedSolic}
-        onClose={() => vm.setShowAprovarModal(false)}
+        onClose={vm.handleCloseAprovarModal}
         onConfirm={vm.handleApproveRequest}
       />
 
@@ -110,9 +110,9 @@ const LoansPage: React.FC = () => {
         isOpen={vm.showRejeitarModal}
         solicitacao={vm.selectedSolic}
         observacao={vm.observacao}
-        onClose={() => vm.setShowRejeitarModal(false)}
+        onClose={vm.handleCloseRejeitarModal}
         onConfirm={vm.handleRejectRequest}
-        onObservacaoChange={vm.setObservacao}
+        onObservacaoChange={vm.handleObservacaoChange}
       />
     </div>
   );

@@ -2,6 +2,7 @@ import React from "react";
 import Modal from "../../../../components/common/Modal";
 import Button from "../../../../components/common/Button";
 import { EmprestimoResponse } from "../../../../services/emprestimo/types";
+import { PRAZO_DIAS_DEFAULT } from "../../../../constants";
 
 interface RenewLoanModalProps {
   isOpen: boolean;
@@ -38,7 +39,7 @@ export const RenewLoanModal: React.FC<RenewLoanModalProps> = ({
       <strong>{loan.livro.titulo}</strong>
       <p>Usuário: {loan.user.name}</p>
       <div className="modal-note modal-note--info">
-        A data de devolução será estendida em 7 dias.
+        A data de devolução será estendida em {PRAZO_DIAS_DEFAULT} dias.
       </div>
     </Modal>
   );

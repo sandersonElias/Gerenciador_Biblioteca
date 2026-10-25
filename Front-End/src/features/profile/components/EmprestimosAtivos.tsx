@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { EmprestimosAtivoDto, EmprestimoHistoricoDto } from "../../../services";
 import { fmt } from "../models/ProfileModel";
 import Button from "../../../components/common/Button";
+import { MAX_RENOVACOES, PRAZO_DIAS_DEFAULT } from "../../../constants";
 
 interface EmprestimosAtivosProps {
   emprestimos?: {
@@ -92,7 +93,7 @@ export const EmprestimosAtivos: React.FC<EmprestimosAtivosProps> = ({
                   </div>
                   <div className="meta-chip">
                     <span className="meta-chip__label">Renovações</span>
-                    <span className="meta-chip__value">{a.renovacoes}/3</span>
+                    <span className="meta-chip__value">{a.renovacoes}/{MAX_RENOVACOES}</span>
                   </div>
                 </div>
 
@@ -107,7 +108,9 @@ export const EmprestimosAtivos: React.FC<EmprestimosAtivosProps> = ({
                         ? "100%"
                         : `${Math.min(
                             100,
-                            ((7 - a.diasRestantes) / 7) * 100,
+                            ((PRAZO_DIAS_DEFAULT - a.diasRestantes) /
+                              PRAZO_DIAS_DEFAULT) *
+                              100,
                           )}%`,
                     }}
                   />
@@ -139,8 +142,8 @@ export const EmprestimosAtivos: React.FC<EmprestimosAtivosProps> = ({
                     </Button>
                   ) : (
                     <span className="renew-blocked">
-                      {a.renovacoes >= 3
-                        ? "Limite atingido (3/3)"
+                      {a.renovacoes >= MAX_RENOVACOES
+                        ? `Limite atingido (${MAX_RENOVACOES}/${MAX_RENOVACOES})`
                         : atrasado
                         ? "Livro atrasado"
                         : "Renovação indisponível"}

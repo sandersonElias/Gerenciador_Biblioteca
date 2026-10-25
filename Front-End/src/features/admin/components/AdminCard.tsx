@@ -1,5 +1,6 @@
 import React from 'react';
-import { AdminCardConfig, AdminIcons } from '../models/AdminModel';
+import { AdminCardConfig } from '../models/AdminModel';
+import { AdminIcon } from './AdminIcon';
 
 interface AdminCardProps {
   card: AdminCardConfig;
@@ -17,7 +18,7 @@ export const AdminCard: React.FC<AdminCardProps> = ({ card, onClick }) => {
       onClick={() => onClick(card.route)}
     >
       <div className="admin-card__icon">
-        {card.icon}
+        <AdminIcon name={card.icon} size={26} />
       </div>
       
       <div className="admin-card__body">
@@ -25,7 +26,7 @@ export const AdminCard: React.FC<AdminCardProps> = ({ card, onClick }) => {
         <p>{card.description}</p>
       </div>
 
-      <AdminIcons.ArrowRightIcon />
+      <AdminIcon name="arrowRight" size={18} className="admin-card__arrow" />
     </div>
   );
 };

@@ -1,5 +1,6 @@
 import React from "react";
 import { EmprestimoResponse } from "../../../services/emprestimo/types";
+import { MAX_RENOVACOES } from "../../../constants";
 import { LoansHelpers } from "../models/LoansModel";
 
 interface LoansTableProps {
@@ -73,7 +74,7 @@ export const LoansTable: React.FC<LoansTableProps> = ({
               </td>
               <td>{LoansHelpers.formatDate(loan.dataEmprestimo)}</td>
               <td>{LoansHelpers.formatDate(loan.dataDevolucao)}</td>
-              <td className="cell-center">{loan.renovacoes}/3</td>
+              <td className="cell-center">{loan.renovacoes}/{MAX_RENOVACOES}</td>
               <td>
                 <span
                   className={`lp-badge ${LoansHelpers.getStatusClass(

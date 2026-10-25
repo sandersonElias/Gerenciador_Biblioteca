@@ -1,5 +1,6 @@
 import { EmprestimoResponse } from "../../../services/emprestimo/types";
 import { Livro } from "../../../services/livro/types";
+import { formatDate } from "../../../utils";
 
 export interface TopBorrower {
   name: string;
@@ -8,7 +9,7 @@ export interface TopBorrower {
 }
 
 export const fmt = (date?: string) =>
-  date ? new Date(date).toLocaleDateString("pt-BR") : "—";
+  date ? formatDate(date) : "—";
 
 export const statusLoanClass = (s: string) => {
   if (s === "ATIVO") return "badge--success";

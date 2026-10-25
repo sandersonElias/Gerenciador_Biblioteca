@@ -2,6 +2,7 @@ import React from "react";
 import Modal from "../../../../components/common/Modal";
 import Button from "../../../../components/common/Button";
 import { SolicitacaoPendenteDto } from "../../../../services/solicitacao/types";
+import { PRAZO_DIAS_DEFAULT } from "../../../../constants";
 
 interface ApproveRequestModalProps {
   isOpen: boolean;
@@ -38,7 +39,7 @@ export const ApproveRequestModal: React.FC<ApproveRequestModalProps> = ({
       <strong>{solicitacao.livroTitulo}</strong>
       <p>Aluno: {solicitacao.solicitanteNome}</p>
       <div className="modal-note modal-note--info">
-        A data de devolução será estendida em 7 dias.
+        A data de devolução será estendida em {PRAZO_DIAS_DEFAULT} dias.
       </div>
     </Modal>
   );

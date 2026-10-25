@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "../../../context/AuthContext";
 import { useToast } from "../../../context/ToastContext";
-import { useLoading } from "../../../context/LoadingContext";
 import { EmprestimoService } from "../../../services/emprestimo/EmprestimoService";
 import { SolicitacaoService } from "../../../services/solicitacao/SolicitacaoService";
 import { UserService } from "../../../services/user/UserService";
@@ -11,31 +11,28 @@ import {
   StatusEmprestimo,
 } from "../../../services/emprestimo/types";
 import { SolicitacaoPendenteDto } from "../../../services/solicitacao/types";
+import { UserResponse } from "../../../services/user/types";
 import {
   LoansTab,
   NewLoanFormData,
   INITIAL_NEW_LOAN,
   LoansHelpers,
 } from "../models/LoansModel";
-import { useAutocomplete } from "./useAutocomplete";
+import { useGenericAutocomplete } from "../../../hooks/useGenericAutocomplete";
 import { useExemplarLoader } from "./useExemplarLoader";
 
 export const useLoansViewModel = () => {
   const { user: authUser } = useAuth();
   const { showToast } = useToast();
-  const { withLoading } = useLoading();
+  const queryClient = useQueryClient();
 
-  const [loans, setLoans] = useState<EmprestimoResponse[]>([]);
-  const [filtered, setFiltered] = useState<EmprestimoResponse[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusEmprestimo | "">("");
+  const [activeTab, setActiveTab] = useState<LoansTab>("emprestimos");
 
-  const [pendentes, setPendentes] = useState<SolicitacaoPendenteDto[]>([]);
   const [selectedSolic, setSelectedSolic] =
     useState<SolicitacaoPendenteDto | null>(null);
   const [observacao, setObservacao] = useState("");
-
-  const [activeTab, setActiveTab] = useState<LoansTab>("emprestimos");
   const [selectedLoan, setSelectedLoan] = useState<EmprestimoResponse | null>(
     null,
   );
@@ -48,6 +45,31 @@ export const useLoansViewModel = () => {
 
   const [newLoan, setNewLoan] = useState<NewLoanFormData>(INITIAL_NEW_LOAN);
 
+  const loansQuery = useQuery({
+    queryKey: ["emprestimos"],
+    queryFn: () => EmprestimoService.getAll(),
+  });
+
+  const pendentesQuery = useQuery({
+    queryKey: ["solicitacoes", "pendentes"],
+    queryFn: () => SolicitacaoService.getPendentes(),
+  });
+
+  useEffect(() => {
+    if (loansQuery.isError) {
+      showToast("Erro ao carregar empréstimos", "error");
+    }
+  }, [loansQuery.isError, showToast]);
+
+  useEffect(() => {
+    if (pendentesQuery.isError) {
+      showToast("Erro ao carregar solicitações", "error");
+    }
+  }, [pendentesQuery.isError, showToast]);
+
+  const loans = loansQuery.data ?? [];
+  const pendentes = pendentesQuery.data ?? [];
+
   const searchUserFn = useCallback(
     (query: string) => UserService.getUserName(query),
     [],
@@ -58,44 +80,122 @@ export const useLoansViewModel = () => {
     [],
   );
 
-  const userAutocomplete = useAutocomplete({
+  const userAutocomplete = useGenericAutocomplete<UserResponse>({
     searchFn: searchUserFn,
     isSelected: !!newLoan.userId,
+    minChars: 3,
   });
 
-  const bookAutocomplete = useAutocomplete({
+  const bookAutocomplete = useGenericAutocomplete({
     searchFn: searchBookFn,
     isSelected: !!newLoan.livroId,
+    minChars: 3,
   });
 
   const { exemplares, loading: loadingExemplares } = useExemplarLoader(
     newLoan.livroId,
   );
 
-  const loadLoans = useCallback(async () => {
-    try {
-      const data = await withLoading(EmprestimoService.getAll());
-      setLoans(data);
-    } catch {
-      showToast("Erro ao carregar empréstimos", "error");
-    }
-  }, [withLoading, showToast]);
+  const invalidateLoans = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ["emprestimos"] });
+    queryClient.invalidateQueries({
+      queryKey: ["exemplares", "disponiveis"],
+    });
+  }, [queryClient]);
 
-  const loadPendentes = useCallback(async () => {
-    try {
-      const data = await SolicitacaoService.getPendentes();
-      setPendentes(data);
-    } catch {
-      showToast("Erro ao carregar solicitações", "error");
-    }
-  }, [showToast]);
+  const invalidatePendentes = useCallback(() => {
+    queryClient.invalidateQueries({
+      queryKey: ["solicitacoes", "pendentes"],
+    });
+  }, [queryClient]);
 
-  useEffect(() => {
-    loadLoans();
-    loadPendentes();
-  }, [loadLoans, loadPendentes]);
+  const renewMutation = useMutation({
+    mutationFn: (loanId: number) => EmprestimoService.renovar(loanId),
+    onSuccess: () => {
+      showToast("Empréstimo renovado!", "success");
+      setShowRenewModal(false);
+      invalidateLoans();
+    },
+    onError: (error: any) => {
+      showToast(error.response?.data?.message || "Erro ao renovar", "error");
+    },
+  });
 
-  useEffect(() => {
+  const returnMutation = useMutation({
+    mutationFn: (loanId: number) => EmprestimoService.devolver(loanId),
+    onSuccess: () => {
+      showToast("Devolução registrada!", "success");
+      setShowReturnModal(false);
+      invalidateLoans();
+    },
+    onError: (error: any) => {
+      showToast(error.response?.data?.message || "Erro ao devolver", "error");
+    },
+  });
+
+  const createLoanMutation = useMutation({
+    mutationFn: (form: NewLoanFormData) =>
+      EmprestimoService.create({
+        userId: Number(form.userId),
+        livroId: Number(form.livroId),
+        exemplarId: form.exemplarId ? Number(form.exemplarId) : undefined,
+      }),
+    onSuccess: () => {
+      showToast("Empréstimo criado com sucesso!", "success");
+      setShowNewLoanModal(false);
+      setNewLoan(INITIAL_NEW_LOAN);
+      userAutocomplete.setSearchTerm("");
+      bookAutocomplete.setSearchTerm("");
+      invalidateLoans();
+      invalidatePendentes();
+    },
+    onError: (error: any) => {
+      showToast(
+        error.response?.data?.message || "Erro ao criar empréstimo",
+        "error",
+      );
+    },
+  });
+
+  const approveMutation = useMutation({
+    mutationFn: (solic: SolicitacaoPendenteDto) => {
+      if (!authUser) throw new Error("Usuário não autenticado");
+      return SolicitacaoService.aprovar(solic.id, authUser.email);
+    },
+    onSuccess: () => {
+      showToast("Solicitação aprovada!", "success");
+      setShowAprovarModal(false);
+      invalidatePendentes();
+      invalidateLoans();
+    },
+    onError: () => {
+      showToast("Erro ao aprovar solicitação", "error");
+    },
+  });
+
+  const rejectMutation = useMutation({
+    mutationFn: ({
+      solic,
+      motivo,
+    }: {
+      solic: SolicitacaoPendenteDto;
+      motivo?: string;
+    }) => {
+      if (!authUser) throw new Error("Usuário não autenticado");
+      return SolicitacaoService.rejeitar(solic.id, authUser.email, motivo);
+    },
+    onSuccess: () => {
+      showToast("Solicitação rejeitada.", "success");
+      setShowRejeitarModal(false);
+      setObservacao("");
+      invalidatePendentes();
+    },
+    onError: () => {
+      showToast("Erro ao rejeitar solicitação", "error");
+    },
+  });
+
+  const filtered = useMemo(() => {
     let result = loans;
 
     if (searchTerm) {
@@ -111,111 +211,41 @@ export const useLoansViewModel = () => {
       result = result.filter((l) => l.status === statusFilter);
     }
 
-    setFiltered(result);
+    return result;
   }, [loans, searchTerm, statusFilter]);
 
-  // ─────────────────────────────────────────────────────────
-  // Handlers - Empréstimos
-  // ─────────────────────────────────────────────────────────
-  const handleRenewLoan = useCallback(async () => {
-    if (!selectedLoan) return;
-    try {
-      await EmprestimoService.renovar(selectedLoan.id);
-      showToast("Empréstimo renovado!", "success");
-      setShowRenewModal(false);
-      loadLoans();
-    } catch (e: any) {
-      showToast(e.response?.data?.message || "Erro ao renovar", "error");
-    }
-  }, [selectedLoan, showToast, loadLoans]);
+  const handleRenewLoan = useCallback(() => {
+    if (selectedLoan) renewMutation.mutate(selectedLoan.id);
+  }, [selectedLoan, renewMutation]);
 
-  const handleReturnLoan = useCallback(async () => {
-    if (!selectedLoan) return;
-    try {
-      await EmprestimoService.devolver(selectedLoan.id);
-      showToast("Devolução registrada!", "success");
-      setShowReturnModal(false);
-      loadLoans();
-    } catch (e: any) {
-      showToast(e.response?.data?.message || "Erro ao devolver", "error");
-    }
-  }, [selectedLoan, showToast, loadLoans]);
+  const handleReturnLoan = useCallback(() => {
+    if (selectedLoan) returnMutation.mutate(selectedLoan.id);
+  }, [selectedLoan, returnMutation]);
 
-  const handleCreateLoan = useCallback(async () => {
+  const handleCreateLoan = useCallback(() => {
     if (!LoansHelpers.isNewLoanValid(newLoan)) {
-      const error = LoansHelpers.getValidationError(newLoan);
-      showToast(error, "error");
+      showToast(LoansHelpers.getValidationError(newLoan), "error");
       return;
     }
+    createLoanMutation.mutate(newLoan);
+  }, [newLoan, createLoanMutation, showToast]);
 
-    try {
-      await EmprestimoService.create({
-        userId: Number(newLoan.userId),
-        livroId: Number(newLoan.livroId),
-        dataDevolucao: newLoan.dataDevolucao || undefined,
-        exemplarId: newLoan.exemplarId ? Number(newLoan.exemplarId) : undefined,
+  const handleApproveRequest = useCallback(() => {
+    if (selectedSolic) approveMutation.mutate(selectedSolic);
+  }, [selectedSolic, approveMutation]);
+
+  const handleRejectRequest = useCallback(() => {
+    if (selectedSolic) {
+      rejectMutation.mutate({
+        solic: selectedSolic,
+        motivo: observacao || undefined,
       });
-      showToast("Empréstimo criado com sucesso!", "success");
-
-      setShowNewLoanModal(false);
-      setNewLoan(INITIAL_NEW_LOAN);
-      userAutocomplete.setSearchTerm("");
-      bookAutocomplete.setSearchTerm("");
-
-      loadLoans();
-    } catch (e: any) {
-      showToast(
-        e.response?.data?.message || "Erro ao criar empréstimo",
-        "error",
-      );
     }
-  }, [newLoan, showToast, loadLoans, userAutocomplete, bookAutocomplete]);
+  }, [selectedSolic, observacao, rejectMutation]);
 
-  // ─────────────────────────────────────────────────────────
-  // Handlers - Solicitações
-  // ─────────────────────────────────────────────────────────
-  const handleApproveRequest = useCallback(async () => {
-    if (!selectedSolic || !authUser) return;
-    try {
-      await SolicitacaoService.aprovar(selectedSolic.id, authUser.email);
-      showToast("Solicitação aprovada!", "success");
-      setShowAprovarModal(false);
-      loadPendentes();
-      loadLoans();
-    } catch {
-      showToast("Erro ao aprovar solicitação", "error");
-    }
-  }, [selectedSolic, authUser, showToast, loadPendentes, loadLoans]);
-
-  const handleRejectRequest = useCallback(async () => {
-    if (!selectedSolic || !authUser) return;
-    try {
-      await SolicitacaoService.rejeitar(
-        selectedSolic.id,
-        authUser.email,
-        observacao || undefined,
-      );
-      showToast("Solicitação rejeitada.", "success");
-      setShowRejeitarModal(false);
-      setObservacao("");
-      loadPendentes();
-    } catch {
-      showToast("Erro ao rejeitar solicitação", "error");
-    }
-  }, [selectedSolic, authUser, observacao, showToast, loadPendentes]);
-
-  // ─────────────────────────────────────────────────────────
-  // Handlers - UI
-  // ─────────────────────────────────────────────────────────
-  const handleTabChange = useCallback(
-    (tab: LoansTab) => {
-      setActiveTab(tab);
-      if (tab === "solicitacoes") {
-        loadPendentes();
-      }
-    },
-    [loadPendentes],
-  );
+  const handleTabChange = useCallback((tab: LoansTab) => {
+    setActiveTab(tab);
+  }, []);
 
   const handleOpenRenewModal = useCallback((loan: EmprestimoResponse) => {
     setSelectedLoan(loan);
@@ -225,6 +255,10 @@ export const useLoansViewModel = () => {
   const handleOpenReturnModal = useCallback((loan: EmprestimoResponse) => {
     setSelectedLoan(loan);
     setShowReturnModal(true);
+  }, []);
+
+  const handleOpenNewLoanModal = useCallback(() => {
+    setShowNewLoanModal(true);
   }, []);
 
   const handleOpenApproveModal = useCallback(
@@ -240,6 +274,22 @@ export const useLoansViewModel = () => {
     setShowRejeitarModal(true);
   }, []);
 
+  const handleCloseRenewModal = useCallback(() => {
+    setShowRenewModal(false);
+  }, []);
+
+  const handleCloseReturnModal = useCallback(() => {
+    setShowReturnModal(false);
+  }, []);
+
+  const handleCloseAprovarModal = useCallback(() => {
+    setShowAprovarModal(false);
+  }, []);
+
+  const handleCloseRejeitarModal = useCallback(() => {
+    setShowRejeitarModal(false);
+  }, []);
+
   const handleCloseNewLoanModal = useCallback(() => {
     setShowNewLoanModal(false);
     setNewLoan(INITIAL_NEW_LOAN);
@@ -247,7 +297,17 @@ export const useLoansViewModel = () => {
     bookAutocomplete.setSearchTerm("");
   }, [userAutocomplete, bookAutocomplete]);
 
-  // Handlers de autocomplete
+  const handleNewLoanFormChange = useCallback(
+    (data: Partial<NewLoanFormData>) => {
+      setNewLoan((prev) => ({ ...prev, ...data }));
+    },
+    [],
+  );
+
+  const handleObservacaoChange = useCallback((value: string) => {
+    setObservacao(value);
+  }, []);
+
   const handleSelectUser = useCallback(
     (userId: number, userName: string) => {
       userAutocomplete.setSearchTerm(userName);
@@ -274,59 +334,49 @@ export const useLoansViewModel = () => {
     setNewLoan((prev) => ({ ...prev, livroId: "", exemplarId: "" }));
   }, []);
 
-  // ─────────────────────────────────────────────────────────
-  // Dados derivados
-  // ─────────────────────────────────────────────────────────
   const ativosCount = loans.filter((l) => l.status !== "DEVOLVIDO").length;
 
   return {
-    // Dados - Empréstimos
     loans: filtered,
     searchTerm,
     statusFilter,
     setSearchTerm,
     setStatusFilter,
 
-    // Dados - Solicitações
     pendentes,
     selectedSolic,
     observacao,
-    setObservacao,
+    handleObservacaoChange,
 
-    // UI
     activeTab,
     ativosCount,
     handleTabChange,
 
-    // Modals
     showRenewModal,
     showReturnModal,
     showNewLoanModal,
     showAprovarModal,
     showRejeitarModal,
-    setShowRenewModal,
-    setShowReturnModal,
-    setShowNewLoanModal,
-    setShowAprovarModal,
-    setShowRejeitarModal,
+    handleOpenNewLoanModal,
+    handleCloseRenewModal,
+    handleCloseReturnModal,
+    handleCloseNewLoanModal,
+    handleCloseAprovarModal,
+    handleCloseRejeitarModal,
 
-    // Handlers - Empréstimos
     handleRenewLoan,
     handleReturnLoan,
     handleCreateLoan,
     handleOpenRenewModal,
     handleOpenReturnModal,
 
-    // Handlers - Solicitações
     handleApproveRequest,
     handleRejectRequest,
     handleOpenApproveModal,
     handleOpenRejectModal,
 
-    // Novo Empréstimo
     newLoan,
-    setNewLoan,
-    handleCloseNewLoanModal,
+    handleNewLoanFormChange,
     userAutocomplete,
     bookAutocomplete,
     handleSelectUser,

@@ -1,12 +1,9 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useToast } from "../../../context/ToastContext";
-import { useLoading } from "../../../context/LoadingContext";
 import { EmprestimoService } from "../../../services/emprestimo/EmprestimoService";
 import { ReservaService } from "../../../services/reserva/ReservaService";
 import { LivroService } from "../../../services/livro/LivroService";
-import { EmprestimoResponse } from "../../../services/emprestimo/types";
-import { ReservaResponse } from "../../../services/reserva/types";
-import { Livro } from "../../../services/livro/types";
 import {
   buildBarData,
   barOptions,
@@ -16,31 +13,34 @@ import {
 } from "../models/ReportsModel";
 
 export const useReportsViewModel = () => {
-  const [loans, setLoans] = useState<EmprestimoResponse[]>([]);
-  const [reservations, setReservations] = useState<ReservaResponse[]>([]);
-  const [popularBooks, setPopularBooks] = useState<Livro[]>([]);
-
   const { showToast } = useToast();
-  const { withLoading } = useLoading();
 
-  const loadData = useCallback(async () => {
-    try {
-      const [loansData, reservationsData, popularData] = await Promise.all([
-        withLoading(EmprestimoService.getAll()),
-        withLoading(ReservaService.getAll()),
-        withLoading(LivroService.getPopulares(8)),
-      ]);
-      setLoans(loansData);
-      setReservations(reservationsData);
-      setPopularBooks(popularData);
-    } catch {
-      showToast("Erro ao carregar dados dos relatórios", "error");
-    }
-  }, [withLoading, showToast]);
+  const loansQuery = useQuery({
+    queryKey: ["emprestimos"],
+    queryFn: () => EmprestimoService.getAll(),
+  });
+
+  const reservationsQuery = useQuery({
+    queryKey: ["reservas"],
+    queryFn: () => ReservaService.getAll(),
+  });
+
+  const popularQuery = useQuery({
+    queryKey: ["livros", "populares", 8],
+    queryFn: () => LivroService.getPopulares(8),
+  });
+
+  const hasError = loansQuery.isError || reservationsQuery.isError || popularQuery.isError;
 
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    if (hasError) {
+      showToast("Erro ao carregar dados dos relatórios", "error");
+    }
+  }, [hasError, showToast]);
+
+  const loans = loansQuery.data ?? [];
+  const reservations = reservationsQuery.data ?? [];
+  const popularBooks = popularQuery.data ?? [];
 
   const ativos = loans.filter((l) => l.status === "ATIVO").length;
   const atrasados = loans.filter((l) => l.status === "ATRASADO").length;

@@ -1,6 +1,6 @@
 import React from "react";
 import Button from "../../../components/common/Button";
-import { PasswordInput } from "./PasswordInput";
+import { PasswordInput } from "../../../components/common/PasswordInput";
 import { LoginFormData, LoginFormErrors } from "../models/LoginModel";
 
 interface LoginFormProps {
@@ -78,6 +78,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
         showPassword={showPassword}
         onToggleVisibility={onTogglePassword}
         error={errors.password}
+        showLockIcon
       />
 
       {/* Botão de Submit */}

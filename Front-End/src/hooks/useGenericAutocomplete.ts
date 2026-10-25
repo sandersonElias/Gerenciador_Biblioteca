@@ -15,13 +15,11 @@ export const useGenericAutocomplete = <T>({
   isSelected,
   initialTerm = "",
 }: UseGenericAutocompleteOptions<T>) => {
-  // ✅ Inicia com o initialTerm se fornecido
   const [searchTerm, setSearchTermState] = useState(initialTerm);
   const [suggestions, setSuggestions] = useState<T[]>([]);
   const [loading, setLoading] = useState(false);
   const userTyped = useRef(false);
 
-  // ✅ Quando initialTerm muda (livro carregado), atualiza sem disparar busca
   useEffect(() => {
     if (initialTerm) {
       userTyped.current = false;

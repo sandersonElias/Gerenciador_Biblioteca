@@ -1,5 +1,6 @@
 import React from 'react';
 import { AdminTab, TabConfig } from '../models/AdminModel';
+import { AdminIcon } from './AdminIcon';
 
 interface AdminTabsProps {
   tabs: TabConfig[];
@@ -23,7 +24,7 @@ export const AdminTabs: React.FC<AdminTabsProps> = ({
           className={`admin-tab ${activeTab === tab.id ? 'admin-tab--active' : ''}`}
           onClick={() => onTabChange(tab.id)}
         >
-          {tab.icon}
+          <AdminIcon name={tab.icon} />
           {tab.label}
         </button>
       ))}

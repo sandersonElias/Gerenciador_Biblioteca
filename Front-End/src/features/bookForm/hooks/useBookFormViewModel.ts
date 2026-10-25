@@ -19,7 +19,7 @@ import {
   BookFormHelpers,
   INITIAL_BOOK_FORM,
 } from "../models/BookFormModel";
-import { useGenericAutocomplete } from "./useGenericAutocomplete";
+import { useGenericAutocomplete } from "../../../hooks/useGenericAutocomplete";
 
 interface UseBookFormViewModelParams {
   bookId?: number;

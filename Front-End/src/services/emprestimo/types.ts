@@ -16,11 +16,6 @@ export type StatusEmprestimo = "ATIVO" | "ATRASADO" | "DEVOLVIDO";
 
 export interface EmprestimoRequest {
   id?: number;
-  dataEmprestimo?: string;
-  dataDevolucao?: string;
-  dataDevolvido?: string;
-  renovacoes?: number;
-  status?: StatusEmprestimo;
   livroId: number;
   userId: number;
   exemplarId?: number;
@@ -32,7 +27,7 @@ export interface EmprestimoResponse {
   dataDevolucao: string;
   dataDevolvido?: string;
   renovacoes: number;
-  status: string;
+  status: StatusEmprestimo;
   livro: LivroMinDto;
   user: UserMinDto;
   exemplar?: { id: number; codigo: string } | null;
@@ -44,7 +39,7 @@ export interface EmprestimosAtivoDto {
   dataEmprestimo: string;
   dataDevolucao: string;
   renovacoes: number;
-  status: string;
+  status: StatusEmprestimo;
   diasRestantes: number;
   podeRenovar: boolean;
 }
@@ -55,7 +50,7 @@ export interface EmprestimoHistoricoDto {
   dataEmprestimo: string;
   dataDevolvido: string;
   renovacoes: number;
-  status: string;
+  status: StatusEmprestimo;
 }
 
 export interface MeusEmprestimosResponse {

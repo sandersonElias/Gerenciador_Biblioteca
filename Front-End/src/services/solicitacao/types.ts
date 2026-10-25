@@ -1,8 +1,10 @@
+export type StatusSolicitacao = "PENDENTE" | "APROVADA" | "REJEITADA";
+
 export interface SolicitacaoRenovacaoResponse {
   id: number;
   emprestimoId: number;
   livroTitulo: string;
-  status: string;
+  status: StatusSolicitacao;
   dataSolicitacao: string;
 }
 

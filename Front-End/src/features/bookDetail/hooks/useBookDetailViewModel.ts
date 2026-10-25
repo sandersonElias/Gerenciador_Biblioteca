@@ -80,17 +80,7 @@ export const useBookDetailViewModel = ({
         throw new Error("Usuário não autenticado corretamente");
       }
 
-      // ✅ LOG PARA DEBUG
-      console.log("📤 Criando reserva:", {
-        livroId: book.id,
-        userId: user.id,
-        userName: user.name,
-        userEmail: user.email,
-      });
-
-      // ✅ VALIDAÇÃO EXTRA: userId deve ser > 0
       if (user.id === 0) {
-        console.error("❌ ERRO CRÍTICO: user.id é 0!", user);
         throw new Error(
           "ID do usuário inválido. Faça logout e login novamente.",
         );
@@ -111,7 +101,6 @@ export const useBookDetailViewModel = ({
       queryClient.invalidateQueries({ queryKey: ["reservas", "minhas"] });
     },
     onError: (error: any) => {
-      console.error("❌ Erro ao reservar:", error);
       showToast(
         error.response?.data?.message ||
           error.message ||
