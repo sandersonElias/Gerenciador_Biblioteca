@@ -2,14 +2,14 @@
 
 ## Configuração Base
 
-O arquivo `src/services/api.ts` contém toda a configuração de comunicação com o backend.
+O arquivo `src/services/api/api.ts` contém toda a configuração de comunicação com o backend.
 
 ### Axios Instance
 
 ```typescript
 const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
-  timeout: Number(process.env.REACT_APP_API_TIMEOUT) || 10000,
+  timeout: Number(import.meta.env.VITE_API_TIMEOUT) || 10000,
   headers: {
     'Content-Type': 'application/json',
   },

@@ -65,20 +65,24 @@ Gerenciador_Biblioteca/
 │   │       ├── security/      # JWT e configurações de segurança
 │   │       └── service/       # Regras de negócio
 │   ├── src/main/resources/
-│   │   └── db/migration/      # Scripts Flyway (V1__ a V12__)
+│   │   └── db/migration/      # Scripts Flyway (V1__ a V17__)
 │   ├── Dockerfile             # Imagem Docker do backend
 │   ├── pom.xml                # Dependências Maven
 │   └── README.md              # Documentação específica do backend
-├── Front-End/                 # Aplicação React (TypeScript)
+├── Front-End/                 # Aplicação React + Vite (TypeScript)
 │   ├── src/
 │   │   ├── components/        # Componentes reutilizáveis
 │   │   ├── pages/             # Páginas da aplicação
 │   │   ├── services/          # Integração com API
 │   │   ├── context/           # Contextos React (Auth, Toast, Loading)
 │   │   └── types/             # Definições TypeScript
+│   ├── Dockerfile             # Build Vite + nginx
+│   ├── nginx.conf             # Proxy para /api e fallback SPA
+│   ├── vercel.json            # Configuração do deploy na Vercel
 │   ├── package.json
 │   └── tsconfig.json
-├── Dockerfile                 # Dockerfile raiz (usado pelo Railway)
+├── docker-compose.yml         # Stack local completa
+├── render.yaml                # Blueprint do backend + PostgreSQL no Render
 └── README.md                  # Este arquivo
 ```
 
@@ -103,18 +107,17 @@ cd Gerenciador_Biblioteca
 ```bash
 cd Back-End
 
-# Configure src/main/resources/application.properties:
-# spring.datasource.url=jdbc:postgresql://localhost:5432/biblioteca
-# spring.datasource.username=postgres
-# spring.datasource.password=sua_senha
-# jwt.secret=sua_chave_secreta_minimo_256_bits
-# jwt.expiration=86400000
+# Ajuste as variáveis conforme seu PostgreSQL local:
+export SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/gerenciador_biblioteca
+export SPRING_DATASOURCE_USERNAME=postgres
+export SPRING_DATASOURCE_PASSWORD=sua_senha
+export JWT_SECRET=sua_chave_secreta_com_no_minimo_32_caracteres
 
 mvn clean install
 mvn spring-boot:run
 ```
 
-O backend estará disponível em `http://localhost:8080`
+O backend estará disponível em `http://localhost:8080`.
 
 ### 3. Configure o Frontend
 
@@ -122,23 +125,24 @@ O backend estará disponível em `http://localhost:8080`
 cd ../Front-End
 
 npm install
+cp .env.example .env
 
-# Configure o arquivo .env:
-# REACT_APP_API_URL=http://localhost:8080
-# REACT_APP_API_TIMEOUT=10000
+# Edite .env:
+# VITE_API_URL=http://localhost:8080
+# VITE_API_TIMEOUT=10000
 
-npm start
+npm run dev
 ```
 
-O frontend estará disponível em `http://localhost:3000`
+O frontend estará disponível em `http://localhost:5173`.
 
 ## 🌐 Deploy em Produção
 
 | Serviço | Plataforma | URL |
 |---------|-----------|-----|
 | Frontend | Vercel | [biblioteca-monsa.vercel.app](https://biblioteca-monsa.vercel.app) |
-| Backend | Railway | gerenciadorbiblioteca-production.up.railway.app |
-| Banco de dados | Railway (PostgreSQL) | — |
+| Backend | Render (Docker) | URL gerada pelo `render.yaml` |
+| Banco de dados | Render PostgreSQL | Referenciado por `DATABASE_URL` |
 
 ## 🛠️ Tecnologias Utilizadas
 
@@ -152,14 +156,16 @@ O frontend estará disponível em `http://localhost:3000`
 
 **Frontend:**
 - React 18 + TypeScript
+- Vite
 - React Router v6
+- React Query
 - Axios (HTTP client)
 - Chart.js (gráficos)
 - SCSS (estilização)
 
 **DevOps:**
-- Docker
-- Railway (backend + banco)
+- Docker e Docker Compose
+- Render (backend + PostgreSQL)
 - Vercel (frontend)
 - Maven (build)
 

@@ -19,14 +19,13 @@ cd Gerenciador_Biblioteca
 
 2. Inicie o banco de dados:
 ```bash
-docker-compose up -d postgres
+docker compose up -d db
 ```
 
 3. Configure o backend:
 ```bash
 cd Back-End
-cp src/main/resources/application-local.properties.example src/main/resources/application-local.properties
-# Edite as credenciais conforme necessário
+# Ajuste as variáveis de ambiente do PostgreSQL local, se necessário.
 mvn spring-boot:run
 ```
 
@@ -34,8 +33,8 @@ mvn spring-boot:run
 ```bash
 cd Front-End
 npm install
-cp .env.example .env.local
-npm start
+cp .env.example .env
+npm run dev
 ```
 
 ## Fluxo de Trabalho
@@ -55,7 +54,7 @@ mvn test
 
 # Frontend
 cd Front-End
-npm test
+npm run build
 ```
 
 4. Faça commit com mensagens descritivas:

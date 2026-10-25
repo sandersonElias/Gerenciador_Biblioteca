@@ -11,13 +11,13 @@ npm install
 
 # 3. Configure o ambiente
 cp .env.example .env
-# Edite .env e ajuste REACT_APP_API_URL para sua API
+# Edite .env e ajuste VITE_API_URL para sua API
 
 # 4. Inicie o servidor de desenvolvimento
-npm start
+npm run dev
 ```
 
-O aplicativo estará disponível em `http://localhost:3000`
+O aplicativo estará disponível em `http://localhost:5173`.
 
 ## Configuração da API
 
@@ -25,20 +25,29 @@ Edite o arquivo `.env`:
 
 ```env
 # Para desenvolvimento local
-REACT_APP_API_URL=http://localhost:8080
-REACT_APP_API_TIMEOUT=10000
+VITE_API_URL=http://localhost:8080
+VITE_API_TIMEOUT=10000
 
 # Para produção (Vercel)
-REACT_APP_API_URL=https://gerenciadorbiblioteca-production.up.railway.app
+VITE_API_URL=https://sua-api.onrender.com
+VITE_API_TIMEOUT=90000
 ```
 
-## Contas de Teste
+> O timeout maior em produção evita falhas enquanto o backend free do Render
+> está acordando (cold start).
+
+## Contas de Teste (dados de demonstração)
 
 | Perfil | Email | Senha |
 |--------|-------|-------|
-| Admin | admin@monsa.com | 123 |
-| Funcionário | func@monsa.com | 123 |
-| Aluno | aluno@monsa.com | 123 |
+| Admin | `admin@biblioteca-demo.com` | `admin1234` |
+| Funcionário | `funcionario@biblioteca-demo.com` | `demo1234` |
+| Aluno (Ana) | `ana.aluna@biblioteca-demo.com` | `demo1234` |
+| Aluno (Bruno) | `bruno.aluno@biblioteca-demo.com` | `demo1234` |
+| Aluno (Carla) | `carla.aluna@biblioteca-demo.com` | `demo1234` |
+
+Essas credenciais são os padrões locais do `docker-compose.yml`. Em produção,
+o admin e a senha demo são definidos no Render (`ADMIN_*` e `DEMO_PASSWORD`).
 
 ## Funcionalidades por Perfil
 
@@ -49,7 +58,7 @@ REACT_APP_API_URL=https://gerenciadorbiblioteca-production.up.railway.app
 
 ### 🎓 Aluno (ROLE_ALUNO)
 - Tudo do público +
-- Meu Perfil: empréstimo ativo e histórico
+- Meu Perfil: empréstimos ativos e histórico
 - Fazer reservas (na página de detalhes do livro)
 - Cancelar reservas (no Meu Perfil)
 - Solicitar renovação de empréstimo
@@ -87,21 +96,34 @@ REACT_APP_API_URL=https://gerenciadorbiblioteca-production.up.railway.app
 ## Comandos Disponíveis
 
 ```bash
-npm start        # Inicia servidor de desenvolvimento
-npm run build    # Cria build de produção
-npm test         # Executa testes
+npm run dev      # Inicia servidor de desenvolvimento (Vite)
+npm run build    # Type-check + build de produção em dist/
+npm run preview  # Visualiza o build localmente
+npm run lint     # Executa ESLint
 ```
+
+## Deploy na Vercel
+
+1. Configure o projeto com **Root Directory** `Front-End`.
+2. Framework: **Vite**.
+3. Build Command: `npm run build`.
+4. Output Directory: `dist`.
+5. Adicione `VITE_API_URL` e `VITE_API_TIMEOUT` em Environment Variables.
+6. Faça o redeploy.
+
+O `vercel.json` já configura os rewrites da SPA.
 
 ## Solução de Problemas
 
 **Erro de CORS:**
-Verifique se o backend está configurado para aceitar requisições do domínio do frontend no `SecurityConfiguration.java`.
+Inclua o domínio da Vercel em `CORS_ALLOWED_ORIGINS` no backend do Render.
 
 **Tela branca em produção:**
-Confirme que a variável `REACT_APP_API_URL` na Vercel começa com `https://` e que foi feito um novo deploy após a alteração.
+Confirme que `VITE_API_URL` começa com `https://`, que o backend está online e
+que foi feito um novo deploy após alterar a variável.
 
-**Porta já em uso:**
-Se a porta 3000 estiver ocupada, o React perguntará se deseja usar outra porta.
+**Backend demora na primeira requisição:**
+O Render free hiberna após 15 minutos. A primeira chamada pode levar ~30 s.
 
 **Erro "Cannot find module":**
 Execute `npm install` novamente para garantir que todas as dependências estão instaladas.

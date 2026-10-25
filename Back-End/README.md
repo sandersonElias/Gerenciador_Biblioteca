@@ -21,37 +21,25 @@ cd Gerenciador_Biblioteca/Back-End
 ### 2. Configure o banco de dados
 
 ```bash
-psql -U postgres -c "CREATE DATABASE biblioteca;"
+psql -U postgres -c "CREATE DATABASE gerenciador_biblioteca;"
 ```
 
-### 3. Configure o application.properties
+### 3. Configure as variáveis de ambiente
 
-Edite `src/main/resources/application.properties`:
+Os valores padrão de `application.properties` apontam para
+`jdbc:postgresql://localhost:5432/gerenciador_biblioteca` com usuário `postgres`.
+Para sobrescrever, use:
 
 ```properties
-# Banco de Dados
-spring.datasource.url=jdbc:postgresql://localhost:5432/biblioteca
-spring.datasource.username=postgres
-spring.datasource.password=sua_senha_segura
-spring.datasource.driver-class-name=org.postgresql.Driver
-
-# JPA/Hibernate
-spring.jpa.hibernate.ddl-auto=validate
-spring.jpa.show-sql=true
-spring.jpa.properties.hibernate.format_sql=true
-
-# JWT
-jwt.secret=sua_chave_secreta_minimo_256_bits
-jwt.expiration=86400000
-
-# Flyway
-spring.flyway.enabled=true
-spring.flyway.locations=classpath:db/migration
-spring.flyway.baseline-on-migrate=true
-
-# Server
-server.port=${PORT:8080}
+SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/gerenciador_biblioteca
+SPRING_DATASOURCE_USERNAME=postgres
+SPRING_DATASOURCE_PASSWORD=sua_senha_segura
+JWT_SECRET=sua_chave_secreta_com_no_minimo_32_caracteres
+JWT_EXPIRATION=86400000
+PORT=8080
 ```
+
+As migrações Flyway são executadas automaticamente no start.
 
 ### 4. Compile e execute
 
@@ -61,21 +49,30 @@ mvn spring-boot:run
 
 A API estará disponível em `http://localhost:8080`
 
-## 🔐 Variáveis de Ambiente (Produção - Railway)
+## 🔐 Variáveis de Ambiente
 
 | Variável | Descrição | Obrigatório |
 |----------|-----------|-------------|
-| `PGHOST` | Host do PostgreSQL | Sim |
-| `PGPORT` | Porta do PostgreSQL | Sim |
-| `PGDATABASE` | Nome do banco | Sim |
-| `PGUSER` | Usuário do banco | Sim |
-| `PGPASSWORD` | Senha do banco | Sim |
-| `JWT_SECRET` | Chave secreta JWT (mín. 256 bits) | Sim |
+| `DATABASE_URL` | URL do PostgreSQL no Render (`postgresql://...`); convertida para JDBC pelo `DatabaseConfig` | Sim no Render |
+| `SPRING_DATASOURCE_URL` | JDBC completo para execução local | Não |
+| `SPRING_DATASOURCE_USERNAME` | Usuário do banco local | Não |
+| `SPRING_DATASOURCE_PASSWORD` | Senha do banco local | Não |
+| `JWT_SECRET` | Chave secreta JWT (mín. 32 caracteres) | Sim |
 | `JWT_EXPIRATION` | Tempo de expiração do token (ms) | Não (padrão: 86400000) |
 | `PORT` | Porta da aplicação | Não (padrão: 8080) |
+| `CORS_ALLOWED_ORIGINS` | Origens permitidas, separadas por vírgula | Não |
+| `ADMIN_NAME` | Nome do admin inicial | Não |
+| `ADMIN_EMAIL` | E-mail do admin inicial | Não |
+| `ADMIN_PASSWORD` | Senha do admin inicial (mín. 8 caracteres) | Não |
+| `DEMO_DATA_ENABLED` | Cria dados fictícios no primeiro start | Não (padrão: false) |
+| `DEMO_PASSWORD` | Senha das contas fictícias | Sim se demo habilitada |
+| `EMAIL_ENABLED` | Habilita envio de e-mail | Não (padrão: false) |
+| `EMAIL_USERNAME` | Usuário SMTP | Não |
+| `EMAIL_PASSWORD` | Senha SMTP | Não |
+| `SHOW_SQL` | Exibe SQL no log | Não (padrão: false no Render) |
 
-> No Railway, use Variable References para referenciar as variáveis do banco automaticamente:
-> `${{Postgres.PGHOST}}`, `${{Postgres.PGUSER}}`, etc.
+> O Render fornece `DATABASE_URL` automaticamente via `fromDatabase.connectionString`.
+> Não é necessário configurar `PGHOST`, `PGPORT`, `PGDATABASE`, `PGUSER` ou `PGPASSWORD`.
 
 ## 🗄️ Migrações (Flyway)
 
@@ -95,31 +92,47 @@ Scripts em `src/main/resources/db/migration/`:
 | `V10__create_tb_reserva.sql` | Cria tabela de reservas |
 | `V11__create_tb_solicitacao_renovacao.sql` | Cria tabela de solicitações de renovação |
 | `V12__create_tb_exemplar.sql` | Cria tabela de exemplares |
+| `V13__add_matricula_e_senha_alterada.sql` | Adiciona matrícula e troca de senha |
+| `V14__insert_role_professor.sql` | Insere o perfil de professor |
+| `V15__add_performance_indexes.sql` | Adiciona índices de performance |
+| `V16__add_optimistic_locking_and_auditing.sql` | Adiciona versionamento e auditoria |
+| `V17__add_unique_exemplar_livro_codigo.sql` | Garante código único por exemplar |
 
-## 🌐 Deploy (Railway)
+## 🌐 Deploy (Render)
 
-O projeto inclui um `Dockerfile` na raiz do repositório configurado para o Railway.
+O `render.yaml` na raiz do repositório cria:
 
-**Variáveis necessárias no serviço do Railway:**
+- PostgreSQL 16 free (`biblioteca-monsa-db`).
+- Web service Docker free (`biblioteca-monsa-api`), usando `./Back-End` como contexto.
+- `DATABASE_URL` vinculada automaticamente ao banco.
+- Health check em `/livro/populares`.
+- Dados de demonstração habilitados e e-mail desabilitado.
 
-```
-DATABASE_URL    = ${{Postgres.DATABASE_URL}}
-PGHOST          = ${{Postgres.PGHOST}}
-PGPORT          = ${{Postgres.PGPORT}}
-PGDATABASE      = ${{Postgres.PGDATABASE}}
-PGUSER          = ${{Postgres.PGUSER}}
-PGPASSWORD      = ${{Postgres.PGPASSWORD}}
-JWT_SECRET      = sua_chave_gerada
-JWT_EXPIRATION  = 86400000
-```
+No dashboard do Render, informe `ADMIN_EMAIL`, `ADMIN_PASSWORD` e `DEMO_PASSWORD`
+quando o Blueprint solicitar. O `JWT_SECRET` é gerado automaticamente.
 
-**Gerar JWT_SECRET seguro:**
+**Gerar segredos localmente (opcional):**
 
 ```bash
 openssl rand -hex 64
 # ou
 python -c "import secrets; print(secrets.token_hex(64))"
 ```
+
+### Build local da imagem
+
+```bash
+docker build -t biblioteca-backend ./Back-End
+docker run --rm -p 8080:8080 \
+  -e SPRING_DATASOURCE_URL=jdbc:postgresql://host.docker.internal:5432/gerenciador_biblioteca \
+  -e SPRING_DATASOURCE_USERNAME=postgres \
+  -e SPRING_DATASOURCE_PASSWORD=senha123 \
+  -e JWT_SECRET=local-secret-com-no-minimo-32-caracteres \
+  biblioteca-backend
+```
+
+> O plano free do Render hiberna após 15 minutos de inatividade e o PostgreSQL
+> free expira em 30 dias.
 
 ## 📡 Principais Endpoints
 
@@ -144,7 +157,7 @@ DELETE /livro/{id}            # Deletar livro (ADMIN)
 ```bash
 GET  /emprestimo/todos                  # Listar todos (FUNCIONARIO+)
 GET  /emprestimo/id/{id}               # Buscar por ID (FUNCIONARIO+)
-GET  /emprestimo/minha-conta/{email}   # Empréstimos do usuário (ALUNO+)
+GET  /emprestimo/minha-conta           # Empréstimos do usuário autenticado (ALUNO+)
 GET  /emprestimo/user/{nome}           # Buscar por nome do usuário (FUNCIONARIO+)
 GET  /emprestimo/livro/{titulo}        # Buscar por título do livro (FUNCIONARIO+)
 GET  /emprestimo/livro/renovar/{titulo} # Buscar para renovação por livro (FUNCIONARIO+)
@@ -214,7 +227,7 @@ Endpoints protegidos requerem autenticação via botão "Authorize" com o token 
 ## 🔍 Troubleshooting
 
 **Erro de CORS:**
-- Verifique se o domínio do frontend está listado no `SecurityConfiguration.java` no método `corsConfigurer()`
+- Inclua a origem do frontend em `CORS_ALLOWED_ORIGINS`, separando múltiplas origens por vírgula.
 
 **Erro "relation does not exist":**
 - Execute as migrações: `mvn flyway:migrate`
@@ -223,8 +236,8 @@ Endpoints protegidos requerem autenticação via botão "Authorize" com o token 
 - Verifique `JWT_EXPIRATION` ou gere novo token via `POST /auth`
 
 **Driver not accept jdbcUrl:**
-- A `DATABASE_URL` do Railway vem no formato `postgresql://...` sem o prefixo `jdbc:`
-- Use as variáveis separadas `PGHOST`, `PGPORT`, `PGDATABASE` no `application.properties`
+- O `DatabaseConfig` converte `DATABASE_URL` (`postgres://` ou `postgresql://`) para JDBC.
+- Em execução local, prefira `SPRING_DATASOURCE_URL` com o prefixo `jdbc:`.
 
 ## 📄 Licença
 

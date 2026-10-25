@@ -2,32 +2,26 @@
 
 Este documento descreve como realizar backups do banco de dados PostgreSQL utilizado pelo sistema Biblioteca Monsa.
 
-## Ambiente de Produção (Railway)
+## Ambiente de Produção (Render)
 
-O Railway oferece backups automáticos para bancos de dados PostgreSQL. Para configurar:
+O PostgreSQL free do Render expira em 30 dias e não deve ser tratado como
+armazenamento permanente. Confirme no dashboard quais backups automáticos estão
+disponíveis no seu plano.
 
-1. Acesse o painel do Railway
-2. Selecione o serviço de banco de dados
-3. Vá para a aba "Settings"
-4. Em "Backups", configure:
-   - Frequência: Diária
-   - Retenção: 7 dias (mínimo recomendado)
+### Backup Manual com a Connection String do Render
 
-### Backup Manual via Railway CLI
+1. No Render, abra o banco `biblioteca-monsa-db`.
+2. Copie a **External Connection String**.
+3. Execute o dump localmente:
 
 ```bash
-# Instalar Railway CLI
-npm i -g @railway/cli
-
-# Login
-railway login
-
-# Conectar ao projeto
-railway link
-
-# Dump do banco
-railway run pg_dump -U postgres gerenciador_biblioteca > backup_$(date +%Y%m%d_%H%M%S).sql
+pg_dump "postgresql://usuario:senha@host:5432/gerenciador_biblioteca?sslmode=require" \
+  --no-owner --no-privileges \
+  > backup_$(date +%Y%m%d_%H%M%S).sql
 ```
+
+> Para uma demo de portfólio, recrie o banco e o seed ao final dos 30 dias do
+> plano free. Não armazene dados reais nesse ambiente.
 
 ## Ambiente Local
 
@@ -51,10 +45,10 @@ psql -U postgres gerenciador_biblioteca < backup.sql
 
 ```bash
 # Backup
-docker exec biblioteca-postgres pg_dump -U postgres gerenciador_biblioteca > backup.sql
+docker exec biblioteca-db pg_dump -U postgres gerenciador_biblioteca > backup.sql
 
 # Restauração
-cat backup.sql | docker exec -i biblioteca-postgres psql -U postgres gerenciador_biblioteca
+cat backup.sql | docker exec -i biblioteca-db psql -U postgres gerenciador_biblioteca
 ```
 
 ## Backup Automatizado (Local)
