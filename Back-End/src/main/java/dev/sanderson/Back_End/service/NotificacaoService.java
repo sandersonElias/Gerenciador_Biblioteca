@@ -21,6 +21,9 @@ public class NotificacaoService {
     @Value("${biblioteca.email.remetente}")
     private String remetente;
 
+    @Value("${biblioteca.email.enabled:false}")
+    private boolean emailEnabled;
+
     private static final DateTimeFormatter FORMATO_DATA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     @Async
@@ -117,6 +120,11 @@ public class NotificacaoService {
     }
 
     private void enviar(String para, String assunto, String corpo) {
+        if (!emailEnabled) {
+            log.debug("Envio de e-mail desativado; notificação para {} ignorada.", para);
+            return;
+        }
+
         try {
             org.springframework.mail.SimpleMailMessage message = new org.springframework.mail.SimpleMailMessage();
             message.setFrom(remetente);
