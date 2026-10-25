@@ -31,6 +31,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -66,6 +68,7 @@ public class DemoDataBootstrap implements ApplicationRunner {
     private final SolicitacaoRenovacaoRepository solicitacaoRenovacaoRepository;
     private final PasswordEncoder passwordEncoder;
     private final PlatformTransactionManager transactionManager;
+    private final CacheManager cacheManager;
 
     @Value("${demo.data.enabled:false}")
     private boolean demoDataEnabled;
@@ -94,6 +97,11 @@ public class DemoDataBootstrap implements ApplicationRunner {
 
         try {
             new TransactionTemplate(transactionManager).executeWithoutResult(status -> seed());
+
+            Cache livrosCache = cacheManager.getCache("livros");
+            if (livrosCache != null) {
+                livrosCache.clear();
+            }
         } catch (Exception exception) {
             log.error("Falha ao criar dados de demonstracao: {}", exception.getMessage(), exception);
         }
