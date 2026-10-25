@@ -2,11 +2,9 @@ package dev.sanderson.Back_End.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.sanderson.Back_End.dto.UserDtos.*;
-import dev.sanderson.Back_End.entity.Aluno;
 import dev.sanderson.Back_End.entity.Roles;
 import dev.sanderson.Back_End.entity.User;
 import dev.sanderson.Back_End.exception.BusinessRuleException;
-import dev.sanderson.Back_End.repository.AlunoRepository;
 import dev.sanderson.Back_End.repository.RoleRepository;
 import dev.sanderson.Back_End.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,17 +12,16 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
 
-    private static final String ROLE_ALUNO = "ROLE_ALUNO";
     private static final String ROLE_PROFESSOR = "ROLE_PROFESSOR";
 
     private final UserRepository userRepository;
-    private final AlunoRepository alunoRepository;
     private final ObjectMapper objectMapper;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
@@ -34,15 +31,18 @@ public class UserService {
         return userRepository.findByEmailAndPassword(email, password);
     }
 
+    @Transactional(readOnly = true)
     public Optional<User> findById(Long id) {
         return userRepository.findById(id);
     }
 
+    @Transactional(readOnly = true)
     public Optional<User> findByEmail(String email) {
         return userRepository.findByEmail(email);
     }
 
-    public UserResponse registrar(UserRequest userRequest) throws BusinessRuleException {
+    @Transactional
+    public UserResponse registrar(UserRequest userRequest) {
 
         if (userRepository.findByEmail(userRequest.getEmail()).isPresent()) {
             throw new BusinessRuleException("Email ja " + userRequest.getEmail() + " esta em uso");
@@ -62,12 +62,13 @@ public class UserService {
         return objectMapper.convertValue(newUser, UserResponse.class);
     }
 
-    private Roles buscarRole(String role) throws BusinessRuleException {
+    private Roles buscarRole(String role) {
         return roleRepository.findByRole(role)
                 .orElseThrow(() ->
                         new BusinessRuleException("Role nao existe: " + role));
     }
 
+    @Transactional(readOnly = true)
     public List<UserResponse> buscarUserName(String name) {
         return userRepository.buscarPeloNome(name)
                 .stream()
@@ -76,68 +77,7 @@ public class UserService {
     }
 
     @Transactional
-    public ImportAlunosResponse importarAlunos(ImportAlunosRequest request) throws BusinessRuleException {
-
-        List<ImportAlunoItem> alunos = request.getAlunos();
-        int totalEnviado = alunos.size();
-
-        Roles roleAluno = buscarRole(ROLE_ALUNO);
-
-        Set<String> matriculasEnviadas = new HashSet<>();
-        Set<String> emailsEnviados = new HashSet<>();
-        for (ImportAlunoItem item : alunos) {
-            matriculasEnviadas.add(item.getMatricula());
-            emailsEnviados.add(item.getEmail().toLowerCase());
-        }
-
-        Set<String> matriculasExistentes = userRepository.findMatriculasExistentes(matriculasEnviadas);
-        Set<String> emailsExistentes = userRepository.findEmailsExistentes(emailsEnviados);
-
-        List<String> matriculasPuladas = new ArrayList<>();
-        List<String> emailsPulados = new ArrayList<>();
-        int totalCadastrados = 0;
-
-        List<Aluno> alunosParaSalvar = new ArrayList<>();
-
-        for (ImportAlunoItem item : alunos) {
-            String emailLower = item.getEmail().toLowerCase();
-
-            if (matriculasExistentes.contains(item.getMatricula())) {
-                matriculasPuladas.add(item.getMatricula());
-                continue;
-            }
-            if (emailsExistentes.contains(emailLower)) {
-                emailsPulados.add(emailLower);
-                continue;
-            }
-
-            Aluno aluno = new Aluno();
-            aluno.setName(item.getNome());
-            aluno.setEmail(emailLower);
-            aluno.setMatricula(item.getMatricula());
-            aluno.setPassword(passwordEncoder.encode(item.getMatricula()));
-            aluno.setRole(roleAluno);
-            aluno.setSenhaAlterada(false);
-            aluno.setSala(item.getSala());
-            aluno.setAno(item.getAno());
-
-            alunosParaSalvar.add(aluno);
-            totalCadastrados++;
-        }
-
-        alunoRepository.saveAll(alunosParaSalvar);
-
-        return new ImportAlunosResponse(
-                totalEnviado,
-                totalCadastrados,
-                matriculasPuladas.size() + emailsPulados.size(),
-                matriculasPuladas,
-                emailsPulados
-        );
-    }
-
-    @Transactional
-    public UserResponse cadastrarProfessor(CadastrarProfessorRequest request) throws BusinessRuleException {
+    public UserResponse cadastrarProfessor(CadastrarProfessorRequest request) {
 
         String emailLower = request.getEmail().toLowerCase();
 
@@ -164,7 +104,7 @@ public class UserService {
     }
 
     @Transactional
-    public void trocarSenha(String email, TrocarSenhaRequest request) throws BusinessRuleException {
+    public void trocarSenha(String email, TrocarSenhaRequest request) {
 
         if (!request.getNovaSenha().equals(request.getConfirmacaoNovaSenha())) {
             throw new BusinessRuleException("A nova senha e a confirmacao nao conferem");

@@ -25,11 +25,11 @@ public class SolicitacaoRenovacao {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "emprestimo_id", nullable = false)
     private Emprestimo emprestimo;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "solicitante_id", nullable = false)
     private User solicitante;
 
@@ -42,7 +42,7 @@ public class SolicitacaoRenovacao {
 
     private String observacao;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "funcionario_id")
     private User funcionarioResponsavel;
 

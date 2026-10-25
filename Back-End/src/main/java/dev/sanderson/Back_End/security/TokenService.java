@@ -4,12 +4,15 @@ import dev.sanderson.Back_End.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
+import java.security.Key;
 import java.util.Date;
 import java.util.List;
 
@@ -27,6 +30,10 @@ public class TokenService {
     @Value("${jwt.secret}")
     private String secret;
 
+    private Key signingKey() {
+        return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+    }
+
     public String generateToken(User user) {
         Date now = new Date();
         Date exp = new Date(now.getTime() + Long.parseLong(expiration));
@@ -43,15 +50,16 @@ public class TokenService {
                         .claim(ROLES_CLAIM, List.of(role))
                         .setIssuedAt(now)
                         .setExpiration(exp)
-                        .signWith(SignatureAlgorithm.HS256, secret)
+                        .signWith(signingKey(), SignatureAlgorithm.HS256)
                         .compact();
     }
 
     public UsernamePasswordAuthenticationToken isValid(String token) {
         if (token == null) return null;
 
-        Claims body = Jwts.parser()
-                .setSigningKey(secret)
+        Claims body = Jwts.parserBuilder()
+                .setSigningKey(signingKey())
+                .build()
                 .parseClaimsJws(token.replace(TOKEN_PREFIX, "").trim())
                 .getBody();
 

@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -19,6 +20,7 @@ public class AutorService {
     private final AutorRepository autorRepository;
     private final ObjectMapper objectMapper;
 
+    @Transactional
     @CacheEvict(value = "autores", allEntries = true)
     public AutorResponse insertAutor(AutorRequest dto){
         Autor autor = new Autor();
@@ -29,6 +31,7 @@ public class AutorService {
         return objectMapper.convertValue(salvo, AutorResponse.class);
     }
 
+    @Transactional(readOnly = true)
     @Cacheable(value = "autores", key = "#autor")
     public List<AutorResponse> buscarAutor(String autor){
         return autorRepository.buscarAutor(autor)

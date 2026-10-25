@@ -39,18 +39,11 @@ public class ReservaService {
         dto.setStatus(r.getStatus().name());
 
         if (r.getUser() != null) {
-            UserMinDto userDto = new UserMinDto();
-            userDto.setName(r.getUser().getName());
-            userDto.setEmail(r.getUser().getEmail());
-            dto.setUser(userDto);
+            dto.setUser(UserMinDto.from(r.getUser()));
         }
 
         if (r.getLivro() != null) {
-            LivroMinDto livroDto = new LivroMinDto();
-            livroDto.setId(r.getLivro().getId());
-            livroDto.setTitulo(r.getLivro().getTitulo());
-            livroDto.setUrlImg(r.getLivro().getUrlImg());
-            dto.setLivro(livroDto);
+            dto.setLivro(LivroMinDto.from(r.getLivro()));
         }
 
         return dto;
@@ -135,18 +128,22 @@ public class ReservaService {
         reservaRepository.saveAll(expiradas);
     }
 
+    @Transactional(readOnly = true)
     public List<ReservaResponse> buscarPorUser(String name) {
         return reservaRepository.buscarUser(name).stream().map(this::toResponse).toList();
     }
 
+    @Transactional(readOnly = true)
     public List<ReservaResponse> buscaPorUserEmail(String email) {
         return reservaRepository.buscarUserEmail(email).stream().map(this::toResponse).toList();
     }
 
+    @Transactional(readOnly = true)
     public List<ReservaResponse> buscarReservasLivro(Long id) {
         return reservaRepository.buscarReservasPorLivro(id).stream().map(this::toResponse).toList();
     }
 
+    @Transactional(readOnly = true)
     public List<ReservaResponse> listarReservas() {
         return reservaRepository.findAll().stream().map(this::toResponse).toList();
     }

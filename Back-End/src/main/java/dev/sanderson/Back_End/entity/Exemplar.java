@@ -15,7 +15,9 @@ import java.time.LocalDateTime;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "tb_exemplar")
+@Table(name = "tb_exemplar", uniqueConstraints = @UniqueConstraint(
+        name = "uk_exemplar_livro_codigo",
+        columnNames = {"livro_id", "codigo"}))
 public class Exemplar {
 
     @Id

@@ -3,7 +3,6 @@ package dev.sanderson.Back_End.controller;
 import dev.sanderson.Back_End.dto.LivroDtos.FiltroLivroRequest;
 import dev.sanderson.Back_End.dto.LivroDtos.LivroRequest;
 import dev.sanderson.Back_End.dto.LivroDtos.LivroResponse;
-import dev.sanderson.Back_End.exception.BusinessRuleException;
 import dev.sanderson.Back_End.service.LivroService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -23,8 +22,7 @@ public class LivroController {
     private final LivroService livroService;
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<LivroResponse> criarLivro(@Valid @RequestBody LivroRequest livroDto)
-            throws BusinessRuleException {
+    public ResponseEntity<LivroResponse> criarLivro(@Valid @RequestBody LivroRequest livroDto) {
         LivroResponse criado = livroService.insertLivro(livroDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(criado);
     }
@@ -62,15 +60,13 @@ public class LivroController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<LivroResponse> update(@PathVariable Long id, @Valid @RequestBody LivroRequest dto)
-            throws BusinessRuleException {
+    public ResponseEntity<LivroResponse> update(@PathVariable Long id, @Valid @RequestBody LivroRequest dto) {
         LivroResponse updated = livroService.updateLivro(id, dto);
         return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletarLivro(@PathVariable Long id)
-            throws BusinessRuleException {
+    public ResponseEntity<Void> deletarLivro(@PathVariable Long id) {
         livroService.deleteLivro(id);
         return ResponseEntity.noContent().build();
     }

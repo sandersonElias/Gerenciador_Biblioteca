@@ -5,6 +5,7 @@ import dev.sanderson.Back_End.dto.SolicitacaoRenovacaoDtos.SolicitacaoPendenteDt
 import dev.sanderson.Back_End.dto.SolicitacaoRenovacaoDtos.SolicitacaoRenovacaoRequest;
 import dev.sanderson.Back_End.dto.SolicitacaoRenovacaoDtos.SolicitacaoRenovacaoResponse;
 import dev.sanderson.Back_End.service.SolicitacaoRenovacaoService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -22,7 +23,7 @@ public class SolicitacaoRenovacaoController {
     @PostMapping
     public ResponseEntity<SolicitacaoRenovacaoResponse> solicitarRenovacao(
             Authentication authentication,
-            @RequestBody SolicitacaoRenovacaoRequest request) {
+            @Valid @RequestBody SolicitacaoRenovacaoRequest request) {
 
         String email = authentication.getName();
         SolicitacaoRenovacaoResponse response = solicitacaoService

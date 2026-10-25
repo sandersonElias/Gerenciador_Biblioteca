@@ -4,7 +4,7 @@ import dev.sanderson.Back_End.dto.UserDtos.CadastrarProfessorRequest;
 import dev.sanderson.Back_End.dto.UserDtos.ImportAlunosRequest;
 import dev.sanderson.Back_End.dto.UserDtos.ImportAlunosResponse;
 import dev.sanderson.Back_End.dto.UserDtos.UserResponse;
-import dev.sanderson.Back_End.exception.BusinessRuleException;
+import dev.sanderson.Back_End.service.AlunoImportService;
 import dev.sanderson.Back_End.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 public class AdminUserController {
 
     private final UserService userService;
+    private final AlunoImportService alunoImportService;
 
     /**
      * Cadastra alunos em lote a partir do export da SEE-MG.
@@ -31,9 +32,8 @@ public class AdminUserController {
     )
     public ResponseEntity<ImportAlunosResponse> importarAlunos(
             @RequestBody @Valid ImportAlunosRequest request
-    ) throws BusinessRuleException {
-
-        ImportAlunosResponse response = userService.importarAlunos(request);
+    ) {
+        ImportAlunosResponse response = alunoImportService.importarAlunos(request);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -48,8 +48,7 @@ public class AdminUserController {
     )
     public ResponseEntity<UserResponse> cadastrarProfessor(
             @RequestBody @Valid CadastrarProfessorRequest request
-    ) throws BusinessRuleException {
-
+    ) {
         UserResponse response = userService.cadastrarProfessor(request);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }

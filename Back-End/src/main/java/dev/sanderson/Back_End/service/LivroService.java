@@ -40,7 +40,7 @@ public class LivroService {
 
     @Transactional
     @CacheEvict(value = "livros", allEntries = true)
-    public LivroResponse insertLivro(LivroRequest dto) throws BusinessRuleException {
+    public LivroResponse insertLivro(LivroRequest dto) {
 
         Autor autor = autorRepository.findById(dto.getAutorId())
                 .orElseThrow(() -> new EntityNotFoundException("Autor nao encontrado"));
@@ -91,7 +91,7 @@ public class LivroService {
 
     @Transactional
     @CacheEvict(value = "livros", allEntries = true)
-    public LivroResponse updateLivro(Long id, LivroRequest dto) throws BusinessRuleException {
+    public LivroResponse updateLivro(Long id, LivroRequest dto) {
         Livro livroExistente = livroRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Livro nao encontrado com id: " + id));
 
@@ -147,7 +147,7 @@ public class LivroService {
 
     @Transactional
     @CacheEvict(value = "livros", allEntries = true)
-    public void deleteLivro(Long id) throws BusinessRuleException {
+    public void deleteLivro(Long id) {
         Livro livro = livroRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Livro nao encontrado"));
 
@@ -175,6 +175,7 @@ public class LivroService {
         livroRepository.delete(livro);
     }
 
+    @Transactional(readOnly = true)
     @Cacheable(value = "livros", key = "'todos'")
     public List<LivroResponse> listarTodos() {
         return livroRepository.findAll()
@@ -183,6 +184,7 @@ public class LivroService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     @Cacheable(value = "livros", key = "#id")
     public LivroResponse buscarPorId(Long id) {
         Livro livro = livroRepository.findById(id)
@@ -190,6 +192,7 @@ public class LivroService {
         return objectMapper.convertValue(livro, LivroResponse.class);
     }
 
+    @Transactional(readOnly = true)
     @Cacheable(value = "livros", key = "'titulo_' + #titulo")
     public List<LivroResponse> buscarPorTitulo(String titulo) {
         return livroRepository.buscarTitulo(titulo)
@@ -198,6 +201,7 @@ public class LivroService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     @Cacheable(value = "livros", key = "'autor_' + #autor")
     public List<LivroResponse> buscarPorAutor(String autor) {
         return livroRepository.buscarAutor(autor)
@@ -206,6 +210,7 @@ public class LivroService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     @Cacheable(value = "livros", key = "'genero_' + #genero")
     public List<LivroResponse> buscarPorGenero(String genero) {
         return livroRepository.buscarGenero(genero)
@@ -214,6 +219,7 @@ public class LivroService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     @Cacheable(value = "livros", key = "'catalogacao_' + #catalogacao")
     public List<LivroResponse> buscarPorCatalogacao(String catalogacao) {
         return livroRepository.buscarCatalogacao(catalogacao)
@@ -222,6 +228,7 @@ public class LivroService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     @Cacheable(value = "livros", key = "'populares_' + #limite")
     public List<LivroResponse> listarMaisPopulares(int limite) {
         return livroRepository.listarMaisPopulares(PageRequest.of(0, Math.max(1, limite)))
@@ -230,6 +237,7 @@ public class LivroService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     @Cacheable(value = "livros", key = "'busca_' + #filtros.hashCode()")
     public org.springframework.data.domain.Page<LivroResponse> buscarComFiltros(dev.sanderson.Back_End.dto.LivroDtos.FiltroLivroRequest filtros) {
         dev.sanderson.Back_End.specification.LivroSpecification spec = new dev.sanderson.Back_End.specification.LivroSpecification(filtros);

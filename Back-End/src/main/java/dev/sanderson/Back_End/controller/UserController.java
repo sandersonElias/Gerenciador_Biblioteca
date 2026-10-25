@@ -2,7 +2,6 @@ package dev.sanderson.Back_End.controller;
 
 import dev.sanderson.Back_End.dto.UserDtos.TrocarSenhaRequest;
 import dev.sanderson.Back_End.dto.UserDtos.UserResponse;
-import dev.sanderson.Back_End.exception.BusinessRuleException;
 import dev.sanderson.Back_End.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +31,7 @@ public class UserController {
     public ResponseEntity<Void> trocarSenha(
             @RequestBody @Valid TrocarSenhaRequest request,
             Authentication authentication
-    ) throws BusinessRuleException {
+    ) {
 
         String email = authentication.getName();
         userService.trocarSenha(email, request);

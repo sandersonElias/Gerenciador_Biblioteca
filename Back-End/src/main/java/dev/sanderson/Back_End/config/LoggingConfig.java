@@ -41,15 +41,7 @@ public class LoggingConfig implements WebMvcConfigurer {
                     request.getRequestURI(),
                     response.getStatus(),
                     duration,
-                    getClientIP(request));
-        }
-
-        private String getClientIP(HttpServletRequest request) {
-            String xForwardedFor = request.getHeader("X-Forwarded-For");
-            if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
-                return xForwardedFor.split(",")[0].trim();
-            }
-            return request.getRemoteAddr();
+                    IpUtils.getClientIP(request));
         }
     }
 }

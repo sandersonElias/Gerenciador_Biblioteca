@@ -35,15 +35,6 @@ public class ExemplarService {
         return dto;
     }
 
-    // ── Gerar próximo código (001, 002, ...) ──────────────────────────────────
-
-    private String gerarProximoCodigo(Long livroId) {
-        int proximo = exemplarRepository.findMaxCodigoByLivroId(livroId)
-                .map(max -> max + 1)
-                .orElse(1);
-        return String.format("%03d", proximo);
-    }
-
     // ── Criar exemplares ao cadastrar livro ───────────────────────────────────
 
     @Transactional
@@ -67,15 +58,20 @@ public class ExemplarService {
         Livro livro = livroRepository.findById(livroId)
                 .orElseThrow(() -> new EntityNotFoundException("Livro não encontrado"));
 
+        int proximo = exemplarRepository.findMaxCodigoByLivroId(livroId)
+                .map(max -> max + 1)
+                .orElse(1);
+
         List<Exemplar> novos = new ArrayList<>();
         for (int i = 0; i < quantidade; i++) {
             Exemplar ex = new Exemplar();
-            ex.setCodigo(gerarProximoCodigo(livroId));
+            ex.setCodigo(String.format("%03d", proximo + i));
             ex.setStatus(StatusExemplar.DISPONIVEL);
             ex.setLivro(livro);
-            novos.add(exemplarRepository.save(ex));
+            novos.add(ex);
         }
-        return novos.stream().map(this::toResponse).toList();
+
+        return exemplarRepository.saveAll(novos).stream().map(this::toResponse).toList();
     }
 
     // ── Ajustar exemplares ao atualizar livro (se total aumentou) ────────────
@@ -96,16 +92,19 @@ public class ExemplarService {
 
     // ── Listagens ─────────────────────────────────────────────────────────────
 
+    @Transactional(readOnly = true)
     public List<ExemplarResponse> listarPorLivro(Long livroId) {
         return exemplarRepository.findByLivroIdOrderByCodigo(livroId)
                 .stream().map(this::toResponse).toList();
     }
 
+    @Transactional(readOnly = true)
     public List<ExemplarResponse> listarDisponiveisPorLivro(Long livroId) {
         return exemplarRepository.findByLivroIdAndStatusOrderByCodigo(livroId, StatusExemplar.DISPONIVEL)
                 .stream().map(this::toResponse).toList();
     }
 
+    @Transactional(readOnly = true)
     public ExemplarResponse sugerirExemplar(Long livroId) {
         return exemplarRepository.findFirstByLivroIdAndStatusOrderByCodigo(livroId, StatusExemplar.DISPONIVEL)
                 .map(this::toResponse)

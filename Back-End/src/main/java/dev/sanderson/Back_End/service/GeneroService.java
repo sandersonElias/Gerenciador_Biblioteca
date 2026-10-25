@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -19,6 +20,7 @@ public class GeneroService {
     private final GeneroRepository generoRepository;
     private final ObjectMapper objectMapper;
 
+    @Transactional
     @CacheEvict(value = "generos", allEntries = true)
     public GeneroResponse insertGenero(GeneroRequest dto){
         Genero genero = new Genero();
@@ -29,6 +31,7 @@ public class GeneroService {
         return objectMapper.convertValue(salvo, GeneroResponse.class);
     }
 
+    @Transactional(readOnly = true)
     @Cacheable(value = "generos", key = "#genero")
     public List<GeneroResponse> buscarGenero(String genero){
         return generoRepository.buscarGenero(genero)

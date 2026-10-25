@@ -51,6 +51,7 @@ public class SolicitacaoRenovacaoService {
         return converterParaResponse(salva);
     }
 
+    @Transactional(readOnly = true)
     public List<SolicitacaoPendenteDto> listarSolicitacoesPendentes() {
         List<SolicitacaoRenovacao> pendentes = solicitacaoRepository
                 .findByStatusOrderByDataSolicitacaoAsc(StatusSolicitacao.PENDENTE);

@@ -1,6 +1,5 @@
 package dev.sanderson.Back_End.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.sanderson.Back_End.config.EmprestimoConfig;
 import dev.sanderson.Back_End.dto.EmprestimoDtos.EmprestimoHistoricoDto;
 import dev.sanderson.Back_End.dto.EmprestimoDtos.EmprestimoRequest;
@@ -21,7 +20,6 @@ import dev.sanderson.Back_End.repository.LivroRepository;
 import dev.sanderson.Back_End.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,9 +37,7 @@ public class EmprestimoService {
     private final UserRepository userRepository;
     private final LivroRepository livroRepository;
     private final ExemplarRepository exemplarRepository;
-    private final ObjectMapper objectMapper;
     private final EmprestimoConfig emprestimoConfig;
-    private final NotificacaoService notificacaoService;
 
     // Status que ocupam "vaga" no limite do usuÃ¡rio
     private static final List<StatusEmprestimo> STATUS_EM_CURSO =
@@ -59,17 +55,11 @@ public class EmprestimoService {
         dto.setStatus(e.getStatus().name());
 
         if (e.getUser() != null) {
-            UserMinDto userDto = new UserMinDto();
-            userDto.setName(e.getUser().getName());
-            userDto.setEmail(e.getUser().getEmail());
-            dto.setUser(userDto);
+            dto.setUser(UserMinDto.from(e.getUser()));
         }
 
         if (e.getLivro() != null) {
-            LivroMinDto livroDto = new LivroMinDto();
-            livroDto.setId(e.getLivro().getId());
-            livroDto.setTitulo(e.getLivro().getTitulo());
-            dto.setLivro(livroDto);
+            dto.setLivro(LivroMinDto.from(e.getLivro()));
         }
 
         if (e.getExemplar() != null) {
@@ -124,14 +114,9 @@ public class EmprestimoService {
         emp.setLivro(livro);
         emp.setExemplar(exemplar);
 
-        LocalDate hoje = dto.getDataEmprestimo() != null ? dto.getDataEmprestimo() : LocalDate.now();
+        LocalDate hoje = LocalDate.now();
         emp.setDataEmprestimo(hoje);
-
-        // âœ… MUDOU: usa prazo configurÃ¡vel (antes era hardcoded "7")
-        LocalDate devolucao = dto.getDataDevolucao() != null
-                ? dto.getDataDevolucao()
-                : hoje.plusDays(emprestimoConfig.getPrazoDias());
-        emp.setDataDevolucao(devolucao);
+        emp.setDataDevolucao(hoje.plusDays(emprestimoConfig.getPrazoDias()));
 
         emp.setStatus(StatusEmprestimo.ATIVO);
         emp.setRenovacoes(0);
@@ -217,7 +202,6 @@ public class EmprestimoService {
 
     // â”€â”€ JOB: marcar ATRASADO (roda todo dia Ã  meia-noite) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-    @Scheduled(cron = "0 0 0 * * *")
     @Transactional
     public void marcarEmprestimosAtrasados() {
         List<Emprestimo> ativos = emprestimoRepository.buscarStatus(StatusEmprestimo.ATIVO);
@@ -233,41 +217,50 @@ public class EmprestimoService {
 
     // â”€â”€ Listagens e buscas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
+    @Transactional(readOnly = true)
     public List<EmprestimoResponse> todosEmprestimos() {
         return emprestimoRepository.findAll().stream().map(this::toResponse).toList();
     }
 
+    @Transactional(readOnly = true)
     public EmprestimoResponse buscarId(Long id) {
         return toResponse(emprestimoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("EmprÃ©stimo nÃ£o encontrado")));
     }
 
+    @Transactional(readOnly = true)
     public List<EmprestimoResponse> buscarPorUser(String nome) {
         return emprestimoRepository.buscarUser(nome).stream().map(this::toResponse).toList();
     }
 
+    @Transactional(readOnly = true)
     public List<EmprestimoResponse> buscarPorLivro(String titulo) {
         return emprestimoRepository.buscarLivro(titulo).stream().map(this::toResponse).toList();
     }
 
+    @Transactional(readOnly = true)
     public List<EmprestimoResponse> buscarPorLivroRenovacao(String titulo) {
         return emprestimoRepository.buscarRenovacaoLivro(titulo).stream().map(this::toResponse).toList();
     }
 
+    @Transactional(readOnly = true)
     public List<EmprestimoResponse> buscarPorUserRenovacao(String nome) {
         return emprestimoRepository.buscarRenovacaoUser(nome).stream().map(this::toResponse).toList();
     }
 
+    @Transactional(readOnly = true)
     public List<EmprestimoResponse> buscarPorStatus(StatusEmprestimo status) {
         return emprestimoRepository.buscarStatus(status).stream().map(this::toResponse).toList();
     }
 
+    @Transactional(readOnly = true)
     public List<EmprestimoResponse> buscarDevolucaoDoDia(LocalDate hoje) {
         return emprestimoRepository.buscarDevolucaoDoDia(hoje).stream().map(this::toResponse).toList();
     }
 
     // â”€â”€ Minha conta (aluno logado) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
+    @Transactional(readOnly = true)
     public MeusEmprestimosResponse obterMeusEmprestimos(String email) {
         MeusEmprestimosResponse response = new MeusEmprestimosResponse();
 
@@ -299,11 +292,7 @@ public class EmprestimoService {
         dto.setPodeRenovar(podeRenovar(e));
 
         if (e.getLivro() != null) {
-            LivroMinDto livroDto = new LivroMinDto();
-            livroDto.setId(e.getLivro().getId());
-            livroDto.setTitulo(e.getLivro().getTitulo());
-            livroDto.setUrlImg(e.getLivro().getUrlImg());
-            dto.setLivro(livroDto);
+            dto.setLivro(LivroMinDto.from(e.getLivro()));
         }
         return dto;
     }
@@ -317,11 +306,7 @@ public class EmprestimoService {
         dto.setStatus(e.getStatus().name());
 
         if (e.getLivro() != null) {
-            LivroMinDto livroDto = new LivroMinDto();
-            livroDto.setId(e.getLivro().getId());
-            livroDto.setTitulo(e.getLivro().getTitulo());
-            livroDto.setUrlImg(e.getLivro().getUrlImg());
-            dto.setLivro(livroDto);
+            dto.setLivro(LivroMinDto.from(e.getLivro()));
         }
         return dto;
     }

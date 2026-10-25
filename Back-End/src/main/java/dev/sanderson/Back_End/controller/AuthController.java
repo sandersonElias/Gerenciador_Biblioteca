@@ -6,7 +6,6 @@ import dev.sanderson.Back_End.dto.UserDtos.UserLoginDto;
 import dev.sanderson.Back_End.dto.UserDtos.UserRequest;
 import dev.sanderson.Back_End.dto.UserDtos.UserResponse;
 import dev.sanderson.Back_End.entity.User;
-import dev.sanderson.Back_End.exception.BusinessRuleException;
 import dev.sanderson.Back_End.security.TokenService;
 import dev.sanderson.Back_End.service.UserService;
 import jakarta.validation.Valid;
@@ -54,7 +53,7 @@ public class AuthController implements AuthControllerDoc {
             value = "/registrar",
             consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public ResponseEntity<UserResponse> registrar(@RequestBody @Valid UserRequest userRequest) throws BusinessRuleException {
+    public ResponseEntity<UserResponse> registrar(@RequestBody @Valid UserRequest userRequest) {
         UserResponse user = userService.registrar(userRequest);
         return new ResponseEntity<>(user, HttpStatus.CREATED);
     }

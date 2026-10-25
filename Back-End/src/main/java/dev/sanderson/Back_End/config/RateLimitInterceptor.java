@@ -17,7 +17,7 @@ public class RateLimitInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
-        String clientIp = getClientIP(request);
+        String clientIp = IpUtils.getClientIP(request);
         RequestCounter counter = requestCounts.computeIfAbsent(clientIp, k -> new RequestCounter());
 
         if (counter.isRateLimited()) {
@@ -28,14 +28,6 @@ public class RateLimitInterceptor implements HandlerInterceptor {
 
         counter.increment();
         return true;
-    }
-
-    private String getClientIP(HttpServletRequest request) {
-        String xForwardedFor = request.getHeader("X-Forwarded-For");
-        if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
-            return xForwardedFor.split(",")[0].trim();
-        }
-        return request.getRemoteAddr();
     }
 
     private static class RequestCounter {

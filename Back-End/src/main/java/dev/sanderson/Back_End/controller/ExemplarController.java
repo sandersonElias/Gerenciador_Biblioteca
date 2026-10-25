@@ -1,13 +1,14 @@
 package dev.sanderson.Back_End.controller;
 
+import dev.sanderson.Back_End.dto.ExemplarDtos.AdicionarExemplarRequest;
 import dev.sanderson.Back_End.dto.ExemplarDtos.ExemplarResponse;
 import dev.sanderson.Back_End.service.ExemplarService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/exemplar")
@@ -38,8 +39,8 @@ public class ExemplarController {
     @PostMapping("/livro/{livroId}/adicionar")
     public ResponseEntity<List<ExemplarResponse>> adicionarExemplares(
             @PathVariable Long livroId,
-            @RequestBody Map<String, Integer> body) {
-        int quantidade = body.getOrDefault("quantidade", 1);
-        return ResponseEntity.ok(exemplarService.adicionarExemplares(livroId, quantidade));
+            @Valid @RequestBody AdicionarExemplarRequest request) {
+        return ResponseEntity.ok(
+                exemplarService.adicionarExemplares(livroId, request.getQuantidade()));
     }
 }
