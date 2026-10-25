@@ -4,12 +4,12 @@ import axios, {
   InternalAxiosRequestConfig,
 } from "axios";
 
-// const API_BASE_URL = process.env.REACT_APP_API_URL;
-const API_BASE_URL = "http://localhost:8080";
+const API_BASE_URL = import.meta.env.VITE_API_URL ?? "";
+const API_TIMEOUT = Number(import.meta.env.VITE_API_TIMEOUT) || 10000;
 
 const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000,
+  timeout: API_TIMEOUT,
   headers: {
     "Content-Type": "application/json",
   },
@@ -32,9 +32,14 @@ apiClient.interceptors.response.use(
   (error: AxiosError) => {
     // Token expirado ou inválido
     if (error.response?.status === 401) {
+      const tinhaToken = Boolean(localStorage.getItem("auth_token"));
       localStorage.removeItem("auth_token");
       localStorage.removeItem("user");
-      window.location.href = "/login";
+
+      // Evita loop de redirecionamento quando já estamos na tela de login
+      if (tinhaToken && window.location.pathname !== "/login") {
+        window.location.href = "/login";
+      }
     }
 
     // Acesso negado

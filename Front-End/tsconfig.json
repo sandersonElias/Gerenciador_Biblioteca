@@ -10,14 +10,13 @@
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
     "module": "esnext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
     "baseUrl": "src",
-    "ignoreDeprecations": "6.0",
-    "types": ["vite/client", "node"],
+    "types": ["vite/client", "node", "jest"],
 
     "paths": {
       "@/*": ["*"],
@@ -31,5 +30,6 @@
       "@/utils/*": ["utils/*"]
     }
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": ["src/**/*.test.ts", "src/**/*.test.tsx"]
 }
