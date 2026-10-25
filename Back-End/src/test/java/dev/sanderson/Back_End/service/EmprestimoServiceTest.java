@@ -2,6 +2,7 @@ package dev.sanderson.Back_End.service;
 
 import dev.sanderson.Back_End.dto.EmprestimoDtos.EmprestimoRequest;
 import dev.sanderson.Back_End.dto.EmprestimoDtos.EmprestimoResponse;
+import dev.sanderson.Back_End.dto.EmprestimoDtos.MeusEmprestimosResponse;
 import dev.sanderson.Back_End.entity.*;
 import dev.sanderson.Back_End.entity.type.StatusEmprestimo;
 import dev.sanderson.Back_End.entity.type.StatusExemplar;
@@ -126,6 +127,27 @@ class EmprestimoServiceTest {
         Emprestimo devolvido = emprestimoRepository.findById(emprestimo.getId()).get();
         assertEquals(StatusEmprestimo.DEVOLVIDO, devolvido.getStatus());
         assertNotNull(devolvido.getDataDevolvido());
+    }
+
+    @Test
+    void deveListarDoisEmprestimosAtivosNoMeuPerfil() {
+        User user = criarUsuario("aluno@test.com", "ROLE_ALUNO");
+        Livro primeiroLivro = criarLivro("Primeiro Livro");
+        Livro segundoLivro = criarLivro("Segundo Livro");
+
+        EmprestimoRequest primeiro = new EmprestimoRequest();
+        primeiro.setLivroId(primeiroLivro.getId());
+        primeiro.setUserId(user.getId());
+        emprestimoService.insertEmprestimo(primeiro);
+
+        EmprestimoRequest segundo = new EmprestimoRequest();
+        segundo.setLivroId(segundoLivro.getId());
+        segundo.setUserId(user.getId());
+        emprestimoService.insertEmprestimo(segundo);
+
+        MeusEmprestimosResponse response = emprestimoService.obterMeusEmprestimos(user.getEmail());
+
+        assertEquals(2, response.getEmprestimosAtivos().size());
     }
 
     @Test

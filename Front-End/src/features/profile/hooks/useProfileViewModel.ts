@@ -28,7 +28,7 @@ export const useProfileViewModel = () => {
       queryKey: ["emprestimos", "meus", user?.email],
       queryFn: () =>
         user?.email
-          ? EmprestimoService.getMeusEmprestimos(user.email)
+          ? EmprestimoService.getMeusEmprestimos()
           : Promise.resolve(null),
       enabled: !!user?.email,
     });

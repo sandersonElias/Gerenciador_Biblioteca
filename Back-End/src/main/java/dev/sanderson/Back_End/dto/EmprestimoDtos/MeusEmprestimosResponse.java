@@ -6,6 +6,6 @@ import java.util.List;
 
 @Data
 public class MeusEmprestimosResponse {
-    private EmprestimosAtivoDto emprestimosAtivo;
+    private List<EmprestimosAtivoDto> emprestimosAtivos;
     private List<EmprestimoHistoricoDto> historico;
 }

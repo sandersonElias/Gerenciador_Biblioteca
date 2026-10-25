@@ -141,12 +141,25 @@
   svg { color: var(--color-blue, #1E6FBF); flex-shrink: 0; }
 }
 
-// ── Card empréstimo ativo ──────────────────────────────────────────────────────
+// ── Cards empréstimos ativos ───────────────────────────────────────────────────
+.active-loans-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
 .active-loan-card {
   display: flex;
   gap: 1.5rem;
   align-items: flex-start;
   flex-wrap: wrap;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(30, 111, 191, 0.08);
+
+  &:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+  }
 
   &--late {
     .deadline-bar__fill { background: #dc2626 !important; }

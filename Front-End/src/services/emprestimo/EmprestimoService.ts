@@ -46,8 +46,8 @@ export class EmprestimoService {
     return response.data;
   }
 
-  static async getMeusEmprestimos(email: string): Promise<MeusEmprestimosResponse> {
-    const response = await apiClient.get(`/emprestimo/minha-conta/${encodeURIComponent(email)}`);
+  static async getMeusEmprestimos(): Promise<MeusEmprestimosResponse> {
+    const response = await apiClient.get('/emprestimo/minha-conta');
     return response.data;
   }
 }

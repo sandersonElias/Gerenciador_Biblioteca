@@ -17,7 +17,7 @@ interface CardProfileProps {
     role: string;
   } | null;
   emprestimos?: {
-    emprestimosAtivo: EmprestimosAtivoDto | null;
+    emprestimosAtivos: EmprestimosAtivoDto[];
     historico: EmprestimoHistoricoDto[];
   } | null;
   reservas?: ReservaResponse[];
@@ -56,9 +56,9 @@ export const CardProfile: React.FC<CardProfileProps> = ({
         </div>
         <div className="profile-stat">
           <span className="profile-stat__value">
-            {emprestimos?.emprestimosAtivo ? 1 : 0}
+            {emprestimos?.emprestimosAtivos?.length ?? 0}
           </span>
-          <span className="profile-stat__label">Empréstimo ativo</span>
+          <span className="profile-stat__label">Empréstimos ativos</span>
         </div>
       </div>
     </section>

@@ -10,7 +10,6 @@ import org.springframework.data.repository.query.Param;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface EmprestimoRepository extends JpaRepository<Emprestimo, Long> {
@@ -55,13 +54,13 @@ public interface EmprestimoRepository extends JpaRepository<Emprestimo, Long> {
     """)
     List<Emprestimo> buscarRenovacaoUser(@Param("name") String name);
 
-    // ✅ Busca empréstimo em curso (ATIVO ou ATRASADO) por email
     @Query("""
         SELECT e FROM Emprestimo e
         WHERE e.user.email = :email
         AND e.status IN :statuses
+        ORDER BY e.dataDevolucao ASC
     """)
-    Optional<Emprestimo> findByUserEmailAndStatusIn(
+    List<Emprestimo> findByUserEmailAndStatusInOrderByDataDevolucaoAsc(
             @Param("email") String email,
             @Param("statuses") List<StatusEmprestimo> statuses
     );

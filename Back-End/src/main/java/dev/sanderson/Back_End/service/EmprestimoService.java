@@ -27,7 +27,6 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -264,11 +263,15 @@ public class EmprestimoService {
     public MeusEmprestimosResponse obterMeusEmprestimos(String email) {
         MeusEmprestimosResponse response = new MeusEmprestimosResponse();
 
-        Optional<Emprestimo> ativoOpt = emprestimoRepository
-                .findByUserEmailAndStatusIn(email,
-                        List.of(StatusEmprestimo.ATIVO, StatusEmprestimo.ATRASADO));
-
-        response.setEmprestimosAtivo(ativoOpt.map(this::converterParaAtivoDto).orElse(null));
+        response.setEmprestimosAtivos(
+                emprestimoRepository
+                        .findByUserEmailAndStatusInOrderByDataDevolucaoAsc(
+                                email,
+                                List.of(StatusEmprestimo.ATIVO, StatusEmprestimo.ATRASADO))
+                        .stream()
+                        .map(this::converterParaAtivoDto)
+                        .toList()
+        );
 
         response.setHistorico(
                 emprestimoRepository

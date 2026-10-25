@@ -7,7 +7,7 @@ import { MAX_RENOVACOES, PRAZO_DIAS_DEFAULT } from "../../../constants";
 
 interface EmprestimosAtivosProps {
   emprestimos?: {
-    emprestimosAtivo: EmprestimosAtivoDto | null;
+    emprestimosAtivos: EmprestimosAtivoDto[];
     historico: EmprestimoHistoricoDto[];
   } | null;
   isAluno: boolean;
@@ -37,123 +37,126 @@ export const EmprestimosAtivos: React.FC<EmprestimosAtivosProps> = ({
           <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
           <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
         </svg>
-        Empréstimo Ativo
+        Empréstimos Ativos
       </h2>
 
-      {emprestimos?.emprestimosAtivo ? (
-        (() => {
-          const a = emprestimos.emprestimosAtivo;
-          const atrasado = a.diasRestantes === 0;
+      {emprestimos?.emprestimosAtivos?.length ? (
+        <div className="active-loans-list">
+          {emprestimos.emprestimosAtivos.map((a) => {
+            const atrasado = a.diasRestantes === 0;
 
-          return (
-            <div
-              className={`active-loan-card ${
-                atrasado ? "active-loan-card--late" : ""
-              }`}
-            >
-              {/* Capa do livro */}
-              <div className="active-loan-cover">
-                {a.livro.urlImg ? (
-                  <img src={a.livro.urlImg} alt={a.livro.titulo} />
-                ) : (
-                  <div className="cover-placeholder">
-                    <svg
-                      width="32"
-                      height="32"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                    >
-                      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-                      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-                    </svg>
+            return (
+              <div
+                key={a.id}
+                className={`active-loan-card ${
+                  atrasado ? "active-loan-card--late" : ""
+                }`}
+              >
+                <div className="active-loan-cover">
+                  {a.livro.urlImg ? (
+                    <img src={a.livro.urlImg} alt={a.livro.titulo} />
+                  ) : (
+                    <div className="cover-placeholder">
+                      <svg
+                        width="32"
+                        height="32"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                      >
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+
+                <div className="active-loan-info">
+                  <Link
+                    to={`/livro/${a.livro.id}`}
+                    className="active-loan-title"
+                  >
+                    {a.livro.titulo}
+                  </Link>
+
+                  <div className="active-loan-meta">
+                    <div className="meta-chip">
+                      <span className="meta-chip__label">Emprestado em</span>
+                      <span className="meta-chip__value">
+                        {fmt(a.dataEmprestimo)}
+                      </span>
+                    </div>
+                    <div className="meta-chip">
+                      <span className="meta-chip__label">Devolver até</span>
+                      <span className="meta-chip__value">
+                        {fmt(a.dataDevolucao)}
+                      </span>
+                    </div>
+                    <div className="meta-chip">
+                      <span className="meta-chip__label">Renovações</span>
+                      <span className="meta-chip__value">
+                        {a.renovacoes}/{MAX_RENOVACOES}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="deadline-bar">
+                    <div
+                      className={`deadline-bar__fill ${
+                        atrasado ? "deadline-bar__fill--late" : ""
+                      }`}
+                      style={{
+                        width: atrasado
+                          ? "100%"
+                          : `${Math.min(
+                              100,
+                              ((PRAZO_DIAS_DEFAULT - a.diasRestantes) /
+                                PRAZO_DIAS_DEFAULT) *
+                                100,
+                            )}%`,
+                      }}
+                    />
+                  </div>
+                  <p
+                    className={`deadline-label ${
+                      atrasado ? "deadline-label--late" : ""
+                    }`}
+                  >
+                    {atrasado
+                      ? "⚠️ Prazo encerrado — devolva o livro"
+                      : `${a.diasRestantes} dia${
+                          a.diasRestantes !== 1 ? "s" : ""
+                        } restante${a.diasRestantes !== 1 ? "s" : ""}`}
+                  </p>
+                </div>
+
+                {isAluno && (
+                  <div className="active-loan-action">
+                    {a.podeRenovar ? (
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        isLoading={isSolicitandoRenovacao}
+                        onClick={() => handleSolicitarRenovacao(a)}
+                      >
+                        Solicitar Renovação
+                      </Button>
+                    ) : (
+                      <span className="renew-blocked">
+                        {a.renovacoes >= MAX_RENOVACOES
+                          ? `Limite atingido (${MAX_RENOVACOES}/${MAX_RENOVACOES})`
+                          : atrasado
+                          ? "Livro atrasado"
+                          : "Renovação indisponível"}
+                      </span>
+                    )}
                   </div>
                 )}
               </div>
-
-              {/* Informações do empréstimo */}
-              <div className="active-loan-info">
-                <Link to={`/livro/${a.livro.id}`} className="active-loan-title">
-                  {a.livro.titulo}
-                </Link>
-
-                <div className="active-loan-meta">
-                  <div className="meta-chip">
-                    <span className="meta-chip__label">Emprestado em</span>
-                    <span className="meta-chip__value">
-                      {fmt(a.dataEmprestimo)}
-                    </span>
-                  </div>
-                  <div className="meta-chip">
-                    <span className="meta-chip__label">Devolver até</span>
-                    <span className="meta-chip__value">
-                      {fmt(a.dataDevolucao)}
-                    </span>
-                  </div>
-                  <div className="meta-chip">
-                    <span className="meta-chip__label">Renovações</span>
-                    <span className="meta-chip__value">{a.renovacoes}/{MAX_RENOVACOES}</span>
-                  </div>
-                </div>
-
-                {/* Barra de prazo */}
-                <div className="deadline-bar">
-                  <div
-                    className={`deadline-bar__fill ${
-                      atrasado ? "deadline-bar__fill--late" : ""
-                    }`}
-                    style={{
-                      width: atrasado
-                        ? "100%"
-                        : `${Math.min(
-                            100,
-                            ((PRAZO_DIAS_DEFAULT - a.diasRestantes) /
-                              PRAZO_DIAS_DEFAULT) *
-                              100,
-                          )}%`,
-                    }}
-                  />
-                </div>
-                <p
-                  className={`deadline-label ${
-                    atrasado ? "deadline-label--late" : ""
-                  }`}
-                >
-                  {atrasado
-                    ? "⚠️ Prazo encerrado — devolva o livro"
-                    : `${a.diasRestantes} dia${
-                        a.diasRestantes !== 1 ? "s" : ""
-                      } restante${a.diasRestantes !== 1 ? "s" : ""}`}
-                </p>
-              </div>
-
-              {/* Ação de renovação (apenas ALUNO) */}
-              {isAluno && (
-                <div className="active-loan-action">
-                  {a.podeRenovar ? (
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      isLoading={isSolicitandoRenovacao}
-                      onClick={() => handleSolicitarRenovacao(a)}
-                    >
-                      Solicitar Renovação
-                    </Button>
-                  ) : (
-                    <span className="renew-blocked">
-                      {a.renovacoes >= MAX_RENOVACOES
-                        ? `Limite atingido (${MAX_RENOVACOES}/${MAX_RENOVACOES})`
-                        : atrasado
-                        ? "Livro atrasado"
-                        : "Renovação indisponível"}
-                    </span>
-                  )}
-                </div>
-              )}
-            </div>
-          );
-        })()
+            );
+          })}
+        </div>
       ) : (
         <div className="empty-card">
           <p>Você não possui nenhum empréstimo ativo no momento.</p>

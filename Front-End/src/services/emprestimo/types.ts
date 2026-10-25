@@ -54,6 +54,6 @@ export interface EmprestimoHistoricoDto {
 }
 
 export interface MeusEmprestimosResponse {
-  emprestimosAtivo: EmprestimosAtivoDto | null;
+  emprestimosAtivos: EmprestimosAtivoDto[];
   historico: EmprestimoHistoricoDto[];
 }
