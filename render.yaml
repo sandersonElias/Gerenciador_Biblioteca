@@ -37,7 +37,7 @@ services:
       - key: DEMO_PASSWORD
         sync: false
       - key: JAVA_TOOL_OPTIONS
-        value: -XX:MaxRAMPercentage=70.0
+        value: -XX:MaxRAMPercentage=55.0 -XX:+UseSerialGC -XX:ActiveProcessorCount=2 -Xss512k
 
 databases:
   - name: biblioteca-monsa-db
